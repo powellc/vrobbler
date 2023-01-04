@@ -1,0 +1,32 @@
+---
+################
+# Build & Test #
+################
+
+kind: pipeline
+name: run_tests
+
+steps:
+  # Run tests against Python/Flask engine backend (with pytest)
+  - name: django_tests
+    image: python:3.10.4
+    commands:
+      # Install dependencies
+      - cp vrobbler.conf.example vrobbler.conf
+      - pip install poetry
+      - poetry install
+      # Start with a fresh database (which is already running as a service from Drone)
+      - poetry run python manage.py test
+    environment:
+      VROBBLER_DATABASE_URL: sqlite:///test.db
+    volumes:
+      # Mount pip cache from host
+      - name: pip_cache
+        path: /root/.cache/pip
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+  - name: pip_cache
+    host:
+      path: /tmp/cache/drone/pip

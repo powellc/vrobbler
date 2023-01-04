@@ -1,0 +1,136 @@
+{% load static %}
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <title>{% block page_title %}Welcome{% endblock %} | Vrobbler &raquo; For video scrobbling</title>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.10/clipboard.min.js"></script>
+
+        <style type="text/css">
+        dl {
+            display: flex;
+            flex-flow: column wrap;
+            max-height: 6em;
+            border: 1px solid #777;
+        }
+        dt {
+            padding: 2px 4px;
+            background: #777;
+            color: #fff;
+        }
+        dd {
+            margin: 0;
+            padding: 4px;
+            min-height: 3em;
+            border-right: 1px solid #777;
+        }
+        #library-update-status { margin-right:10px; }
+        .card img { width:18em; padding: 1em; }
+        .card-block { padding: 1em 0 1em 0; }
+        .system-badge { padding: 1em; font-size: normal; }
+        .updating { color:#aaa; margin-right: 8px; }
+        .high { color: green; }
+        .medium { color: #aaa;}
+        .low { color: red; }
+        .card {
+            height: auto;
+            display: flex;
+        }
+        .card-columns{
+            display: grid;
+            overflow: hidden;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: 1fr;
+            grid-column-gap: 20px;
+            grid-row-gap: 10px;
+        }
+        {% for system in game_systems %}
+        .{{system.retropie_slug}} { background: #{{system.get_color}}; }
+        {% endfor %}
+        </style>
+        {% block head_extra %}{% endblock %}
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <script>
+        function checkUpdate(){
+            $.get('/library/update/status/', function(data) {
+                $('#library-update-status').html("");
+                console.log('Checking for task');
+                setTimeout(checkUpdate,5000);
+            });
+        }
+        </script>
+
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">
+            You are using an <strong>outdated</strong> browser. Please
+            <a href="http://browsehappy.com/">upgrade your browser</a> to improve
+            your experience.
+            </p>
+        <![endif]-->
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Vrobbler</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            {% if request.user.is_authenticated %}
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Recent<span class="sr-only"></span></a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" href="{% url 'games:game_list' %}">Library<span class="sr-only"></span></a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Systems</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url "games:gamesystem_list" %}">All</a>
+                        {% for system in game_systems %}
+                        <a class="dropdown-item" href="{{system.get_absolute_url}}">{{system.name}} ({{system.game_set.count}})</a>
+                        {% endfor %}
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Collections</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url "games:gamecollection_list" %}">All</a>
+                        {% for collection in game_collections %}
+                        <a class="dropdown-item" href="{{collection.get_absolute_url}}">{{collection.name}} ({{collection.games.count}})</a>
+                        {% endfor %}
+                    </div>
+                </li>
+                </ul>
+                {% if update_in_progress %}<em class="updating">Updating</em><img id="library-update-status" src="{% static 'img/spinner.gif'%}"" width=30 />{% endif %}
+                <form class="form-inline my-2 my-lg-0" method="get" action="{% url 'search:search' %}">
+                <input class="form-control mr-sm-2" name="q" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            </div>
+            <a class="nav-link" href="{% url 'account_logout' %}">Logout<span class="sr-only"></span></a>
+            {% else %}
+            <a class="nav-link" href="{% url 'account_login' %}">Login<span class="sr-only"></span></a>
+            {% endif %}
+            </nav>
+
+            <h1>{% block title %}{% endblock %}</h1>
+
+            <div>
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </body>
+</html>

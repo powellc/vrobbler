@@ -1,0 +1,5 @@
+# You can use this file to set environment variables for your local setup
+#
+VROBBLER_MEDIA_ROOT="/media"
+VROBBLER_DATABASE_URL="postgres://USER:PASSWORD@HOST:PORT/NAME"
+VROBBLER_JSON_LOGGING=True
