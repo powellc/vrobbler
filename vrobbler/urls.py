@@ -21,10 +21,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     # path("api-auth/", include("rest_framework.urls")),
-    # path("api/v1/", include(router.urls)),
     # path("movies/", include(movies, namespace="movies")),
     # path("shows/", include(shows, namespace="shows")),
-    path("scrobbles/", include(scrobble_urls, namespace="scrobbles")),
+    path("api/v1/scrobbles/", include(scrobble_urls, namespace="scrobbles")),
     path("", RecentScrobbleList.as_view(), name="home"),
 ]
 
