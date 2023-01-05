@@ -1,12 +1,11 @@
-import dj_database_url
 import os
 import sys
-
-from django.utils.translation import gettext_lazy as _
-from dotenv import load_dotenv
 from pathlib import Path
 
-# PROJECT_ROOT = os.path.dirname(__file__)
+import dj_database_url
+from django.utils.translation import gettext_lazy as _
+from dotenv import load_dotenv
+
 PROJECT_ROOT = Path(__file__).resolve().parent
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
@@ -46,7 +45,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [
-    os.getenv("vrobbler_TRUSTED_ORIGINS", "http://localhost:8000")
+    os.getenv("VROBBLER_TRUSTED_ORIGINS", "http://localhost:8000")
 ]
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
@@ -205,7 +204,9 @@ if not DEBUG:
     )
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv("VROBBLER_MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
+MEDIA_ROOT = os.getenv(
+    "VROBBLER_MEDIA_ROOT", os.path.join(PROJECT_ROOT, "media")
+)
 
 JSON_LOGGING = os.getenv("VROBBLER_JSON_LOGGING", False)
 LOG_TYPE = "json" if JSON_LOGGING else "log"
