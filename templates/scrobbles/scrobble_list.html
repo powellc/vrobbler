@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Last watched{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for scrobble in object_list %}
+        <li>{{scrobble.timestamp|date:"D, M j Y"}}: <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

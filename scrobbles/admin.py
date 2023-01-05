@@ -5,7 +5,13 @@ from scrobbles.models import Scrobble
 
 class ScrobbleAdmin(admin.ModelAdmin):
     date_hierarchy = "timestamp"
-    list_display = ("video", "timestamp", "source", "playback_position")
+    list_display = (
+        "video",
+        "timestamp",
+        "source",
+        "playback_position",
+        "in_progress",
+    )
     list_filter = ("video",)
     ordering = ("-timestamp",)
 

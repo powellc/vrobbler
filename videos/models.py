@@ -10,6 +10,12 @@ class Series(TimeStampedModel):
     overview = models.TextField(**BNULL)
     tagline = models.TextField(**BNULL)
 
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "series"
+
 
 class Video(TimeStampedModel):
     class VideoType(models.TextChoices):
@@ -37,3 +43,10 @@ class Video(TimeStampedModel):
     tvdb_id = models.CharField(max_length=20, **BNULL)
     imdb_id = models.CharField(max_length=20, **BNULL)
     tvrage_id = models.CharField(max_length=20, **BNULL)
+
+    # Metadata fields from TMDB
+
+    def __str__(self):
+        if self.video_type == self.VideoType.TV_EPISODE:
+            return f"{self.tv_series} - Season {self.season_number}, Episode {self.episode_number}"
+        return self.title

@@ -20,6 +20,13 @@ class Scrobble(TimeStampedModel):
     played_to_completion = models.BooleanField(default=False)
     source = models.CharField(max_length=255, **BNULL)
     source_id = models.TextField(**BNULL)
+    in_progress = models.BooleanField(default=True)
 
-    def percent_played(self):
-        return int((self.playback_position_ticks / video.run_time_ticks) * 100)
+    @property
+    def percent_played(self) -> int:
+        return int(
+            (self.playback_position_ticks / self.video.run_time_ticks) * 100
+        )
+
+    def __str__(self):
+        return f"Scrobble of {self.video} {self.timestamp.year}-{self.timestamp.month}"

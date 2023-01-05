@@ -32,6 +32,8 @@ DEBUG = os.getenv("VROBBLER_DEBUG", False)
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
+TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ALLOWED_HOSTS = ["*"]
@@ -72,6 +74,7 @@ SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -143,6 +146,10 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend"
     ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'vrobbler.negotiation.IgnoreClientContentNegotiation',
     "PAGE_SIZE": 100,
 }
 
@@ -183,30 +190,25 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.getenv(
-    "vrobbler_STATIC_ROOT", os.path.join(BASE_DIR, "static")
+    "VROBBLER_STATIC_ROOT", os.path.join(BASE_DIR, "static")
 )
+if not DEBUG:
+    STATICFILES_STORAGE = (
+        "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    )
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv("vrobbler_MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
-ROMS_DIR = os.path.join(MEDIA_ROOT, "roms")
-COLLECTIONS_DIR = os.path.join(ROMS_DIR, "emulationstation-collections")
+MEDIA_ROOT = os.getenv("VROBBLER_MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
-SCRAPER_BIN_PATH = os.getenv("vrobbler_SCRAPER_BINPATH", "Skyscraper")
-SCRAPER_CONFIG_FILE = os.getenv(
-    "vrobbler_SCRAPER_CONFIG_FILE", "skyscraper.ini"
-)
-SCRAPER_SITE = os.getenv("vrobbler_SCRAPER_SITE", "screenscraper")
-SCRAPER_FRONTEND = os.getenv("vrobbler_FRONTEND", "emulationstation")
-
-JSON_LOGGING = os.getenv("vrobbler_JSON_LOGGING", False)
+JSON_LOGGING = os.getenv("VROBBLER_JSON_LOGGING", False)
 LOG_TYPE = "json" if JSON_LOGGING else "log"
 
 default_level = "INFO"
 if DEBUG:
     default_level = "DEBUG"
 
-LOG_LEVEL = os.getenv("vrobbler_LOG_LEVEL", default_level)
-LOG_FILE_PATH = os.getenv("vrobbler_LOG_FILE_PATH", "/tmp/")
+LOG_LEVEL = os.getenv("VROBBLER_LOG_LEVEL", default_level)
+LOG_FILE_PATH = os.getenv("VROBBLER_LOG_FILE_PATH", "/tmp/")
 
 LOGGING = {
     "version": 1,
