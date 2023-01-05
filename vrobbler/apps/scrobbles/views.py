@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from scrobbles.models import Scrobble
 from scrobbles.serializers import ScrobbleSerializer
 from videos.models import Series, Video
+from vrobbler.settings import DELETE_STALE_SCROBBLES
 
 logger = logging.getLogger(__name__)
 
@@ -115,18 +116,21 @@ def jellyfin_websocket(request):
         )
         return Response(video_dict, status=status.HTTP_204_NO_CONTENT)
 
-    # Check if found in progress scrobble is more than a day old
-    if not (
+    existing_scrobble_more_than_a_day_old = (
         existing_in_progress_scrobble
-        and existing_in_progress_scrobble.modified < a_day_from_now
-    ):
+        and existing_in_progress_scrobble.modified > a_day_from_now
+    )
+    delete_stale_scrobbles = getattr(settings, "DELETE_STALE_SCROBBLES", True)
+
+    # Check if found in progress scrobble is more than a day old
+    if existing_scrobble_more_than_a_day_old:
         logger.info(
             'Found a scrobble for this video more than a day old, creating a new scrobble'
         )
         scrobble = existing_in_progress_scrobble
         scrobble_created = False
     else:
-        if getattr(settings, "DELETE_STALE_SCROBBLES", True):
+        if existing_scrobble_more_than_a_day_old and delete_stale_scrobbles:
             existing_in_progress_scrobble.delete()
         scrobble, scrobble_created = Scrobble.objects.get_or_create(
             **scrobble_dict
@@ -137,8 +141,6 @@ def jellyfin_websocket(request):
         scrobble.source = data_dict['ClientName']
         scrobble.source_id = data_dict['MediaSourceId']
         scrobble.scrobble_log = ""
-    else:
-        last_tick = scrobble.playback_position_ticks
 
     # Update a found scrobble with new position and timestamp
     scrobble.playback_position_ticks = data_dict["PlaybackPositionTicks"]

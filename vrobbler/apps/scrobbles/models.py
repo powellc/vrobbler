@@ -14,7 +14,7 @@ class Scrobble(TimeStampedModel):
         User, blank=True, null=True, on_delete=models.DO_NOTHING
     )
     timestamp = models.DateTimeField(**BNULL)
-    playback_position_ticks = models.PositiveIntegerField(**BNULL)
+    playback_position_ticks = models.PositiveBigIntegerField(**BNULL)
     playback_position = models.CharField(max_length=8, **BNULL)
     is_paused = models.BooleanField(default=False)
     played_to_completion = models.BooleanField(default=False)

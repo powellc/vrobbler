@@ -4,7 +4,12 @@ import sys
 
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
+from pathlib import Path
 
+# PROJECT_ROOT = os.path.dirname(__file__)
+PROJECT_ROOT = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
 
 # Tap vrobbler.conf if it's available
 if os.path.exists("vrobbler.conf"):
@@ -14,10 +19,7 @@ elif os.path.exists("/etc/vrobbler.conf"):
 elif os.path.exists("/usr/local/etc/vrobbler.conf"):
     load_dotenv("/usr/local/etc/vrobbler.conf")
 
-from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -94,7 +96,7 @@ ROOT_URLCONF = "vrobbler.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [str(BASE_DIR.joinpath("templates"))],  # new
+        "DIRS": [str(PROJECT_ROOT.joinpath("templates"))],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -111,7 +113,7 @@ WSGI_APPLICATION = "vrobbler.wsgi.application"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("vrobbler_DATABASE_URL", "sqlite:///db.sqlite3"),
+        default=os.getenv("VROBBLER_DATABASE_URL", "sqlite:///db.sqlite3"),
         conn_max_age=600,
     ),
 }
@@ -181,7 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = os.getenv("vrobbler_TIME_ZONE", "EST")
+TIME_ZONE = os.getenv("VROBBLER_TIME_ZONE", "EST")
 
 USE_I18N = True
 
@@ -195,7 +197,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.getenv(
-    "VROBBLER_STATIC_ROOT", os.path.join(BASE_DIR, "static")
+    "VROBBLER_STATIC_ROOT", os.path.join(PROJECT_ROOT, "static")
 )
 if not DEBUG:
     STATICFILES_STORAGE = (

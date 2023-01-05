@@ -33,7 +33,7 @@ class Video(TimeStampedModel):
     overview = models.TextField(**BNULL)
     tagline = models.TextField(**BNULL)
     run_time = models.CharField(max_length=8, **BNULL)
-    run_time_ticks = models.BigIntegerField(**BNULL)
+    run_time_ticks = models.PositiveBigIntegerField(**BNULL)
     year = models.IntegerField()
 
     # TV show specific fields
