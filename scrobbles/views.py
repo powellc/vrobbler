@@ -34,7 +34,9 @@ class RecentScrobbleList(ListView):
     model = Scrobble
 
     def get_queryset(self):
-        return Scrobble.objects.filter(in_progress=False)
+        return Scrobble.objects.filter(in_progress=False).order_by(
+            '-timestamp'
+        )
 
 
 @csrf_exempt
@@ -93,8 +95,16 @@ def jellyfin_websocket(request):
         .order_by('-modified')
         .first()
     )
+    existing_in_progress_scrobble = (
+        Scrobble.objects.filter(
+            video=video, user_id=request.user.id, in_progress=True
+        )
+        .order_by('-modified')
+        .first()
+    )
 
     minutes_from_now = timezone.now() + timedelta(minutes=15)
+    a_day_from_now = timezone.now() + timedelta(days=1)
 
     if (
         existing_finished_scrobble
@@ -105,14 +115,28 @@ def jellyfin_websocket(request):
         )
         return Response(video_dict, status=status.HTTP_204_NO_CONTENT)
 
-    scrobble, scrobble_created = Scrobble.objects.get_or_create(
-        **scrobble_dict
-    )
+    # Check if found in progress scrobble is more than a day old
+    if not (
+        existing_in_progress_scrobble
+        and existing_in_progress_scrobble.modified < a_day_from_now
+    ):
+        logger.info(
+            'Found a scrobble for this video more than a day old, creating a new scrobble'
+        )
+        scrobble = existing_in_progress_scrobble
+        scrobble_created = False
+    else:
+        if getattr(settings, "DELETE_STALE_SCROBBLES", True):
+            existing_in_progress_scrobble.delete()
+        scrobble, scrobble_created = Scrobble.objects.get_or_create(
+            **scrobble_dict
+        )
 
     if scrobble_created:
         # If we newly created this, capture the client we're watching from
         scrobble.source = data_dict['ClientName']
         scrobble.source_id = data_dict['MediaSourceId']
+        scrobble.scrobble_log = ""
     else:
         last_tick = scrobble.playback_position_ticks
 
@@ -121,7 +145,14 @@ def jellyfin_websocket(request):
     scrobble.playback_position = data_dict["PlaybackPosition"]
     scrobble.timestamp = parse(data_dict["UtcTimestamp"])
     scrobble.is_paused = data_dict["IsPaused"] in TRUTHY_VALUES
-    scrobble.save()
+    scrobble.save(
+        update_fields=[
+            'playback_position_ticks',
+            'playback_position',
+            'timestamp',
+            'is_paused',
+        ]
+    )
 
     # If we hit our completion threshold, save it and get ready
     # to scrobble again if we re-watch this.
@@ -133,6 +164,9 @@ def jellyfin_websocket(request):
         scrobble.save()
 
     if scrobble.percent_played % 5 == 0:
-        logger.info(f"You are {scrobble.percent_played}% through {video}")
+        if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
+            scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
+            scrobble.save(update_fields=['scrobble_log'])
+        logger.debug(f"You are {scrobble.percent_played}% through {video}")
 
     return Response(video_dict, status=status.HTTP_201_CREATED)

@@ -32,6 +32,12 @@ DEBUG = os.getenv("VROBBLER_DEBUG", False)
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
+KEEP_DETAILED_SCROBBLE_LOGS = os.getenv(
+    "VROBBLER_KEEP_DETAILED_SCROBBLE_LOGS", False
+)
+
+DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
+
 TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -61,7 +67,6 @@ INSTALLED_APPS = [
     "django_filters",
     "django_extensions",
     'rest_framework.authtoken',
-    "vrobbler",
     "scrobbles",
     "videos",
     "rest_framework",

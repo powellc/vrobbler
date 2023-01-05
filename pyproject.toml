@@ -62,9 +62,7 @@ combine_as_imports = true
 exclude_dirs = ["*/tests/*", "*/migrations/*"]
 
 [tool.poetry.scripts]
-server = 'scripts:server'
-migrate = 'scripts:migrate'
-shell = 'scripts:shell'
+vrobbler = "vrobbler.cli:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

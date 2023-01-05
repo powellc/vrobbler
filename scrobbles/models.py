@@ -21,6 +21,7 @@ class Scrobble(TimeStampedModel):
     source = models.CharField(max_length=255, **BNULL)
     source_id = models.TextField(**BNULL)
     in_progress = models.BooleanField(default=True)
+    scrobble_log = models.TextField(**BNULL)
 
     @property
     def percent_played(self) -> int:
