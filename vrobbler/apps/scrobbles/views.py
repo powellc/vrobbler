@@ -54,12 +54,18 @@ def scrobble_endpoint(request):
 def jellyfin_websocket(request):
     data_dict = request.data
     media_type = data_dict["ItemType"]
+    imdb_id = data_dict.get("Provider_imdb", None)
+    if not imdb_id:
+        logger.error(
+            "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
+        )
+        return Response({}, status=status.HTTP_400_BAD_REQUEST)
     # Check if it's a TV Episode
     video_dict = {
-        "title": data_dict["Name"],
-        "imdb_id": data_dict["Provider_imdb"],
+        "title": data_dict.get("Name", ""),
+        "imdb_id": imdb_id,
         "video_type": Video.VideoType.MOVIE,
-        "year": data_dict["Year"],
+        "year": data_dict.get("Year", ""),
     }
     if media_type == 'Episode':
         series_name = data_dict["SeriesName"]
@@ -67,8 +73,8 @@ def jellyfin_websocket(request):
 
         video_dict['video_type'] = Video.VideoType.TV_EPISODE
         video_dict["tv_series_id"] = series.id
-        video_dict["episode_number"] = data_dict["EpisodeNumber"]
-        video_dict["season_number"] = data_dict["SeasonNumber"]
+        video_dict["episode_number"] = data_dict.get("EpisodeNumber", "")
+        video_dict["season_number"] = data_dict.get("SeasonNumber", "")
         video_dict["tvdb_id"] = data_dict.get("Provider_tvdb", None)
         video_dict["tvrage_id"] = data_dict.get("Provider_tvrage", None)
 
@@ -89,17 +95,8 @@ def jellyfin_websocket(request):
         'in_progress': True,
     }
 
-    existing_finished_scrobble = (
-        Scrobble.objects.filter(
-            video=video, user_id=request.user.id, in_progress=False
-        )
-        .order_by('-modified')
-        .first()
-    )
-    existing_in_progress_scrobble = (
-        Scrobble.objects.filter(
-            video=video, user_id=request.user.id, in_progress=True
-        )
+    existing_scrobble = (
+        Scrobble.objects.filter(video=video, user_id=request.user.id)
         .order_by('-modified')
         .first()
     )
@@ -107,30 +104,33 @@ def jellyfin_websocket(request):
     minutes_from_now = timezone.now() + timedelta(minutes=15)
     a_day_from_now = timezone.now() + timedelta(days=1)
 
-    if (
-        existing_finished_scrobble
-        and existing_finished_scrobble.modified < minutes_from_now
-    ):
+    existing_finished_scrobble = (
+        existing_scrobble
+        and not existing_scrobble.in_progress
+        and existing_scrobble.modified < minutes_from_now
+    )
+    existing_in_progress_scrobble = (
+        existing_scrobble
+        and existing_scrobble.in_progress
+        and existing_scrobble.modified > a_day_from_now
+    )
+    delete_stale_scrobbles = getattr(settings, "DELETE_STALE_SCROBBLES", True)
+
+    if existing_finished_scrobble:
         logger.info(
             'Found a scrobble for this video less than 15 minutes ago, holding off scrobbling again'
         )
         return Response(video_dict, status=status.HTTP_204_NO_CONTENT)
 
-    existing_scrobble_more_than_a_day_old = (
-        existing_in_progress_scrobble
-        and existing_in_progress_scrobble.modified > a_day_from_now
-    )
-    delete_stale_scrobbles = getattr(settings, "DELETE_STALE_SCROBBLES", True)
-
     # Check if found in progress scrobble is more than a day old
-    if existing_scrobble_more_than_a_day_old:
+    if existing_in_progress_scrobble:
         logger.info(
             'Found a scrobble for this video more than a day old, creating a new scrobble'
         )
         scrobble = existing_in_progress_scrobble
         scrobble_created = False
     else:
-        if existing_scrobble_more_than_a_day_old and delete_stale_scrobbles:
+        if existing_in_progress_scrobble and delete_stale_scrobbles:
             existing_in_progress_scrobble.delete()
         scrobble, scrobble_created = Scrobble.objects.get_or_create(
             **scrobble_dict
