@@ -15,6 +15,7 @@ from scrobbles.models import Scrobble
 from scrobbles.serializers import ScrobbleSerializer
 from videos.models import Series, Video
 from vrobbler.settings import DELETE_STALE_SCROBBLES
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,14 @@ TRUTHY_VALUES = [
 
 class RecentScrobbleList(ListView):
     model = Scrobble
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        last_five_minutes = timezone.now() - timedelta(minutes=5)
+        data['now_playing_list'] = Scrobble.objects.filter(
+            in_progress=True, modified__lte=last_five_minutes
+        )
+        return data
 
     def get_queryset(self):
         return Scrobble.objects.filter(in_progress=False).order_by(
