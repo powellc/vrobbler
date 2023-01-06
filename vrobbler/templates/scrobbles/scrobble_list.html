@@ -5,16 +5,24 @@
 {% block content %}
     {% if now_playing_list %}
     <h2>Now playing</h2>
-    <ul>
-        {% for scrobble in now_playing_list %}
-        <li>{{scrobble.timestamp|date:"D, M j Y"}}: <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}</a></li>
-        {% endfor %}
-    </ul>
+    {% for scrobble in now_playing_list %}
+        <dl class="latest-scrobble">
+            <dt>{{scrobble.video.title}} - {{scrobble.video}}</dt>
+            <dd>
+                {{scrobble.timestamp|date:"D, M j Y"}} |
+                <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">IMDB</a>
+                <div class="progress-bar">
+                    <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
+                </div>
+            </dd>
+        </dl>
+        <br />
+    {% endfor %}
     {% endif %}
     <h2>Last scrobbles</h2>
     <ul>
         {% for scrobble in object_list %}
-        <li>{{scrobble.timestamp|date:"D, M j Y"}}: <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}</a></li>
+        <li>{{scrobble.timestamp|date:"D, M j Y"}}: <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}{% if scrobble.video.video_type == 'E' %} - {{scrobble.video.title}}{% endif %}</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

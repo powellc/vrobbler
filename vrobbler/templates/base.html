@@ -21,7 +21,7 @@
         }
         dt {
             padding: 2px 4px;
-            background: #777;
+            background: #000;
             color: #fff;
         }
         dd {
@@ -30,29 +30,25 @@
             min-height: 3em;
             border-right: 1px solid #777;
         }
-        #library-update-status { margin-right:10px; }
-        .card img { width:18em; padding: 1em; }
-        .card-block { padding: 1em 0 1em 0; }
-        .system-badge { padding: 1em; font-size: normal; }
-        .updating { color:#aaa; margin-right: 8px; }
-        .high { color: green; }
-        .medium { color: #aaa;}
-        .low { color: red; }
-        .card {
-            height: auto;
-            display: flex;
+        .latest-scrobble {
+            width: 50%;
         }
-        .card-columns{
-            display: grid;
-            overflow: hidden;
-            grid-template-columns: repeat(2, 1fr);
-            grid-auto-rows: 1fr;
-            grid-column-gap: 20px;
-            grid-row-gap: 10px;
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            padding: 3px;
+            border-radius: 3px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
         }
-        {% for system in game_systems %}
-        .{{system.retropie_slug}} { background: #{{system.get_color}}; }
-        {% endfor %}
+
+        .progress-bar-fill {
+            display: block;
+            height: 22px;
+            background-color: #659cef;
+            border-radius: 3px;
+            transition: width 500ms ease-in-out;
+        }
         </style>
         {% block head_extra %}{% endblock %}
 
