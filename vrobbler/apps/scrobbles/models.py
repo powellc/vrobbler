@@ -10,7 +10,7 @@ from django_extensions.db.models import TimeStampedModel
 from music.models import Track
 from videos.models import Video
 
-logger = logging.getLogger('__name__')
+logger = logging.getLogger(__name__)
 User = get_user_model()
 BNULL = {"blank": True, "null": True}
 VIDEO_BACKOFF = getattr(settings, 'VIDEO_BACKOFF_MINUTES')
@@ -37,9 +37,12 @@ class Scrobble(TimeStampedModel):
 
     @property
     def percent_played(self) -> int:
-        return int(
-            (self.playback_position_ticks / self.media_run_time_ticks) * 100
-        )
+        if self.playback_position_ticks and self.media_run_time_ticks:
+            return int(
+                (self.playback_position_ticks / self.media_run_time_ticks)
+                * 100
+            )
+        return 0
 
     @property
     def media_run_time_ticks(self) -> int:
@@ -105,24 +108,24 @@ class Scrobble(TimeStampedModel):
 
     @classmethod
     def create_or_update_for_track(
-        cls, track: "Track", user_id: int, jellyfin_data: dict
+        cls, track: "Track", user_id: int, scrobble_data: dict
     ) -> "Scrobble":
-        jellyfin_data['track_id'] = track.id
-        logger.debug(
-            f"Creating or updating scrobble for track {track}",
-            {"jellyfin_data": jellyfin_data},
-        )
+        scrobble_data['track_id'] = track.id
         scrobble = (
             Scrobble.objects.filter(track=track, user_id=user_id)
             .order_by('-modified')
             .first()
         )
+        logger.debug(
+            f"Found existing scrobble for track {track}, updating",
+            {"scrobble_data": scrobble_data},
+        )
 
-        backoff = timezone.now() + timedelta(minutes=TRACK_BACKOFF)
+        backoff = timezone.now() + timedelta(seconds=TRACK_BACKOFF)
         wait_period = timezone.now() + timedelta(minutes=TRACK_WAIT_PERIOD)
 
         return cls.update_or_create(
-            scrobble, backoff, wait_period, jellyfin_data
+            scrobble, backoff, wait_period, scrobble_data
         )
 
     @classmethod
@@ -131,11 +134,27 @@ class Scrobble(TimeStampedModel):
         scrobble: Optional["Scrobble"],
         backoff,
         wait_period,
-        jellyfin_data: dict,
+        scrobble_data: dict,
     ) -> Optional["Scrobble"]:
+
+        # Status is a field we get from Mopidy, which refuses to poll us
+        mopidy_status = scrobble_data.pop('status', None)
         scrobble_is_stale = False
 
-        if scrobble:
+        if mopidy_status == "stopped":
+            logger.info(f"Mopidy sent a message to stop {scrobble}")
+            if not scrobble:
+                logger.warning(
+                    'Mopidy sent us a stopped message, without ever starting'
+                )
+                return
+
+            # Mopidy finished a play, scrobble away
+            scrobble.in_progress = False
+            scrobble.save(update_fields=['in_progress'])
+            return scrobble
+
+        if scrobble and not mopidy_status:
             scrobble_is_finished = (
                 not scrobble.in_progress and scrobble.modified < backoff
             )
@@ -147,14 +166,14 @@ class Scrobble(TimeStampedModel):
 
             scrobble_is_stale = scrobble.is_stale(backoff, wait_period)
 
-        if not scrobble or scrobble_is_stale:
+        if (not scrobble or scrobble_is_stale) or mopidy_status:
             # If we default this to "" we can probably remove this
-            jellyfin_data['scrobble_log'] = ""
+            scrobble_data['scrobble_log'] = ""
             scrobble = cls.objects.create(
-                **jellyfin_data,
+                **scrobble_data,
             )
         else:
-            for key, value in jellyfin_data.items():
+            for key, value in scrobble_data.items():
                 setattr(scrobble, key, value)
             scrobble.save()
 

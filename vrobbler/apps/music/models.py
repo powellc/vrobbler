@@ -11,7 +11,7 @@ BNULL = {"blank": True, "null": True}
 
 class Album(TimeStampedModel):
     name = models.CharField(max_length=255)
-    year = models.IntegerField()
+    year = models.IntegerField(**BNULL)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
     musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
     musicbrainz_albumartist_id = models.CharField(max_length=255, **BNULL)
@@ -40,55 +40,35 @@ class Track(TimeStampedModel):
         return f"{self.title} by {self.artist}"
 
     @classmethod
-    def find_or_create(cls, data_dict: Dict) -> Optional["Track"]:
+    def find_or_create(
+        cls, artist_dict: Dict, album_dict: Dict, track_dict: Dict
+    ) -> Optional["Track"]:
         """Given a data dict from Jellyfin, does the heavy lifting of looking up
         the video and, if need, TV Series, creating both if they don't yet
         exist.
 
         """
-        artist = data_dict.get(KEYS["ARTIST_NAME"], None)
-        artist_musicbrainz_id = data_dict.get(KEYS["ARTIST_MB_ID"], None)
-        if not artist or not artist_musicbrainz_id:
+        if not artist_dict.get('name') or not artist_dict.get(
+            'musicbrainz_id'
+        ):
             logger.warning(
                 f"No artist or artist musicbrainz ID found in message from Jellyfin, not scrobbling"
             )
             return
-        artist, artist_created = Artist.objects.get_or_create(
-            name=artist, musicbrainz_id=artist_musicbrainz_id
-        )
+        artist, artist_created = Artist.objects.get_or_create(**artist_dict)
         if artist_created:
             logger.debug(f"Created new album {artist}")
         else:
             logger.debug(f"Found album {artist}")
 
-        album = None
-        album_name = data_dict.get(KEYS["ALBUM_NAME"], None)
-        if album_name:
-            album_dict = {
-                "name": album_name,
-                "year": data_dict.get(KEYS["YEAR"], ""),
-                "musicbrainz_id": data_dict.get(KEYS['ALBUM_MB_ID']),
-                "musicbrainz_releasegroup_id": data_dict.get(
-                    KEYS["RELEASEGROUP_MB_ID"]
-                ),
-                "musicbrainz_albumartist_id": data_dict.get(
-                    KEYS["ARTIST_MB_ID"]
-                ),
-            }
-            album, album_created = Album.objects.get_or_create(**album_dict)
-            if album_created:
-                logger.debug(f"Created new album {album}")
-            else:
-                logger.debug(f"Found album {album}")
+        album, album_created = Album.objects.get_or_create(**album_dict)
+        if album_created:
+            logger.debug(f"Created new album {album}")
+        else:
+            logger.debug(f"Found album {album}")
 
-        track_dict = {
-            "title": data_dict.get("Name", ""),
-            "musicbrainz_id": data_dict.get(KEYS["TRACK_MB_ID"], None),
-            "run_time_ticks": data_dict.get(KEYS["RUN_TIME_TICKS"], None),
-            "run_time": data_dict.get(KEYS["RUN_TIME"], None),
-            "album_id": getattr(album, "id", None),
-            "artist_id": artist.id,
-        }
+        track_dict['album_id'] = getattr(album, "id", None)
+        track_dict['artist_id'] = artist.id
 
         track, created = cls.objects.get_or_create(**track_dict)
         if created:
