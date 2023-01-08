@@ -151,7 +151,7 @@ def jellyfin_websocket(request):
 @csrf_exempt
 @api_view(['POST'])
 def mopidy_websocket(request):
-    data_dict = request.data
+    data_dict = json.loads(request.data)
 
     # For making things easier to build new input processors
     if getattr(settings, "DUMP_REQUEST_DATA", False):
