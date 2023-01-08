@@ -16,6 +16,9 @@ class Series(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    def imdb_link(self):
+        return f"https://www.imdb.com/title/{self.imdb_id}"
+
     class Meta:
         verbose_name_plural = "series"
 
@@ -54,6 +57,8 @@ class Video(TimeStampedModel):
             return f"{self.tv_series} - Season {self.season_number}, Episode {self.episode_number}"
         return self.title
 
+    def imdb_link(self):
+        return f"https://www.imdb.com/title/{self.imdb_id}"
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Video":
@@ -75,7 +80,9 @@ class Video(TimeStampedModel):
 
         if data_dict.get("ItemType", "") == "Episode":
             series_name = data_dict.get("SeriesName", "")
-            series, series_created = Series.objects.get_or_create(name=series_name)
+            series, series_created = Series.objects.get_or_create(
+                name=series_name
+            )
             if series_created:
                 logger.debug(f"Created new series {series}")
             else:
@@ -86,7 +93,6 @@ class Video(TimeStampedModel):
             video_dict["tvrage_id"] = data_dict.get("Provider_tvrage", None)
             video_dict["episode_number"] = data_dict.get("EpisodeNumber", "")
             video_dict["season_number"] = data_dict.get("SeasonNumber", "")
-
 
         video, created = cls.objects.get_or_create(**video_dict)
         if created:

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load humanize %}
+
 {% block title %}{% endblock %}
 
 {% block content %}
@@ -10,8 +12,8 @@
             <dl class="latest-scrobble">
                 <dt>{{scrobble.video.title}} - {{scrobble.video}}</dt>
                 <dd>
-                    {{scrobble.timestamp|date:"D, M j Y"}} |
-                    <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">IMDB</a>
+                    Started {{scrobble.created|naturaltime}} from {{scrobble.source}}
+
                     <div class="progress-bar">
                         <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
                     </div>
@@ -22,8 +24,7 @@
             <dl class="latest-scrobble">
                 <dt>{{scrobble.track.title}} by {{scrobble.track.artist}} from {{scrobble.track.album}}</dt>
                 <dd>
-                    {{scrobble.timestamp|date:"D, M j Y"}} |
-                    <a href="https://www.imdb.com/title/{{scrobble.track.musicbrainz_id}}">MusicBrainz</a>
+                    Started {{scrobble.created|naturaltime}} from {{scrobble.source}}
                     <div class="progress-bar">
                         <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
                     </div>
@@ -37,12 +38,12 @@
     <ul>
         {% for scrobble in object_list %}
         <li>
-            {{scrobble.timestamp|date:"D, M j Y"}}:
+            {{scrobble.timestamp|naturaltime}}:
             {% if scrobble.video %}
-            📼 <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}{% if scrobble.video.video_type == 'E' %} - {{scrobble.video.title}}{% endif %}</a></li>
+            🎥 watched <a href="{{scrobble.video.imdb_link}}">{{scrobble.video}}{% if scrobble.video.video_type == 'E' %} - {{scrobble.video.title}}{% endif %}</a></li>
             {% endif %}
             {% if scrobble.track %}
-            🎶 <a href="https://musicbrainz.org/recording/{{scrobble.track.album.musicbrainz_id}}">{{scrobble.track}} by {{scrobble.track.artist}}</a></li>
+            🎶 listened to <a href="{{scrobble.track.mb_link}}">{{scrobble.track.title}}</a> by <a href="{{scrobble.track.artist.mb_link}}">{{scrobble.track.artist}}</a></li>
             {% endif %}
         {% endfor %}
     </ul>

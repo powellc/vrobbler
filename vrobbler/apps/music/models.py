@@ -19,6 +19,10 @@ class Album(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    @property
+    def mb_link(self):
+        return f"https://musicbrainz.org/release/{self.musicbrainz_id}"
+
 
 class Artist(TimeStampedModel):
     name = models.CharField(max_length=255)
@@ -26,6 +30,10 @@ class Artist(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def mb_link(self):
+        return f"https://musicbrainz.org/artist/{self.musicbrainz_id}"
 
 
 class Track(TimeStampedModel):
@@ -38,6 +46,10 @@ class Track(TimeStampedModel):
 
     def __str__(self):
         return f"{self.title} by {self.artist}"
+
+    @property
+    def mb_link(self):
+        return f"https://musicbrainz.org/recording/{self.musicbrainz_id}"
 
     @classmethod
     def find_or_create(
