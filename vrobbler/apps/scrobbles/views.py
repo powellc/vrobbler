@@ -5,17 +5,20 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 from django.conf import settings
 from django.db.models.fields import timezone
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.list import ListView
+from music.models import Track
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from scrobbles.constants import (
+    JELLYFIN_AUDIO_ITEM_TYPES,
+    JELLYFIN_VIDEO_ITEM_TYPES,
+)
 from scrobbles.models import Scrobble
 from scrobbles.serializers import ScrobbleSerializer
-from videos.models import Series, Video
-from vrobbler.settings import DELETE_STALE_SCROBBLES
-from django.utils import timezone
+from videos.models import Video
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +41,11 @@ class RecentScrobbleList(ListView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         now = timezone.now()
-        last_ten_minutes = timezone.now() - timedelta(minutes=10)
+        last_three_minutes = timezone.now() - timedelta(minutes=3)
         # Find scrobbles from the last 10 minutes
         data['now_playing_list'] = Scrobble.objects.filter(
             in_progress=True,
-            timestamp__gte=last_ten_minutes,
+            timestamp__gte=last_three_minutes,
             timestamp__lte=now,
         )
         return data
@@ -66,122 +69,57 @@ def scrobble_endpoint(request):
 @api_view(['POST'])
 def jellyfin_websocket(request):
     data_dict = request.data
-    media_type = data_dict["ItemType"]
-    imdb_id = data_dict.get("Provider_imdb", None)
-    if not imdb_id:
-        logger.error(
-            "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
-        )
-        return Response({}, status=status.HTTP_400_BAD_REQUEST)
-    # Check if it's a TV Episode
-    video_dict = {
-        "title": data_dict.get("Name", ""),
-        "imdb_id": imdb_id,
-        "video_type": Video.VideoType.MOVIE,
-        "year": data_dict.get("Year", ""),
-    }
-    if media_type == 'Episode':
-        series_name = data_dict["SeriesName"]
-        series, series_created = Series.objects.get_or_create(name=series_name)
 
-        video_dict['video_type'] = Video.VideoType.TV_EPISODE
-        video_dict["tv_series_id"] = series.id
-        video_dict["episode_number"] = data_dict.get("EpisodeNumber", "")
-        video_dict["season_number"] = data_dict.get("SeasonNumber", "")
-        video_dict["tvdb_id"] = data_dict.get("Provider_tvdb", None)
-        video_dict["tvrage_id"] = data_dict.get("Provider_tvrage", None)
+    # For making things easier to build new input processors
+    if getattr(settings, "DUMP_REQUEST_DATA", False):
+        json_data = json.dumps(data_dict, indent=4)
+        logger.debug(f"{json_data}")
 
-    video, video_created = Video.objects.get_or_create(**video_dict)
+    media_type = data_dict.get("ItemType", "")
 
-    if video_created:
-        video.overview = data_dict["Overview"]
-        video.tagline = data_dict["Tagline"]
-        video.run_time_ticks = data_dict["RunTimeTicks"]
-        video.run_time = data_dict["RunTime"]
-        video.save()
+    track = None
+    video = None
+    existing_scrobble = False
+    if media_type in JELLYFIN_AUDIO_ITEM_TYPES:
+        if not data_dict.get("Provider_musicbrainztrack", None):
+            logger.error(
+                "No MBrainz Track ID received. This is likely because all metadata is bad, not scrobbling"
+            )
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        track = Track.find_or_create(data_dict)
+
+    if media_type in JELLYFIN_VIDEO_ITEM_TYPES:
+        if not data_dict.get("Provider_imdb", None):
+            logger.error(
+                "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
+            )
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        video = Video.find_or_create(data_dict)
 
     # Now we run off a scrobble
-    timestamp = parse(data_dict["UtcTimestamp"])
-    scrobble_dict = {
-        'video_id': video.id,
-        'user_id': request.user.id,
-        'in_progress': True,
+    jellyfin_data = {
+        "user_id": request.user.id,
+        "timestamp": parse(data_dict.get("UtcTimestamp")),
+        "playback_position_ticks": data_dict.get("PlaybackPositionTicks"),
+        "playback_position": data_dict.get("PlaybackPosition"),
+        "source": data_dict.get('ClientName'),
+        "source_id": data_dict.get('MediaSourceId'),
+        "is_paused": data_dict.get("IsPaused") in TRUTHY_VALUES,
     }
 
-    existing_scrobble = (
-        Scrobble.objects.filter(video=video, user_id=request.user.id)
-        .order_by('-modified')
-        .first()
-    )
-
-    minutes_from_now = timezone.now() + timedelta(minutes=15)
-    a_day_from_now = timezone.now() + timedelta(days=1)
-
-    existing_finished_scrobble = (
-        existing_scrobble
-        and not existing_scrobble.in_progress
-        and existing_scrobble.modified < minutes_from_now
-    )
-    existing_in_progress_scrobble = (
-        existing_scrobble
-        and existing_scrobble.in_progress
-        and existing_scrobble.modified > a_day_from_now
-    )
-    delete_stale_scrobbles = getattr(settings, "DELETE_STALE_SCROBBLES", True)
-
-    if existing_finished_scrobble:
-        logger.info(
-            'Found a scrobble for this video less than 15 minutes ago, holding off scrobbling again'
+    scrobble = None
+    if video:
+        scrobble = Scrobble.create_or_update_for_video(
+            video, request.user.id, jellyfin_data
         )
-        return Response(video_dict, status=status.HTTP_204_NO_CONTENT)
-
-    # Check if found in progress scrobble is more than a day old
-    if existing_in_progress_scrobble:
-        logger.info(
-            'Found a scrobble for this video more than a day old, creating a new scrobble'
-        )
-        scrobble = existing_in_progress_scrobble
-        scrobble_created = False
-    else:
-        if existing_in_progress_scrobble and delete_stale_scrobbles:
-            existing_in_progress_scrobble.delete()
-        scrobble, scrobble_created = Scrobble.objects.get_or_create(
-            **scrobble_dict
+    if track:
+        scrobble = Scrobble.create_or_update_for_track(
+            track, request.user.id, jellyfin_data
         )
 
-    if scrobble_created:
-        # If we newly created this, capture the client we're watching from
-        scrobble.source = data_dict['ClientName']
-        scrobble.source_id = data_dict['MediaSourceId']
-        scrobble.scrobble_log = ""
+    if not scrobble:
+        return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Update a found scrobble with new position and timestamp
-    scrobble.playback_position_ticks = data_dict["PlaybackPositionTicks"]
-    scrobble.playback_position = data_dict["PlaybackPosition"]
-    scrobble.timestamp = parse(data_dict["UtcTimestamp"])
-    scrobble.is_paused = data_dict["IsPaused"] in TRUTHY_VALUES
-    scrobble.save(
-        update_fields=[
-            'playback_position_ticks',
-            'playback_position',
-            'timestamp',
-            'is_paused',
-        ]
+    return Response(
+        {'scrobble_id': scrobble.id}, status=status.HTTP_201_CREATED
     )
-
-    # If we hit our completion threshold, save it and get ready
-    # to scrobble again if we re-watch this.
-    if scrobble.percent_played >= getattr(
-        settings, "PERCENT_FOR_COMPLETION", 95
-    ):
-        scrobble.in_progress = False
-        scrobble.playback_position_ticks = video.run_time_ticks
-        scrobble.save()
-
-    if scrobble.percent_played % 5 == 0:
-        if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
-            scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
-            scrobble.save(update_fields=['scrobble_log'])
-        logger.debug(f"You are {scrobble.percent_played}% through {video}")
-
-    return Response(video_dict, status=status.HTTP_201_CREATED)

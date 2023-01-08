@@ -6,23 +6,44 @@
     {% if now_playing_list %}
     <h2>Now playing</h2>
     {% for scrobble in now_playing_list %}
-        <dl class="latest-scrobble">
-            <dt>{{scrobble.video.title}} - {{scrobble.video}}</dt>
-            <dd>
-                {{scrobble.timestamp|date:"D, M j Y"}} |
-                <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">IMDB</a>
-                <div class="progress-bar">
-                    <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
-                </div>
-            </dd>
-        </dl>
+        {% if scrobble.video %}
+            <dl class="latest-scrobble">
+                <dt>{{scrobble.video.title}} - {{scrobble.video}}</dt>
+                <dd>
+                    {{scrobble.timestamp|date:"D, M j Y"}} |
+                    <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">IMDB</a>
+                    <div class="progress-bar">
+                        <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
+                    </div>
+                </dd>
+            </dl>
+        {% endif %}
+        {% if scrobble.track %}
+            <dl class="latest-scrobble">
+                <dt>{{scrobble.track.title}} by {{scrobble.track.artist}} from {{scrobble.track.album}}</dt>
+                <dd>
+                    {{scrobble.timestamp|date:"D, M j Y"}} |
+                    <a href="https://www.imdb.com/title/{{scrobble.track.musicbrainz_id}}">MusicBrainz</a>
+                    <div class="progress-bar">
+                        <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
+                    </div>
+                </dd>
+            </dl>
+        {% endif %}
         <br />
     {% endfor %}
     {% endif %}
     <h2>Last scrobbles</h2>
     <ul>
         {% for scrobble in object_list %}
-        <li>{{scrobble.timestamp|date:"D, M j Y"}}: <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}{% if scrobble.video.video_type == 'E' %} - {{scrobble.video.title}}{% endif %}</a></li>
+        <li>
+            {{scrobble.timestamp|date:"D, M j Y"}}:
+            {% if scrobble.video %}
+            📼 <a href="https://www.imdb.com/title/{{scrobble.video.imdb_id}}">{{scrobble.video}}{% if scrobble.video.video_type == 'E' %} - {{scrobble.video.title}}{% endif %}</a></li>
+            {% endif %}
+            {% if scrobble.track %}
+            🎶 <a href="https://musicbrainz.org/recording/{{scrobble.track.album.musicbrainz_id}}">{{scrobble.track}} by {{scrobble.track.artist}}</a></li>
+            {% endif %}
         {% endfor %}
     </ul>
 {% endblock %}

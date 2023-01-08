@@ -1,0 +1,16 @@
+JELLYFIN_POST_KEYS = {
+    'ITEM_TYPE': 'ItemType',
+    'RUN_TIME_TICKS': 'RunTimeTicks',
+    'RUN_TIME': 'RunTime',
+    'TITLE': 'Name',
+    'TIMESTAMP': 'UtcTimestamp',
+    'YEAR': 'Year',
+    'PLAYBACK_POSITION_TICKS': 'PlaybackPositionTicks',
+    'PLAYBACK_POSITION': 'PlaybackPosition',
+    'ARTIST_MB_ID': 'Provider_musicbrainzartist',
+    'ALBUM_MB_ID': 'Provider_musicbrainzalbum',
+    'RELEASEGROUP_MB_ID': 'Provider_musicbrainzreleasegroup',
+    'TRACK_MB_ID': 'Provider_musicbrainztrack',
+    'ALBUM_NAME': 'Album',
+    'ARTIST_NAME': 'Artist',
+}
