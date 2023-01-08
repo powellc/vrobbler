@@ -42,6 +42,12 @@ class Scrobble(TimeStampedModel):
                 (self.playback_position_ticks / self.media_run_time_ticks)
                 * 100
             )
+        # If we don't have media_run_time_ticks, let's guess from created time
+        now = timezone.now()
+        playback_duration = (now - self.created).seconds
+        if playback_duration and self.track.run_time:
+            return int((playback_duration / int(self.track.run_time)) * 100)
+
         return 0
 
     @property
@@ -97,6 +103,15 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
+        # Check if playback_position_ticks has changed from this scrobble
+        scrobble_changed = (
+            scrobble
+            and scrobble.playback_position_ticks
+            != jellyfin_data['playback_position_ticks']
+        )
+        if not scrobble_changed:
+            logger.info('Scrobble playback has not changed, not scrobbling')
+            return
 
         # Backoff is how long until we consider this a new scrobble
         backoff = timezone.now() + timedelta(minutes=VIDEO_BACKOFF)
