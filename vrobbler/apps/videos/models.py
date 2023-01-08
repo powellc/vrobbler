@@ -1,17 +1,22 @@
 import logging
-from typing import Dict, Tuple
+from typing import Dict
+from uuid import uuid4
+
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
 from django.utils.translation import gettext_lazy as _
+from django_extensions.db.models import TimeStampedModel
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 
 
 class Series(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     overview = models.TextField(**BNULL)
     tagline = models.TextField(**BNULL)
+    # tvdb_id = models.CharField(max_length=20, **BNULL)
+    # imdb_id = models.CharField(max_length=20, **BNULL)
 
     def __str__(self):
         return self.name
@@ -30,12 +35,13 @@ class Video(TimeStampedModel):
         MOVIE = 'M', _('Movie')
 
     # General fields
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+    title = models.CharField(max_length=255, **BNULL)
     video_type = models.CharField(
         max_length=1,
         choices=VideoType.choices,
         default=VideoType.UNKNOWN,
     )
-    title = models.CharField(max_length=255, **BNULL)
     overview = models.TextField(**BNULL)
     tagline = models.TextField(**BNULL)
     run_time = models.CharField(max_length=8, **BNULL)

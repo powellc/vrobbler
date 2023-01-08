@@ -1,15 +1,17 @@
 import logging
 from typing import Dict, Optional
+from uuid import uuid4
+
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
 from django.utils.translation import gettext_lazy as _
-from vrobbler.apps.music.constants import JELLYFIN_POST_KEYS as KEYS
+from django_extensions.db.models import TimeStampedModel
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 
 
 class Album(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     year = models.IntegerField(**BNULL)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
@@ -25,6 +27,7 @@ class Album(TimeStampedModel):
 
 
 class Artist(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
 
@@ -37,6 +40,7 @@ class Artist(TimeStampedModel):
 
 
 class Track(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     title = models.CharField(max_length=255, **BNULL)
     artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING)
     album = models.ForeignKey(Album, on_delete=models.DO_NOTHING, **BNULL)
