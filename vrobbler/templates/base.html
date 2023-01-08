@@ -89,8 +89,8 @@
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Movies</a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{ url "games:gamesystem_list" %}">All</a>
-                        {% for system in game_systems %}
-                        <a class="dropdown-item" href="{{system.get_absolute_url}}">{{system.name}} ({{system.game_set.count}})</a>
+                        {% for movie in movie_list %}
+                        <a class="dropdown-item" href="{{movie.get_absolute_url}}">{{movie.title}}</a>
                         {% endfor %}
                     </div>
                 </li>
@@ -98,8 +98,8 @@
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Shows</a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{ url "games:gamecollection_list" %}">All</a>
-                        {% for collection in game_collections %}
-                        <a class="dropdown-item" href="{{collection.get_absolute_url}}">{{collection.name}} ({{collection.games.count}})</a>
+                        {% for series in series_list %}
+                        <a class="dropdown-item" href="{{series.get_absolute_url}}">{{series.name}}</a>
                         {% endfor %}
                     </div>
                 </li>
