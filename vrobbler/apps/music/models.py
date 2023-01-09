@@ -42,6 +42,11 @@ class Artist(TimeStampedModel):
 
 
 class Track(TimeStampedModel):
+    class Opinion(models.IntegerChoices):
+        DOWN = -1, 'Thumbs down'
+        NEUTRAL = 0, 'No opinion'
+        UP = 1, 'Thumbs up'
+
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     title = models.CharField(max_length=255, **BNULL)
     artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING)
@@ -49,6 +54,7 @@ class Track(TimeStampedModel):
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
     run_time = models.CharField(max_length=8, **BNULL)
     run_time_ticks = models.PositiveBigIntegerField(**BNULL)
+    thumbs = models.IntegerField(default=Opinion.NEUTRAL, choices=Opinion.choices)
 
     def __str__(self):
         return f"{self.title} by {self.artist}"
