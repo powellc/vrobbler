@@ -96,6 +96,6 @@ class Track(TimeStampedModel):
         if created:
             logger.debug(f"Created new track: {track}")
         else:
-            logger.debug(f"Found track{track}")
+            logger.debug(f"Found track {track}")
 
         return track
