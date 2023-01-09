@@ -2,6 +2,8 @@ import logging
 from typing import Dict, Optional
 from uuid import uuid4
 
+from django.apps.config import cached_property
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
@@ -54,6 +56,10 @@ class Track(TimeStampedModel):
     @property
     def mb_link(self):
         return f"https://musicbrainz.org/recording/{self.musicbrainz_id}"
+
+    @cached_property
+    def scrobble_count(self):
+        return self.scrobble_set.filter(in_progress=False).count()
 
     @classmethod
     def find_or_create(
