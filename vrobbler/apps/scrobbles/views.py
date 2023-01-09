@@ -8,6 +8,7 @@ from django.db.models.fields import timezone
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.list import ListView
+from music.constants import JELLYFIN_POST_KEYS as KEYS
 from music.models import Track
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -18,9 +19,8 @@ from scrobbles.constants import (
 )
 from scrobbles.models import Scrobble
 from scrobbles.serializers import ScrobbleSerializer
+from scrobbles.utils import convert_to_seconds
 from videos.models import Video
-
-from vrobbler.apps.music.constants import JELLYFIN_POST_KEYS as KEYS
 
 logger = logging.getLogger(__name__)
 
@@ -103,11 +103,15 @@ def jellyfin_websocket(request):
             "musicbrainz_albumartist_id": data_dict.get(KEYS["ARTIST_MB_ID"]),
         }
 
+        # Convert ticks from Jellyfin from microseconds to nanoseconds
+        # Ain't nobody got time for nanoseconds
         track_dict = {
             "title": data_dict.get("Name", ""),
-            "musicbrainz_id": data_dict.get(KEYS["TRACK_MB_ID"], None),
-            "run_time_ticks": data_dict.get(KEYS["RUN_TIME_TICKS"], None),
-            "run_time": data_dict.get(KEYS["RUN_TIME"], None),
+            "run_time_ticks": data_dict.get(KEYS["RUN_TIME_TICKS"], None)
+            // 10000,
+            "run_time": convert_to_seconds(
+                data_dict.get(KEYS["RUN_TIME"], None)
+            ),
         }
         track = Track.find_or_create(artist_dict, album_dict, track_dict)
 
@@ -123,8 +127,11 @@ def jellyfin_websocket(request):
     jellyfin_data = {
         "user_id": request.user.id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_ticks": data_dict.get("PlaybackPositionTicks"),
-        "playback_position": data_dict.get("PlaybackPosition"),
+        "playback_position_ticks": data_dict.get("PlaybackPositionTicks")
+        // 10000,
+        "playback_position": convert_to_seconds(
+            data_dict.get("PlaybackPosition")
+        ),
         "source": "Jellyfin",
         "source_id": data_dict.get('MediaSourceId'),
         "is_paused": data_dict.get("IsPaused") in TRUTHY_VALUES,
@@ -136,6 +143,9 @@ def jellyfin_websocket(request):
             video, request.user.id, jellyfin_data
         )
     if track:
+        # Prefer Jellyfin track IDs to Mopidy, so just overwrite anything in there
+        track.musicbrainz_id = data_dict.get(KEYS["TRACK_MB_ID"], None)
+        track.save()
         scrobble = Scrobble.create_or_update_for_track(
             track, request.user.id, jellyfin_data
         )
@@ -169,7 +179,6 @@ def mopidy_websocket(request):
 
     track_dict = {
         "title": data_dict.get("name"),
-        "musicbrainz_id": data_dict.get("musicbrainz_track_id"),
         "run_time_ticks": data_dict.get("run_time_ticks"),
         "run_time": data_dict.get("run_time"),
     }
@@ -186,6 +195,10 @@ def mopidy_websocket(request):
 
     scrobble = None
     if track:
+        # Mopidy MB ids suck, we'd prefer jellyfin, but we'll take this if we have no other
+        if not track.musicbrainz_id:
+            track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
+            track.save()
         scrobble = Scrobble.create_or_update_for_track(
             track, request.user.id, mopidy_data
         )

@@ -5,6 +5,7 @@ from uuid import uuid4
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
+from scrobbles.utils import convert_to_seconds
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -80,8 +81,8 @@ class Video(TimeStampedModel):
             "year": data_dict.get("Year", ""),
             "overview": data_dict.get("Overview", None),
             "tagline": data_dict.get("Tagline", None),
-            "run_time_ticks": data_dict.get("RunTimeTicks", None),
-            "run_time": data_dict.get("RunTime", None),
+            "run_time_ticks": data_dict.get("RunTimeTicks", 0) // 10000,
+            "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
         }
 
         if data_dict.get("ItemType", "") == "Episode":
