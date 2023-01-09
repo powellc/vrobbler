@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Movies{% endblock %}
+{% block content %}
+    {% for movie in object_list %}
+    <dl>
+        <dt>{{movie}}</dt>
+        {% for scrobble in movie.scrobble_set.all %}
+        <dd>{{scrobble}}</dd>
+        {% endfor %}
+    </dl>
+    {% endfor %}
+{% endblock %}

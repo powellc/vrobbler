@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Videos{% endblock %}
+
+{% block content %}
+    {{object}}
+
+    {% for scrobble in object.scrobble_set.all %}
+    <ul>
+        <li>{{scrobble}}</li>
+    </ul>
+
+    {% endfor %}
+{% endblock %}

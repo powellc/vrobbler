@@ -3,6 +3,7 @@ from typing import Dict
 from uuid import uuid4
 
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.utils import convert_to_seconds
@@ -64,6 +65,10 @@ class Video(TimeStampedModel):
             return f"{self.tv_series} - Season {self.season_number}, Episode {self.episode_number}"
         return self.title
 
+    def get_absolute_url(self):
+        return reverse("videos:video_detail", kwargs={'slug': self.uuid})
+
+    @property
     def imdb_link(self):
         return f"https://www.imdb.com/title/{self.imdb_id}"
 

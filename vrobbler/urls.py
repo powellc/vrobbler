@@ -2,20 +2,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from scrobbles.views import RecentScrobbleList
-from scrobbles import urls as scrobble_urls
-
-# from scrobbles.api.views import ScrobbleViewSet
-# from media_types.api.views import (
-#    ShowViewSet,
-#    MovieViewSet,
-# )
 from rest_framework import routers
+from scrobbles.views import RecentScrobbleList
+from videos import urls as video_urls
 
-# router = routers.DefaultRouter()
-# router.register(r"scrobbles", ScrobbleViewSet)
-# router.register(r"shows", ShowViewSet)
-# router.register(r"movies", MovieViewSet)
+from scrobbles import urls as scrobble_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -24,6 +15,7 @@ urlpatterns = [
     # path("movies/", include(movies, namespace="movies")),
     # path("shows/", include(shows, namespace="shows")),
     path("api/v1/scrobbles/", include(scrobble_urls, namespace="scrobbles")),
+    path("", include(video_urls, namespace="videos")),
     path("", RecentScrobbleList.as_view(), name="home"),
 ]
 
