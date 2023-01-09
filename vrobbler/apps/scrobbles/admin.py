@@ -13,7 +13,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "playback_position",
         "in_progress",
     )
-    list_filter = ("video",)
+    list_filter = ("in_progress", "source")
     ordering = ("-timestamp",)
 
 
