@@ -143,9 +143,10 @@ def jellyfin_websocket(request):
             video, request.user.id, jellyfin_data
         )
     if track:
-        # Prefer Jellyfin track IDs to Mopidy, so just overwrite anything in there
-        track.musicbrainz_id = data_dict.get(KEYS["TRACK_MB_ID"], None)
-        track.save()
+        # Prefer Mopidy MD IDs to Jellyfin, so skip if we already have one
+        if not track.musicbrainz_id:
+            track.musicbrainz_id = data_dict.get(KEYS["TRACK_MB_ID"], None)
+            track.save()
         scrobble = Scrobble.create_or_update_for_track(
             track, request.user.id, jellyfin_data
         )
@@ -195,10 +196,9 @@ def mopidy_websocket(request):
 
     scrobble = None
     if track:
-        # Mopidy MB ids suck, we'd prefer jellyfin, but we'll take this if we have no other
-        if not track.musicbrainz_id:
-            track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
-            track.save()
+        # Jellyfin MB ids suck, so always overwrite with Mopidy if they're offering
+        track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
+        track.save()
         scrobble = Scrobble.create_or_update_for_track(
             track, request.user.id, mopidy_data
         )
