@@ -6,14 +6,17 @@ from os import environ as env
 
 if not 'DJANGO_SETTINGS_MODULE' in env:
     from vrobbler import settings
+
     env.setdefault('DJANGO_SETTINGS_MODULE', settings.__name__)
 
 
 import django
+
 django.setup()
 
 # this line must be after django.setup() for logging configure
 logger = logging.getLogger('vrobbler')
+
 
 def main():
     # to get configured settings

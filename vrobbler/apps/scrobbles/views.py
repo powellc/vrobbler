@@ -21,7 +21,11 @@ from scrobbles.models import Scrobble
 from scrobbles.serializers import ScrobbleSerializer
 from scrobbles.utils import convert_to_seconds
 from videos.models import Video
-from vrobbler.apps.music.aggregators import scrobble_counts, top_tracks, week_of_scrobbles
+from vrobbler.apps.music.aggregators import (
+    scrobble_counts,
+    top_tracks,
+    week_of_scrobbles,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +56,9 @@ class RecentScrobbleList(ListView):
             timestamp__gte=last_eight_minutes,
             timestamp__lte=now,
         )
-        data['video_scrobble_list'] = Scrobble.objects.filter(video__isnull=False, in_progress=False).order_by('-timestamp')[:10]
+        data['video_scrobble_list'] = Scrobble.objects.filter(
+            video__isnull=False, in_progress=False
+        ).order_by('-timestamp')[:10]
         data['top_daily_tracks'] = top_tracks()
         data['top_weekly_tracks'] = top_tracks(filter='week')
         data['top_monthly_tracks'] = top_tracks(filter='month')
@@ -61,9 +67,9 @@ class RecentScrobbleList(ListView):
         return data
 
     def get_queryset(self):
-        return Scrobble.objects.filter(track__isnull=False, in_progress=False).order_by(
-            '-timestamp'
-        )[:25]
+        return Scrobble.objects.filter(
+            track__isnull=False, in_progress=False
+        ).order_by('-timestamp')[:25]
 
 
 @csrf_exempt
