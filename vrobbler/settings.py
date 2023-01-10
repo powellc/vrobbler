@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
     "django_celery_results",
 ]
 

@@ -1,50 +1,99 @@
 {% extends "base.html" %}
-
 {% load humanize %}
 
-{% block title %}{% endblock %}
 
 {% block content %}
-    {% if now_playing_list %}
-    <h2>Now playing</h2>
-    {% for scrobble in now_playing_list %}
-        {% if scrobble.video %}
-            <dl class="latest-scrobble">
-                <dt>{{scrobble.video.title}} - {{scrobble.video}}</dt>
-                <dd>
-                    Started {{scrobble.created|naturaltime}} from {{scrobble.source}}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+            <span data-feather="calendar"></span>
+            This week
+        </button>
+        </div>
+    </div>
 
-                    <div class="progress-bar">
-                        <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
-                    </div>
-                </dd>
-            </dl>
-        {% endif %}
-        {% if scrobble.track %}
-            <dl class="latest-scrobble">
-                <dt>{{scrobble.track.title}} by {{scrobble.track.artist}} from {{scrobble.track.album}}</dt>
-                <dd>
-                    Started {{scrobble.created|naturaltime}} from {{scrobble.source}}
-                    <div class="progress-bar">
-                        <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
-                    </div>
-                </dd>
-            </dl>
-        {% endif %}
-        <br />
-    {% endfor %}
-    {% endif %}
-    <h2>Last scrobbles</h2>
-    <ul>
-        {% for scrobble in object_list %}
-        <li>
-            {{scrobble.timestamp|naturaltime}}:
-            {% if scrobble.video %}
-            🎥 watched <a href="{{scrobble.video.imdb_link}}">{{scrobble.video}}{% if scrobble.video.video_type == 'E' %} - {{scrobble.video.title}}{% endif %}</a></li>
-            {% endif %}
-            {% if scrobble.track %}
-            🎶 listened to <a href="{{scrobble.track.mb_link}}">{{scrobble.track.title}}</a> by <a href="{{scrobble.track.artist.mb_link}}">{{scrobble.track.artist}}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
+    <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+
+
+    <h2>Top this week</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Track</th>
+                <th scope="col">Artist</th>
+                <th scope="col">Album</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for track in top_weekly_tracks %}
+            <tr>
+                <td>{{track.num_scrobbles}}</td>
+                <td>{{track.title}}</td>
+                <td>{{track.artist.name}}</td>
+                <td>{{track.album.name}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+
+    <h2>Latest scrobbles</h2>
+    <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+            <th scope="col">Time</th>
+            <th scope="col">Track</th>
+            <th scope="col">Artist</th>
+            <th scope="col">Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scrobble in object_list %}
+            <tr>
+                <td>{{scrobble.timestamp|naturaltime}}</td>
+                <td>{{scrobble.track.title}}</td>
+                <td>{{scrobble.track.artist.name}}</td>
+                <td>{{scrobble.source}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+
+    <h2>Latest watched</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+            <th scope="col">Time</th>
+            <th scope="col">Title</th>
+            <th scope="col">Series</th>
+            <th scope="col">Season & Episode</th>
+            <th scope="col">Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scrobble in video_scrobble_list %}
+            <tr>
+                <td>{{scrobble.timestamp|naturaltime}}</td>
+                <td>{{scrobble.video.title}}</td>
+                <td>{% if scrobble.video.tv_series %}{{scrobble.video.tv_series}}{% endif %}</td>
+                <td>{% if scrobble.video.tv_series %}{{scrobble.video.season_number}}, {{scrobble.video.episode_number}}{% endif %}</td>
+                <td>{{scrobble.source}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</main>
 {% endblock %}
