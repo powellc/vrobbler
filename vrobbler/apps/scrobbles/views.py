@@ -23,6 +23,7 @@ from scrobbles.utils import convert_to_seconds
 from videos.models import Video
 from vrobbler.apps.music.aggregators import (
     scrobble_counts,
+    top_artists,
     top_tracks,
     week_of_scrobbles,
 )
@@ -62,6 +63,11 @@ class RecentScrobbleList(ListView):
         data['top_daily_tracks'] = top_tracks()
         data['top_weekly_tracks'] = top_tracks(filter='week')
         data['top_monthly_tracks'] = top_tracks(filter='month')
+
+        data['top_daily_artists'] = top_artists()
+        data['top_weekly_artists'] = top_artists(filter='week')
+        data['top_monthly_artists'] = top_artists(filter='month')
+
         data["weekly_data"] = week_of_scrobbles()
         data['counts'] = scrobble_counts()
         return data

@@ -280,35 +280,35 @@
             var myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                labels: [
-                    {% for day in weekly_data.keys %}
-                    "{{day}}"{% if not forloop.last %},{% endif %}
-                    {% endfor %}
-                ],
-                datasets: [{
-                    data: [
-                    {% for count in weekly_data.values %}
-                    {{count}}{% if not forloop.last %},{% endif %}
-                    {% endfor %}
-                    ],
-                    lineTension: 0,
-                    backgroundColor: 'transparent',
-                    borderColor: '#007bff',
-                    borderWidth: 4,
-                    pointBackgroundColor: '#007bff'
-                }]
+                  labels: [
+                      {% for day in weekly_data.keys %}
+                      "{{day}}"{% if not forloop.last %},{% endif %}
+                      {% endfor %}
+                  ],
+                  datasets: [{
+                      data: [
+                      {% for count in weekly_data.values %}
+                      {{count}}{% if not forloop.last %},{% endif %}
+                      {% endfor %}
+                      ],
+                      lineTension: 0,
+                      backgroundColor: 'transparent',
+                      borderColor: '#007bf0',
+                      borderWidth: 4,
+                      pointBackgroundColor: '#007bff'
+                  }]
                 },
                 options: {
-                scales: {
-                    yAxes: [{
-                    ticks: {
-                        beginAtZero: false
-                    }
-                    }]
-                },
-                legend: {
-                    display: false
-                }
+                  scales: {
+                      yAxes: [{
+                      ticks: {
+                          beginAtZero: false
+                      }
+                      }]
+                  },
+                  legend: {
+                      display: false
+                  }
                 }
             })
             })()

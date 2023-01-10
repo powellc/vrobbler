@@ -20,80 +20,109 @@
 
     <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
 
-
-    <h2>Top this week</h2>
-    <div class="table-responsive">
-        <table class="table table-striped table-sm">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Track</th>
-                <th scope="col">Artist</th>
-                <th scope="col">Album</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for track in top_weekly_tracks %}
-            <tr>
-                <td>{{track.num_scrobbles}}</td>
-                <td>{{track.title}}</td>
-                <td>{{track.artist.name}}</td>
-                <td>{{track.album.name}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <h2>Top artists this week</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Artist</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for artist in top_weekly_artists %}
+                        <tr>
+                            <td>{{artist.num_scrobbles}}</td>
+                            <td>{{artist.name}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg">
+                <h2>Top tracks this week</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Track</th>
+                            <th scope="col">Artist</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for track in top_weekly_tracks %}
+                        <tr>
+                            <td>{{track.num_scrobbles}}</td>
+                            <td>{{track.title}}</td>
+                            <td>{{track.artist.name}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg">
+                <h2>Latest listened</h2>
+                <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                        <th scope="col">Time</th>
+                        <th scope="col">Track</th>
+                        <th scope="col">Artist</th>
+                        <th scope="col">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scrobble in object_list %}
+                        <tr>
+                            <td>{{scrobble.timestamp|naturaltime}}</td>
+                            <td>{{scrobble.track.title}}</td>
+                            <td>{{scrobble.track.artist.name}}</td>
+                            <td>{{scrobble.source}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
 
-    <h2>Latest scrobbles</h2>
-    <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
-    <div class="table-responsive">
-        <table class="table table-striped table-sm">
-        <thead>
-            <tr>
-            <th scope="col">Time</th>
-            <th scope="col">Track</th>
-            <th scope="col">Artist</th>
-            <th scope="col">Source</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for scrobble in object_list %}
-            <tr>
-                <td>{{scrobble.timestamp|naturaltime}}</td>
-                <td>{{scrobble.track.title}}</td>
-                <td>{{scrobble.track.artist.name}}</td>
-                <td>{{scrobble.source}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
-    </div>
-
-    <h2>Latest watched</h2>
-    <div class="table-responsive">
-        <table class="table table-striped table-sm">
-        <thead>
-            <tr>
-            <th scope="col">Time</th>
-            <th scope="col">Title</th>
-            <th scope="col">Series</th>
-            <th scope="col">Season & Episode</th>
-            <th scope="col">Source</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for scrobble in video_scrobble_list %}
-            <tr>
-                <td>{{scrobble.timestamp|naturaltime}}</td>
-                <td>{{scrobble.video.title}}</td>
-                <td>{% if scrobble.video.tv_series %}{{scrobble.video.tv_series}}{% endif %}</td>
-                <td>{% if scrobble.video.tv_series %}{{scrobble.video.season_number}}, {{scrobble.video.episode_number}}{% endif %}</td>
-                <td>{{scrobble.source}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
+            <div class="col-lg">
+                <h2>Latest watched</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                        <th scope="col">Time</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Series</th>
+                        <th scope="col">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for scrobble in video_scrobble_list %}
+                        <tr>
+                            <td>{{scrobble.timestamp|naturaltime}}</td>
+                            <td>{% if scrobble.video.tv_series %}E{{scrobble.video.season_number}}S{{scrobble.video.season_number}} -{% endif %} {{scrobble.video.title}}</td>
+                            <td>{% if scrobble.video.tv_series %}{{scrobble.video.tv_series}}{% endif %}</td>
+                            <td>{{scrobble.source}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 {% endblock %}

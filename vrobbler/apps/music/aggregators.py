@@ -94,7 +94,7 @@ def top_artists(filter: str = "today", limit: int = 15) -> List["Artist"]:
 
     return (
         Artist.objects.annotate(
-            num_scrobbles=Sum("track__scrobble", distinct=True)
+            num_scrobbles=Count("track__scrobble", distinct=True)
         )
         .filter(time_filter)
         .order_by("-num_scrobbles")[:limit]
