@@ -99,7 +99,7 @@ class Scrobble(TimeStampedModel):
             f"Creating or updating scrobble for video {video} with data {jellyfin_data}"
         )
         scrobble = (
-            Scrobble.objects.filter(video=video, user_id=user_id)
+            cls.objects.filter(video=video, user_id=user_id)
             .order_by('-modified')
             .first()
         )
@@ -118,7 +118,7 @@ class Scrobble(TimeStampedModel):
     ) -> "Scrobble":
         scrobble_data['track_id'] = track.id
         scrobble = (
-            Scrobble.objects.filter(track=track, user_id=user_id)
+            cls.objects.filter(track=track, user_id=user_id)
             .order_by('-modified')
             .first()
         )
