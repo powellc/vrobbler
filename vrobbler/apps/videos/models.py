@@ -58,7 +58,8 @@ class Video(TimeStampedModel):
     imdb_id = models.CharField(max_length=20, **BNULL)
     tvrage_id = models.CharField(max_length=20, **BNULL)
 
-    # Metadata fields from TMDB
+    class Meta:
+        unique_together = [['title', 'imdb_id']]
 
     def __str__(self):
         if self.video_type == self.VideoType.TV_EPISODE:
@@ -107,6 +108,7 @@ class Video(TimeStampedModel):
             video_dict["season_number"] = data_dict.get("SeasonNumber", "")
 
         video, created = cls.objects.get_or_create(**video_dict)
+
         if created:
             logger.debug(f"Created new video: {video}")
         else:

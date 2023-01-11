@@ -16,7 +16,7 @@ class Album(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     year = models.IntegerField(**BNULL)
-    musicbrainz_id = models.CharField(max_length=255, **BNULL)
+    musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
     musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
     musicbrainz_albumartist_id = models.CharField(max_length=255, **BNULL)
 
@@ -32,6 +32,9 @@ class Artist(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
+
+    class Meta:
+        unique_together=[['name', 'musicbrainz_id']]
 
     def __str__(self):
         return self.name
@@ -51,10 +54,10 @@ class Track(TimeStampedModel):
     title = models.CharField(max_length=255, **BNULL)
     artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING)
     album = models.ForeignKey(Album, on_delete=models.DO_NOTHING, **BNULL)
-    musicbrainz_id = models.CharField(max_length=255, **BNULL)
+    musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
     run_time = models.CharField(max_length=8, **BNULL)
     run_time_ticks = models.PositiveBigIntegerField(**BNULL)
-    thumbs = models.IntegerField(default=Opinion.NEUTRAL, choices=Opinion.choices)
+    # thumbs = models.IntegerField(default=Opinion.NEUTRAL, choices=Opinion.choices)
 
     def __str__(self):
         return f"{self.title} by {self.artist}"
