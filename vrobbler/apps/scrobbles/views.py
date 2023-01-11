@@ -75,7 +75,7 @@ class RecentScrobbleList(ListView):
     def get_queryset(self):
         return Scrobble.objects.filter(
             track__isnull=False, in_progress=False
-        ).order_by('-timestamp')[:25]
+        ).order_by('-timestamp')[:15]
 
 
 @csrf_exempt
