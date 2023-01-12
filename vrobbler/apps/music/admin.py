@@ -9,6 +9,9 @@ class AlbumAdmin(admin.ModelAdmin):
     list_display = ("name", "year", "musicbrainz_id")
     list_filter = ("year",)
     ordering = ("name",)
+    filter_horizontal = [
+        'artists',
+    ]
 
 
 @admin.register(Artist)

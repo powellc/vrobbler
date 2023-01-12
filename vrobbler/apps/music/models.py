@@ -1,9 +1,10 @@
 import logging
 from typing import Dict, Optional
 from uuid import uuid4
+import musicbrainzngs
 
 from django.apps.config import cached_property
-
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
@@ -12,29 +13,13 @@ logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 
 
-class Album(TimeStampedModel):
-    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
-    name = models.CharField(max_length=255)
-    year = models.IntegerField(**BNULL)
-    musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
-    musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
-    musicbrainz_albumartist_id = models.CharField(max_length=255, **BNULL)
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def mb_link(self):
-        return f"https://musicbrainz.org/release/{self.musicbrainz_id}"
-
-
 class Artist(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
 
     class Meta:
-        unique_together=[['name', 'musicbrainz_id']]
+        unique_together = [['name', 'musicbrainz_id']]
 
     def __str__(self):
         return self.name
@@ -42,6 +27,59 @@ class Artist(TimeStampedModel):
     @property
     def mb_link(self):
         return f"https://musicbrainz.org/artist/{self.musicbrainz_id}"
+
+
+class Album(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+    name = models.CharField(max_length=255)
+    artists = models.ManyToManyField(Artist, **BNULL)
+    year = models.IntegerField(**BNULL)
+    musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
+    musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
+    musicbrainz_albumartist_id = models.CharField(max_length=255, **BNULL)
+    cover_image = models.ImageField(upload_to="albums/", **BNULL)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def primary_artist(self):
+        return self.artists.first()
+
+    def fix_metadata(self):
+        musicbrainzngs.set_useragent('vrobbler', '0.3.0')
+        mb_data = musicbrainzngs.get_release_by_id(
+            self.musicbrainz_id, includes=['artists']
+        )
+        if not self.musicbrainz_albumartist_id:
+            self.musicbrainz_albumartist_id = mb_data['release'][
+                'artist-credit'
+            ][0]['artist']['id']
+        if not self.year:
+            self.year = mb_data['release']['date'][0:4]
+        self.save(update_fields=['musicbrainz_albumartist_id', 'year'])
+
+        new_artist = Artist.objects.filter(
+            musicbrainz_id=self.musicbrainz_albumartist_id
+        ).first()
+        if self.musicbrainz_albumartist_id and new_artist:
+            self.artists.add(new_artist)
+        if not new_artist:
+            for t in self.track_set.all():
+                self.artists.add(t.artist)
+
+    def fetch_artwork(self):
+        try:
+            img_data = musicbrainzngs.get_image_front(self.musicbrainz_id)
+            name = f"{self.name}_{self.uuid}.jpg"
+            self.cover_image = ContentFile(img_data, name=name)
+            self.save()
+        except musicbrainzngs.ResponseError:
+            logger.warning(f'No cover art found for {self.name}')
+
+    @property
+    def mb_link(self):
+        return f"https://musicbrainz.org/release/{self.musicbrainz_id}"
 
 
 class Track(TimeStampedModel):
@@ -83,7 +121,7 @@ class Track(TimeStampedModel):
             'musicbrainz_id'
         ):
             logger.warning(
-                f"No artist or artist musicbrainz ID found in message from Jellyfin, not scrobbling"
+                f"No artist or artist musicbrainz ID found in message from source, not scrobbling"
             )
             return
         artist, artist_created = Artist.objects.get_or_create(**artist_dict)
@@ -97,6 +135,8 @@ class Track(TimeStampedModel):
             logger.debug(f"Created new album {album}")
         else:
             logger.debug(f"Found album {album}")
+        album.fix_metadata()
+        album.fetch_artwork()
 
         track_dict['album_id'] = getattr(album, "id", None)
         track_dict['artist_id'] = artist.id
