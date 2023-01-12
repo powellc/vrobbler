@@ -21,9 +21,7 @@ def scrobble_podcast(data_dict: dict, user_id: Optional[int]) -> Scrobble:
         podcast_name = parsed_data.get("podcast_name")
     podcast_dict = {"name": podcast_name}
 
-    episode_name = data_dict.get("name")
-    if not episode_name or '.mp3' in episode_name:
-        episode_name = parsed_data.get("episode_filename")
+    episode_name = parsed_data.get("episode_filename")
     episode_dict = {
         "title": episode_name,
         "run_time_ticks": data_dict.get("run_time_ticks"),

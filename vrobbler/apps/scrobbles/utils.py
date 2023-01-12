@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from urllib.parse import unquote
 
 from dateutil.parser import ParserError, parse
 
@@ -19,8 +20,8 @@ def parse_mopidy_uri(uri: str) -> dict:
     logger.debug(f"Parsing URI: {uri}")
     parsed_uri = uri.split('/')
 
-    episode_str = parsed_uri.pop(-1).strip(".mp3")
-    podcast_str = parsed_uri.pop(-1).replace("%20", " ")
+    episode_str = unquote(parsed_uri.pop(-1).strip(".mp3"))
+    podcast_str = unquote(parsed_uri.pop(-1))
     possible_date_str = episode_str[0:10]
 
     try:
