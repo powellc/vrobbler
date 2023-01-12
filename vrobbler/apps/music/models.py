@@ -1,13 +1,14 @@
 import logging
 from typing import Dict, Optional
 from uuid import uuid4
-import musicbrainzngs
 
+import musicbrainzngs
 from django.apps.config import cached_property
 from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
+from scrobbles.mixins import ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -82,20 +83,15 @@ class Album(TimeStampedModel):
         return f"https://musicbrainz.org/release/{self.musicbrainz_id}"
 
 
-class Track(TimeStampedModel):
+class Track(ScrobblableMixin):
     class Opinion(models.IntegerChoices):
         DOWN = -1, 'Thumbs down'
         NEUTRAL = 0, 'No opinion'
         UP = 1, 'Thumbs up'
 
-    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
-    title = models.CharField(max_length=255, **BNULL)
     artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING)
     album = models.ForeignKey(Album, on_delete=models.DO_NOTHING, **BNULL)
     musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
-    run_time = models.CharField(max_length=8, **BNULL)
-    run_time_ticks = models.PositiveBigIntegerField(**BNULL)
-    # thumbs = models.IntegerField(default=Opinion.NEUTRAL, choices=Opinion.choices)
 
     def __str__(self):
         return f"{self.title} by {self.artist}"

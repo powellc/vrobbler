@@ -1,7 +1,6 @@
 import logging
 from datetime import timedelta
 from typing import Optional
-from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -20,16 +19,6 @@ VIDEO_BACKOFF = getattr(settings, 'VIDEO_BACKOFF_MINUTES')
 TRACK_BACKOFF = getattr(settings, 'MUSIC_BACKOFF_SECONDS')
 VIDEO_WAIT_PERIOD = getattr(settings, 'VIDEO_WAIT_PERIOD_DAYS')
 TRACK_WAIT_PERIOD = getattr(settings, 'MUSIC_WAIT_PERIOD_MINUTES')
-
-
-class ScrobblableMixin(TimeStampedModel):
-    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
-    title = models.CharField(max_length=255, **BNULL)
-    run_time = models.CharField(max_length=8, **BNULL)
-    run_time_ticks = models.PositiveBigIntegerField(**BNULL)
-
-    class Meta:
-        abstract = True
 
 
 class Scrobble(TimeStampedModel):

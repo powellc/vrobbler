@@ -6,6 +6,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
+from vrobbler.apps.scrobbles.mixins import ScrobblableMixin
+
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 
@@ -31,14 +33,10 @@ class Podcast(TimeStampedModel):
         return f"{self.name}"
 
 
-class Episode(TimeStampedModel):
-    title = models.CharField(max_length=255)
-    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+class Episode(ScrobblableMixin):
     podcast = models.ForeignKey(Podcast, on_delete=models.DO_NOTHING)
     number = models.IntegerField(**BNULL)
     pub_date = models.DateField(**BNULL)
-    run_time = models.CharField(max_length=8, **BNULL)
-    run_time_ticks = models.PositiveBigIntegerField(**BNULL)
     mopidy_uri = models.CharField(max_length=255, **BNULL)
 
     def __str__(self):

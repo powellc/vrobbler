@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.utils import convert_to_seconds
+from scrobbles.mixins import ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -30,15 +31,12 @@ class Series(TimeStampedModel):
         verbose_name_plural = "series"
 
 
-class Video(TimeStampedModel):
+class Video(ScrobblableMixin):
     class VideoType(models.TextChoices):
         UNKNOWN = 'U', _('Unknown')
         TV_EPISODE = 'E', _('TV Episode')
         MOVIE = 'M', _('Movie')
 
-    # General fields
-    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
-    title = models.CharField(max_length=255, **BNULL)
     video_type = models.CharField(
         max_length=1,
         choices=VideoType.choices,
@@ -46,8 +44,6 @@ class Video(TimeStampedModel):
     )
     overview = models.TextField(**BNULL)
     tagline = models.TextField(**BNULL)
-    run_time = models.CharField(max_length=8, **BNULL)
-    run_time_ticks = models.PositiveBigIntegerField(**BNULL)
     year = models.IntegerField()
 
     # TV show specific fields
