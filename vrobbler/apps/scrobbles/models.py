@@ -1,6 +1,7 @@
 import logging
 from datetime import timedelta
 from typing import Optional
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -8,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 from music.models import Track
+from podcasts.models import Episode
 from videos.models import Video
 
 logger = logging.getLogger(__name__)
@@ -19,9 +21,22 @@ VIDEO_WAIT_PERIOD = getattr(settings, 'VIDEO_WAIT_PERIOD_DAYS')
 TRACK_WAIT_PERIOD = getattr(settings, 'MUSIC_WAIT_PERIOD_MINUTES')
 
 
+class ScrobblableMixin(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+    title = models.CharField(max_length=255, **BNULL)
+    run_time = models.CharField(max_length=8, **BNULL)
+    run_time_ticks = models.PositiveBigIntegerField(**BNULL)
+
+    class Meta:
+        abstract = True
+
+
 class Scrobble(TimeStampedModel):
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
+    podcast_episode = models.ForeignKey(
+        Episode, on_delete=models.DO_NOTHING, **BNULL
+    )
     user = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.DO_NOTHING
     )
@@ -124,6 +139,28 @@ class Scrobble(TimeStampedModel):
         )
         logger.debug(
             f"Found existing scrobble for track {track}, updating",
+            {"scrobble_data": scrobble_data},
+        )
+
+        backoff = timezone.now() + timedelta(seconds=TRACK_BACKOFF)
+        wait_period = timezone.now() + timedelta(minutes=TRACK_WAIT_PERIOD)
+
+        return cls.update_or_create(
+            scrobble, backoff, wait_period, scrobble_data
+        )
+
+    @classmethod
+    def create_or_update_for_podcast_episode(
+        cls, episode: "Episode", user_id: int, scrobble_data: dict
+    ) -> "Scrobble":
+        scrobble_data['podcast_episode_id'] = episode.id
+        scrobble = (
+            cls.objects.filter(podcast_episode=episode, user_id=user_id)
+            .order_by('-modified')
+            .first()
+        )
+        logger.debug(
+            f"Found existing scrobble for podcast {episode}, updating",
             {"scrobble_data": scrobble_data},
         )
 

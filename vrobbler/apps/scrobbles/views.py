@@ -27,6 +27,7 @@ from vrobbler.apps.music.aggregators import (
     top_tracks,
     week_of_scrobbles,
 )
+from scrobbles.scrobblers import scrobble_podcast, scrobble_track
 
 logger = logging.getLogger(__name__)
 
@@ -187,41 +188,12 @@ def mopidy_websocket(request):
     # For making things easier to build new input processors
     if getattr(settings, "DUMP_REQUEST_DATA", False):
         json_data = json.dumps(data_dict, indent=4)
+        logger.debug(f"{json_data}")
 
-    artist_dict = {
-        "name": data_dict.get("artist", None),
-        "musicbrainz_id": data_dict.get("musicbrainz_artist_id", None),
-    }
-
-    album_dict = {
-        "name": data_dict.get("album"),
-        "musicbrainz_id": data_dict.get("musicbrainz_album_id"),
-    }
-
-    track_dict = {
-        "title": data_dict.get("name"),
-        "run_time_ticks": data_dict.get("run_time_ticks"),
-        "run_time": data_dict.get("run_time"),
-    }
-
-    track = Track.find_or_create(artist_dict, album_dict, track_dict)
-
-    # Now we run off a scrobble
-    mopidy_data = {
-        "user_id": request.user.id,
-        "timestamp": timezone.now(),
-        "source": "Mopidy",
-        "status": data_dict.get("status"),
-    }
-
-    scrobble = None
-    if track:
-        # Jellyfin MB ids suck, so always overwrite with Mopidy if they're offering
-        track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
-        track.save()
-        scrobble = Scrobble.create_or_update_for_track(
-            track, request.user.id, mopidy_data
-        )
+    if 'podcast' in data_dict.get('mopidy_uri'):
+        scrobble = scrobble_podcast(data_dict, request.user.id)
+    else:
+        scrobble = scrobble_track(data_dict, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)

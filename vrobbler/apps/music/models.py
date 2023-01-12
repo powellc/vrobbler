@@ -32,7 +32,7 @@ class Artist(TimeStampedModel):
 class Album(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
-    artists = models.ManyToManyField(Artist, **BNULL)
+    artists = models.ManyToManyField(Artist)
     year = models.IntegerField(**BNULL)
     musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
     musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
@@ -124,6 +124,7 @@ class Track(TimeStampedModel):
                 f"No artist or artist musicbrainz ID found in message from source, not scrobbling"
             )
             return
+
         artist, artist_created = Artist.objects.get_or_create(**artist_dict)
         if artist_created:
             logger.debug(f"Created new album {artist}")

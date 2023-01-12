@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "scrobbles",
     "videos",
     "music",
+    "podcasts",
     "rest_framework",
     "allauth",
     "allauth.account",
