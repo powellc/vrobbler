@@ -10,7 +10,9 @@ from scrobbles.utils import parse_mopidy_uri
 logger = logging.getLogger(__name__)
 
 
-def scrobble_podcast(data_dict: dict, user_id: Optional[int]) -> Scrobble:
+def mopidy_scrobble_podcast(
+    data_dict: dict, user_id: Optional[int]
+) -> Scrobble:
     mopidy_uri = data_dict.get("mopidy_uri", "")
     parsed_data = parse_mopidy_uri(mopidy_uri)
 
@@ -37,6 +39,7 @@ def scrobble_podcast(data_dict: dict, user_id: Optional[int]) -> Scrobble:
     mopidy_data = {
         "user_id": user_id,
         "timestamp": timezone.now(),
+        "playback_position_ticks": data_dict.get("playback_time_ticks"),
         "source": "Mopidy",
         "status": data_dict.get("status"),
     }
@@ -49,7 +52,7 @@ def scrobble_podcast(data_dict: dict, user_id: Optional[int]) -> Scrobble:
     return scrobble
 
 
-def scrobble_track(
+def mopidy_scrobble_track(
     data_dict: dict, user_id: Optional[int]
 ) -> Optional[Scrobble]:
     artist_dict = {
@@ -74,6 +77,7 @@ def scrobble_track(
     mopidy_data = {
         "user_id": user_id,
         "timestamp": timezone.now(),
+        "playback_position_ticks": data_dict.get("playback_time_ticks"),
         "source": "Mopidy",
         "status": data_dict.get("status"),
     }

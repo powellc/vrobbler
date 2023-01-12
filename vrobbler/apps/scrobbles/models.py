@@ -10,6 +10,7 @@ from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 from music.models import Track
 from podcasts.models import Episode
+from scrobbles.utils import check_scrobble_for_finish
 from videos.models import Video
 
 logger = logging.getLogger(__name__)
@@ -180,6 +181,13 @@ class Scrobble(TimeStampedModel):
         mopidy_status = scrobble_data.pop('status', None)
         scrobble_is_stale = False
 
+        if scrobble:
+            logger.debug(f"Updating scrobble ticks")
+            scrobble.playback_position_ticks = scrobble_data.get(
+                "playback_position_ticks"
+            )
+            scrobble.save(update_fields=['playback_position_ticks'])
+
         if mopidy_status == "stopped":
             logger.info(f"Mopidy sent a message to stop {scrobble}")
             if not scrobble:
@@ -190,7 +198,37 @@ class Scrobble(TimeStampedModel):
 
             # Mopidy finished a play, scrobble away
             scrobble.in_progress = False
-            scrobble.save(update_fields=['in_progress'])
+            scrobble.played_to_completion = True
+            scrobble.save(
+                update_fields=['in_progress', 'played_to_completion']
+            )
+            return scrobble
+
+        if mopidy_status == "paused":
+            logger.info(f"Mopidy sent a message to pause {scrobble}")
+            if not scrobble:
+                logger.info("Message to pause while not started, ignoring")
+                return
+            if scrobble.is_paused:
+                logger.info("Message to pause while paused, ignoring")
+                return
+
+            # Mopidy finished a play, scrobble away
+            scrobble.is_paused = True
+            scrobble.save(update_fields=["is_paused"])
+            scrobble = check_scrobble_for_finish(scrobble)
+            return scrobble
+
+        if mopidy_status == "resumed":
+            logger.info(f"Mopidy sent a message to resume {scrobble}")
+            if not scrobble:
+                logger.info("Message to resume while not started, ignoring")
+                return
+            if not scrobble.is_paused:
+                logger.info("Message to resume while not paused, resuming")
+            # Mopidy finished a play, scrobble away
+            scrobble.is_paused = False
+            scrobble.save(update_fields=["is_paused"])
             return scrobble
 
         if scrobble and not mopidy_status:
@@ -218,16 +256,6 @@ class Scrobble(TimeStampedModel):
 
         # If we hit our completion threshold, save it and get ready
         # to scrobble again if we re-watch this.
-        if scrobble.percent_played >= getattr(
-            settings, "PERCENT_FOR_COMPLETION", 95
-        ):
-            scrobble.in_progress = False
-            scrobble.playback_position_ticks = scrobble.media_run_time_ticks
-            scrobble.save()
-
-        if scrobble.percent_played % 5 == 0:
-            if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
-                scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
-                scrobble.save(update_fields=['scrobble_log'])
+        scrobble = check_scrobble_for_finish(scrobble)
 
         return scrobble

@@ -37,6 +37,11 @@ KEEP_DETAILED_SCROBBLE_LOGS = os.getenv(
     "VROBBLER_KEEP_DETAILED_SCROBBLE_LOGS", False
 )
 
+PODCAST_COMPLETION_PERCENT = os.getenv(
+    "VROBBLER_PODCAST_COMPLETION_PERCENT", 25
+)
+MUSIC_COMPLETION_PERCENT = os.getenv("VROBBLER_MUSIC_COMPLETION_PERCENT", 90)
+
 # Should we cull old in-progress scrobbles that are beyond the wait period for resuming?
 DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
 

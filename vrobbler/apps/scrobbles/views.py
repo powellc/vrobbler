@@ -27,7 +27,7 @@ from vrobbler.apps.music.aggregators import (
     top_tracks,
     week_of_scrobbles,
 )
-from scrobbles.scrobblers import scrobble_podcast, scrobble_track
+from scrobbles.scrobblers import mopidy_scrobble_podcast, mopidy_scrobble_track
 
 logger = logging.getLogger(__name__)
 
@@ -191,9 +191,9 @@ def mopidy_websocket(request):
         logger.debug(f"{json_data}")
 
     if 'podcast' in data_dict.get('mopidy_uri'):
-        scrobble = scrobble_podcast(data_dict, request.user.id)
+        scrobble = mopidy_scrobble_podcast(data_dict, request.user.id)
     else:
-        scrobble = scrobble_track(data_dict, request.user.id)
+        scrobble = mopidy_scrobble_track(data_dict, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)

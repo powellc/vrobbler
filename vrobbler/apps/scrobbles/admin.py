@@ -13,8 +13,9 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "source",
         "playback_position",
         "in_progress",
+        "is_paused",
     )
-    list_filter = ("in_progress", "source", "track__artist")
+    list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)
 
     def media_name(self, obj):

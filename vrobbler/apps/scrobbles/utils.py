@@ -3,6 +3,7 @@ from typing import Any
 from urllib.parse import unquote
 
 from dateutil.parser import ParserError, parse
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -57,3 +58,34 @@ def parse_mopidy_uri(uri: str) -> dict:
         'podcast_name': podcast_str,
         'pub_date': pub_date,
     }
+
+
+def check_scrobble_for_finish(scrobble: "Scrobble") -> None:
+    completion_percent = getattr(settings, "MUSIC_COMPLETION_PERCENT", 90)
+    if scrobble.podcast_episode:
+        completion_percent = getattr(
+            settings, "PODCAST_COMPLETION_PERCENT", 25
+        )
+    logger.debug(f"Completion set to {completion_percent}")
+
+    if scrobble.percent_played >= completion_percent:
+        logger.debug(
+            f"{scrobble} meets completion goal of {completion_percent}, finishing"
+        )
+        scrobble.in_progress = False
+        scrobble.is_paused = False
+        scrobble.playback_position_ticks = scrobble.media_obj.run_time_ticks
+        scrobble.save(
+            update_fields=[
+                "in_progress",
+                "is_paused",
+                "playback_position_ticks",
+            ]
+        )
+
+    if scrobble.percent_played % 5 == 0:
+        if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
+            scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
+            scrobble.save(update_fields=['scrobble_log'])
+
+    return scrobble
