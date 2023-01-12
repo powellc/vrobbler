@@ -42,7 +42,11 @@ class Scrobble(TimeStampedModel):
 
     @property
     def percent_played(self) -> int:
-        if self.playback_position_ticks and self.media_obj.run_time_ticks:
+        if (
+            self.playback_position_ticks
+            and self.media_obj.run_time_ticks
+            and source != 'Mopidy'
+        ):
             return int(
                 (self.playback_position_ticks / self.media_obj.run_time_ticks)
                 * 100
