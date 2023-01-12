@@ -52,27 +52,20 @@ class Scrobble(TimeStampedModel):
 
     @property
     def percent_played(self) -> int:
-        if self.playback_position_ticks and self.media_run_time_ticks:
+        if self.playback_position_ticks and self.media_obj.run_time_ticks:
             return int(
-                (self.playback_position_ticks / self.media_run_time_ticks)
+                (self.playback_position_ticks / self.media_obj.run_time_ticks)
                 * 100
             )
-        # If we don't have media_run_time_ticks, let's guess from created time
+        # If we don't have media_obj.run_time_ticks, let's guess from created time
         now = timezone.now()
         playback_duration = (now - self.created).seconds
-        if playback_duration and self.track.run_time:
-            return int((playback_duration / int(self.track.run_time)) * 100)
+        if playback_duration and self.media_obj.run_time:
+            return int(
+                (playback_duration / int(self.media_obj.run_time)) * 100
+            )
 
         return 0
-
-    @property
-    def media_run_time_ticks(self) -> int:
-        if self.video:
-            return self.video.run_time_ticks
-        if self.track:
-            return self.track.run_time_ticks
-        # this is hacky, but want to avoid divide by zero
-        return 1
 
     def is_stale(self, backoff, wait_period) -> bool:
         scrobble_is_stale = self.in_progress and self.modified > wait_period
@@ -94,16 +87,19 @@ class Scrobble(TimeStampedModel):
 
         return scrobble_is_stale
 
-    def __str__(self):
-        media = None
+    @property
+    def media_obj(self):
+        media_obj = None
         if self.video:
-            media = self.video
+            media_obj = self.video
         if self.track:
-            media = self.track
+            media_obj = self.track
+        if self.podcast_episode:
+            media_obj = self.podcast_episode
+        return media_obj
 
-        return (
-            f"Scrobble of {media} {self.timestamp.year}-{self.timestamp.month}"
-        )
+    def __str__(self):
+        return f"Scrobble of {self.media_obj} {self.timestamp.year}-{self.timestamp.month}"
 
     @classmethod
     def create_or_update_for_video(

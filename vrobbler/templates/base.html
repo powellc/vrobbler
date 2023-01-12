@@ -194,27 +194,16 @@
                         <ul style="padding-right:10px;">
                             <b>Now playing</b>
                             {% for scrobble in now_playing_list %}
-                            {% if scrobble.video %}
                             <div>
-                                {{scrobble.video.title}}<br/>
-                                <small>{{scrobble.created|naturaltime}}<br/>
-                                    from {{scrobble.source}}</small>
-                                <div class="progress-bar">
-                                    <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% if scrobble.track %}
-                            <div>
-                                {{scrobble.track.title}}<br/>
-                                <em>{{scrobble.track.artist}}</em><br/>
+                                {{scrobble.media_obj.title}}<br/>
+                                {% if scrobble.track %}<em>{{scrobble.track.artist}}</em><br/>{% endif %}
+                                {% if scrobble.podcast_episode%}<em>{{scrobble.podcast_episode.podcast}}</em><br/>{% endif %}
                                 <small>{{scrobble.created|naturaltime}}<br/>
                                     from {{scrobble.source}}</small>
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
                                 </div>
                             </div>
-                            {% endif %}
                             <hr/>
                             {% endfor %}
                         </ul>
