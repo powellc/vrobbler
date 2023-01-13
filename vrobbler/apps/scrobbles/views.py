@@ -85,7 +85,7 @@ class RecentScrobbleList(ListView):
         ).order_by('-timestamp')[:15]
 
 
-class ManualScrobbleView(FormView):
+class ManualImdbScrobbleView(FormView):
     form_class = ScrobbleForm
     template_name = 'scrobbles/manual_form.html'
 

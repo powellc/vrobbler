@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
-from scrobbles.views import RecentScrobbleList, ManualScrobbleView
+import scrobbles.views as scrobbles_views
 from videos import urls as video_urls
 
 from scrobbles import urls as scrobble_urls
@@ -15,9 +15,13 @@ urlpatterns = [
     # path("movies/", include(movies, namespace="movies")),
     # path("shows/", include(shows, namespace="shows")),
     path("api/v1/scrobbles/", include(scrobble_urls, namespace="scrobbles")),
-    path('manual/', ManualScrobbleView.as_view(), name='manual-scrobble'),
+    path(
+        'manual/imdb/',
+        scrobbles_views.ManualImdbScrobbleView.as_view(),
+        name='manual-scrobble',
+    ),
     path("", include(video_urls, namespace="videos")),
-    path("", RecentScrobbleList.as_view(), name="home"),
+    path("", scrobbles_views.RecentScrobbleList.as_view(), name="home"),
 ]
 
 if settings.DEBUG:
