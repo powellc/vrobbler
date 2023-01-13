@@ -13,7 +13,10 @@ def convert_to_seconds(run_time: str) -> int:
     actually be in seconds so we'll convert it"""
     if ":" in run_time:
         run_time_list = run_time.split(":")
-        run_time = (int(run_time_list[1]) * 60) + int(run_time_list[2])
+        hours = int(run_time_list[0])
+        minutes = int(run_time_list[1])
+        seconds = int(run_time_list[2])
+        run_time = (((hours * 60) + minutes) * 60) + seconds
     return int(run_time)
 
 
