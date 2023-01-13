@@ -82,6 +82,7 @@ class Video(ScrobblableMixin):
             "video_type": Video.VideoType.MOVIE,
         }
 
+        series = None
         if data_dict.get("ItemType", "") == "Episode":
             series_name = data_dict.get("SeriesName", "")
             series, series_created = Series.objects.get_or_create(
@@ -101,12 +102,14 @@ class Video(ScrobblableMixin):
             "tagline": data_dict.get("Tagline", None),
             "run_time_ticks": data_dict.get("RunTimeTicks", 0) // 10000,
             "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
-            "tv_series_id": series.id,
             "tvdb_id": data_dict.get("Provider_tvdb", None),
             "tvrage_id": data_dict.get("Provider_tvrage", None),
             "episode_number": data_dict.get("EpisodeNumber", ""),
             "season_number": data_dict.get("SeasonNumber", ""),
         }
+
+        if series:
+            video_extra_dict["tv_series_id"] = series.id
 
         if created:
             logger.debug(f"Created new video: {video}")
