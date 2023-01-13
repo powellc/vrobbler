@@ -104,14 +104,14 @@ class Video(ScrobblableMixin):
             "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
             "tvdb_id": data_dict.get("Provider_tvdb", None),
             "tvrage_id": data_dict.get("Provider_tvrage", None),
-            "episode_number": data_dict.get("EpisodeNumber", ""),
-            "season_number": data_dict.get("SeasonNumber", ""),
+            "episode_number": data_dict.get("EpisodeNumber", None),
+            "season_number": data_dict.get("SeasonNumber", None),
         }
 
         if series:
             video_extra_dict["tv_series_id"] = series.id
 
-        if created:
+        if not video.run_time_ticks:
             logger.debug(f"Created new video: {video}")
             for key, value in video_extra_dict.items():
                 setattr(video, key, value)
