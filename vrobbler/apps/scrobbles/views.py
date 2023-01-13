@@ -61,10 +61,14 @@ class RecentScrobbleList(ListView):
         data['now_playing_list'] = Scrobble.objects.filter(
             in_progress=True,
             is_paused=False,
+            modified__gte=last_eight_minutes,
             timestamp__lte=now,
         )
         data['video_scrobble_list'] = Scrobble.objects.filter(
-            video__isnull=False, in_progress=False
+            video__isnull=False, played_to_completion=True
+        ).order_by('-timestamp')[:10]
+        data['podcast_scrobble_list'] = Scrobble.objects.filter(
+            podcast_episode__isnull=False, played_to_completion=True
         ).order_by('-timestamp')[:10]
         data['top_daily_tracks'] = top_tracks()
         data['top_weekly_tracks'] = top_tracks(filter='week')
