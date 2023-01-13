@@ -104,11 +104,15 @@ def create_jellyfin_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     if data_dict.get("PlayedToCompletion"):
         jellyfin_status = "stopped"
 
+    playback_position_ticks = data_dict.get("PlaybackPositionTicks") // 10000
+    if playback_position_ticks <= 0:
+        playback_position_ticks = None
+
+    logger.debug(playback_position_ticks)
     return {
         "user_id": user_id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_ticks": data_dict.get("PlaybackPositionTicks")
-        // 10000,
+        "playback_position_ticks": playback_position_ticks,
         "playback_position": convert_to_seconds(
             data_dict.get("PlaybackPosition")
         ),
@@ -166,6 +170,19 @@ def jellyfin_scrobble_track(
 
 
 def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
+    if not data_dict.get("Provider_imdb", None):
+        logger.error(
+            "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
+        )
+        return
+    video = Video.find_or_create(data_dict)
+
+    scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
+
+    return Scrobble.create_or_update_for_video(video, user_id, scrobble_dict)
+
+
+def manual_scrobble_video(data_dict: dict, user_id: Optional[int]):
     if not data_dict.get("Provider_imdb", None):
         logger.error(
             "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"

@@ -96,11 +96,16 @@ class Video(ScrobblableMixin):
 
         video, created = cls.objects.get_or_create(**video_dict)
 
+        logger.debug(data_dict)
+        run_time_ticks = data_dict.get("RunTimeTicks", None)
+        if run_time_ticks:
+            run_time_ticks = run_time_ticks // 10000
+
         video_extra_dict = {
             "year": data_dict.get("Year", ""),
             "overview": data_dict.get("Overview", None),
             "tagline": data_dict.get("Tagline", None),
-            "run_time_ticks": data_dict.get("RunTimeTicks", 0) // 10000,
+            "run_time_ticks": run_time_ticks,
             "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
             "tvdb_id": data_dict.get("Provider_tvdb", None),
             "tvrage_id": data_dict.get("Provider_tvrage", None),

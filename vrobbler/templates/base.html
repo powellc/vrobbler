@@ -199,7 +199,7 @@
                                 {% if scrobble.track %}<em>{{scrobble.track.artist}}</em><br/>{% endif %}
                                 {% if scrobble.podcast_episode%}<em>{{scrobble.podcast_episode.podcast}}</em><br/>{% endif %}
                                 {% if scrobble.video.tv_series %}<em>{{scrobble.video.tv_series }}</em><br/>{% endif %}
-                                <small>{{scrobble.created|naturaltime}}<br/>
+                                <small>{{scrobble.timestamp|naturaltime}}<br/>
                                     from {{scrobble.source}}</small>
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
@@ -243,6 +243,12 @@
                                 </a>
                             </li>
                             {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/manual/">
+                                <span data-feather="key"></span>
+                                Manual scrobble
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/admin/">
                                 <span data-feather="key"></span>

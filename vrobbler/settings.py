@@ -62,6 +62,8 @@ TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+TIME_ZONE = os.getenv("VROBBLER_TIME_ZONE", "EST")
+
 ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [
     os.getenv("VROBBLER_TRUSTED_ORIGINS", "http://localhost:8000")

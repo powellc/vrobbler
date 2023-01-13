@@ -10,8 +10,12 @@ logger = logging.getLogger(__name__)
 
 def convert_to_seconds(run_time: str) -> int:
     """Jellyfin sends run time as 00:00:00 string. We want the run time to
-    actually be in seconds so we'll convert it"""
-    if ":" in run_time:
+    actually be in seconds so we'll convert it"
+
+    This is actually deprecated, as we now convert to seconds before saving.
+    But for older videos, we'll leave this here.
+    """
+    if ":" in str(run_time):
         run_time_list = run_time.split(":")
         hours = int(run_time_list[0])
         minutes = int(run_time_list[1])

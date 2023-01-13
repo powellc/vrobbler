@@ -1,15 +1,14 @@
 import json
 import logging
-from datetime import datetime, timedelta
 
-from dateutil.parser import parse
 from django.conf import settings
 from django.db.models.fields import timezone
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import FormView
 from django.views.generic.list import ListView
-from music.constants import JELLYFIN_POST_KEYS as KEYS
-from music.models import Track
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -17,16 +16,17 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
+from scrobbles.forms import ScrobbleForm
+from scrobbles.imdb import lookup_video_from_imdb
 from scrobbles.models import Scrobble
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
+    manual_scrobble_video,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
 from scrobbles.serializers import ScrobbleSerializer
-from scrobbles.utils import convert_to_seconds
-from videos.models import Video
 
 from vrobbler.apps.music.aggregators import (
     scrobble_counts,
@@ -83,6 +83,20 @@ class RecentScrobbleList(ListView):
         return Scrobble.objects.filter(
             track__isnull=False, in_progress=False
         ).order_by('-timestamp')[:15]
+
+
+class ManualScrobbleView(FormView):
+    form_class = ScrobbleForm
+    template_name = 'scrobbles/manual_form.html'
+
+    def form_valid(self, form):
+
+        # look for video via IMDB id
+        data_dict = lookup_video_from_imdb(form.cleaned_data.get('imdb_id'))
+
+        manual_scrobble_video(data_dict, self.request.user.id)
+
+        return HttpResponseRedirect(reverse("home"))
 
 
 @csrf_exempt
