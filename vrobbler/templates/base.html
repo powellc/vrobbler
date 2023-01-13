@@ -161,7 +161,7 @@
         border-color: transparent;
         box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
         }
-
+        #scrobble-form { width: 100% }
         </style>
         {% block head_extra %}{% endblock %}
 
@@ -174,7 +174,11 @@
             <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+
+            <form id="scrobble-form" action="{% url 'imdb-manual-scrobble' %}" method="post">
+                {% csrf_token %}
+                {{ imdb_form }}
+            </form>
             <div class="navbar-nav">
                 <div class="nav-item text-nowrap">
                 {% if user.is_authenticated %}
@@ -243,12 +247,6 @@
                                 </a>
                             </li>
                             {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="/manual/imdb/">
-                                <span data-feather="key"></span>
-                                IMDB scrobble
-                                </a>
-                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/admin/">
                                 <span data-feather="key"></span>
