@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import unquote
 
 from dateutil.parser import ParserError, parse
@@ -61,26 +61,19 @@ def parse_mopidy_uri(uri: str) -> dict:
 
 
 def check_scrobble_for_finish(scrobble: "Scrobble") -> None:
-    completion_percent = getattr(settings, "MUSIC_COMPLETION_PERCENT", 90)
+    completion_percent = getattr(settings, "MUSIC_COMPLETION_PERCENT", 95)
+    if scrobble.video:
+        completion_percent = getattr(settings, "VIDEO_COMPLETION_PERCENT", 90)
     if scrobble.podcast_episode:
         completion_percent = getattr(
             settings, "PODCAST_COMPLETION_PERCENT", 25
         )
-    logger.debug(f"Completion set to {completion_percent}")
-
     if scrobble.percent_played >= completion_percent:
-        logger.debug(
-            f"{scrobble} meets completion goal of {completion_percent}, finishing"
-        )
         scrobble.in_progress = False
         scrobble.is_paused = False
-        scrobble.playback_position_ticks = scrobble.media_obj.run_time_ticks
+        scrobble.played_to_completion = True
         scrobble.save(
-            update_fields=[
-                "in_progress",
-                "is_paused",
-                "playback_position_ticks",
-            ]
+            update_fields=["in_progress", "is_paused", "played_to_completion"]
         )
 
     if scrobble.percent_played % 5 == 0:

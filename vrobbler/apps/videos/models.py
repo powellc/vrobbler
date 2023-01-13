@@ -44,7 +44,7 @@ class Video(ScrobblableMixin):
     )
     overview = models.TextField(**BNULL)
     tagline = models.TextField(**BNULL)
-    year = models.IntegerField()
+    year = models.IntegerField(**BNULL)
 
     # TV show specific fields
     tv_series = models.ForeignKey(Series, on_delete=models.DO_NOTHING, **BNULL)
@@ -80,11 +80,6 @@ class Video(ScrobblableMixin):
             "title": data_dict.get("Name", ""),
             "imdb_id": data_dict.get("Provider_imdb", None),
             "video_type": Video.VideoType.MOVIE,
-            "year": data_dict.get("Year", ""),
-            "overview": data_dict.get("Overview", None),
-            "tagline": data_dict.get("Tagline", None),
-            "run_time_ticks": data_dict.get("RunTimeTicks", 0) // 10000,
-            "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
         }
 
         if data_dict.get("ItemType", "") == "Episode":
@@ -97,16 +92,27 @@ class Video(ScrobblableMixin):
             else:
                 logger.debug(f"Found series {series}")
             video_dict['video_type'] = Video.VideoType.TV_EPISODE
-            video_dict["tv_series_id"] = series.id
-            video_dict["tvdb_id"] = data_dict.get("Provider_tvdb", None)
-            video_dict["tvrage_id"] = data_dict.get("Provider_tvrage", None)
-            video_dict["episode_number"] = data_dict.get("EpisodeNumber", "")
-            video_dict["season_number"] = data_dict.get("SeasonNumber", "")
 
         video, created = cls.objects.get_or_create(**video_dict)
 
+        video_extra_dict = {
+            "year": data_dict.get("Year", ""),
+            "overview": data_dict.get("Overview", None),
+            "tagline": data_dict.get("Tagline", None),
+            "run_time_ticks": data_dict.get("RunTimeTicks", 0) // 10000,
+            "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
+            "tv_series_id": series.id,
+            "tvdb_id": data_dict.get("Provider_tvdb", None),
+            "tvrage_id": data_dict.get("Provider_tvrage", None),
+            "episode_number": data_dict.get("EpisodeNumber", ""),
+            "season_number": data_dict.get("SeasonNumber", ""),
+        }
+
         if created:
             logger.debug(f"Created new video: {video}")
+            for key, value in video_extra_dict.items():
+                setattr(video, key, value)
+            video.save()
         else:
             logger.debug(f"Found video {video}")
 

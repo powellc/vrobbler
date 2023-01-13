@@ -45,7 +45,7 @@ class Scrobble(TimeStampedModel):
         if (
             self.playback_position_ticks
             and self.media_obj.run_time_ticks
-            and source != 'Mopidy'
+            and self.source != 'Mopidy'
         ):
             return int(
                 (self.playback_position_ticks / self.media_obj.run_time_ticks)
@@ -60,26 +60,6 @@ class Scrobble(TimeStampedModel):
             )
 
         return 0
-
-    def is_stale(self, backoff, wait_period) -> bool:
-        scrobble_is_stale = self.in_progress and self.modified > wait_period
-
-        # Check if found in progress scrobble is more than a day old
-        if scrobble_is_stale:
-            logger.info(
-                'Found a in-progress scrobble for this item more than a day old, creating a new scrobble'
-            )
-            delete_stale_scrobbles = getattr(
-                settings, "DELETE_STALE_SCROBBLES", True
-            )
-
-            if delete_stale_scrobbles:
-                logger.info(
-                    'Deleting {scrobble} that has been in-progress too long'
-                )
-                self.delete()
-
-        return scrobble_is_stale
 
     @property
     def media_obj(self):
@@ -171,60 +151,31 @@ class Scrobble(TimeStampedModel):
     ) -> Optional["Scrobble"]:
 
         # Status is a field we get from Mopidy, which refuses to poll us
-        mopidy_status = scrobble_data.pop('status', None)
-        scrobble_is_stale = False
+        scrobble_status = scrobble_data.pop('mopidy_status', None)
+        if not scrobble_status:
+            scrobble_status = scrobble_data.pop('jellyfin_status', None)
+        if not scrobble_status:
+            logger.warning(
+                f"No status update found in message, not scrobbling"
+            )
+            return
 
+        logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
         if scrobble:
-            logger.debug(f"Updating scrobble ticks")
-            scrobble.playback_position_ticks = scrobble_data.get(
-                "playback_position_ticks"
-            )
-            scrobble.save(update_fields=['playback_position_ticks'])
+            scrobble.update_ticks(scrobble_data)
 
-        if mopidy_status == "stopped":
-            logger.info(f"Mopidy sent a message to stop {scrobble}")
-            if not scrobble:
-                logger.warning(
-                    'Mopidy sent us a stopped message, without ever starting'
-                )
-                return
+            # On stop, stop progress and send it to the check for completion
+            if scrobble_status == "stopped":
+                return scrobble.stop()
 
-            # Mopidy finished a play, scrobble away
-            scrobble.in_progress = False
-            scrobble.played_to_completion = True
-            scrobble.save(
-                update_fields=['in_progress', 'played_to_completion']
-            )
-            return scrobble
+            # On pause, set is_paused and stop scrobbling
+            if scrobble_status == "paused":
+                return scrobble.pause()
 
-        if mopidy_status == "paused":
-            logger.info(f"Mopidy sent a message to pause {scrobble}")
-            if not scrobble:
-                logger.info("Message to pause while not started, ignoring")
-                return
-            if scrobble.is_paused:
-                logger.info("Message to pause while paused, ignoring")
-                return
+            if scrobble_status == "resumed":
+                return scrobble.resume()
 
-            # Mopidy finished a play, scrobble away
-            scrobble.is_paused = True
-            scrobble.save(update_fields=["is_paused"])
-            scrobble = check_scrobble_for_finish(scrobble)
-            return scrobble
-
-        if mopidy_status == "resumed":
-            logger.info(f"Mopidy sent a message to resume {scrobble}")
-            if not scrobble:
-                logger.info("Message to resume while not started, ignoring")
-                return
-            if not scrobble.is_paused:
-                logger.info("Message to resume while not paused, resuming")
-            # Mopidy finished a play, scrobble away
-            scrobble.is_paused = False
-            scrobble.save(update_fields=["is_paused"])
-            return scrobble
-
-        if scrobble and not mopidy_status:
+            # We're not changing the scrobble, but we don't want to walk over an existing one
             scrobble_is_finished = (
                 not scrobble.in_progress and scrobble.modified < backoff
             )
@@ -234,9 +185,7 @@ class Scrobble(TimeStampedModel):
                 )
                 return
 
-            scrobble_is_stale = scrobble.is_stale(backoff, wait_period)
-
-        if (not scrobble or scrobble_is_stale) or mopidy_status:
+        if not scrobble:
             # If we default this to "" we can probably remove this
             scrobble_data['scrobble_log'] = ""
             scrobble = cls.objects.create(
@@ -252,3 +201,37 @@ class Scrobble(TimeStampedModel):
         scrobble = check_scrobble_for_finish(scrobble)
 
         return scrobble
+
+    def stop(self):
+        if not self.in_progress:
+            logger.warning("Scrobble already stopped")
+            return
+        self.in_progress = False
+        self.save(update_fields=['in_progress'])
+        return check_scrobble_for_finish(self)
+
+    def pause(self):
+        if self.is_paused:
+            logger.warning("Scrobble already paused")
+            return
+        self.is_paused = True
+        self.save(update_fields=["is_paused"])
+        return check_scrobble_for_finish(self)
+
+    def resume(self):
+        if self.is_paused or not self.in_progress:
+            self.is_paused = False
+            self.in_progress = True
+            return self.save(update_fields=["is_paused", "in_progress"])
+        return self
+
+    def update_ticks(self, data):
+        self.playback_position_ticks = data.get("playback_position_ticks")
+        self.playback_position = data.get("playback_position")
+        logger.debug(
+            f"Updating scrobble ticks to {self.playback_position_ticks}"
+        )
+        self.save(
+            update_fields=['playback_position_ticks', 'playback_position']
+        )
+        return self

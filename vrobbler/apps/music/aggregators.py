@@ -18,7 +18,7 @@ STARTING_DAY_OF_CURRENT_YEAR = NOW.date().replace(month=1, day=1)
 
 
 def scrobble_counts():
-    finished_scrobbles_qs = Scrobble.objects.filter(in_progress=False)
+    finished_scrobbles_qs = Scrobble.objects.filter(played_to_completion=True)
     data = {}
     data['today'] = finished_scrobbles_qs.filter(
         timestamp__gte=START_OF_TODAY
@@ -53,7 +53,7 @@ def week_of_scrobbles(media: str = 'tracks') -> dict[str, int]:
             .filter(
                 timestamp__gte=start,
                 timestamp__lte=end,
-                in_progress=False,
+                played_to_completion=True,
             )
             .count()
         )

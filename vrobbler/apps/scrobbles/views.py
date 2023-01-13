@@ -18,16 +18,22 @@ from scrobbles.constants import (
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
 from scrobbles.models import Scrobble
+from scrobbles.scrobblers import (
+    jellyfin_scrobble_track,
+    jellyfin_scrobble_video,
+    mopidy_scrobble_podcast,
+    mopidy_scrobble_track,
+)
 from scrobbles.serializers import ScrobbleSerializer
 from scrobbles.utils import convert_to_seconds
 from videos.models import Video
+
 from vrobbler.apps.music.aggregators import (
     scrobble_counts,
     top_artists,
     top_tracks,
     week_of_scrobbles,
 )
-from scrobbles.scrobblers import mopidy_scrobble_podcast, mopidy_scrobble_track
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +61,6 @@ class RecentScrobbleList(ListView):
         data['now_playing_list'] = Scrobble.objects.filter(
             in_progress=True,
             is_paused=False,
-            timestamp__gte=last_eight_minutes,
             timestamp__lte=now,
         )
         data['video_scrobble_list'] = Scrobble.objects.filter(
@@ -98,79 +103,14 @@ def jellyfin_websocket(request):
         json_data = json.dumps(data_dict, indent=4)
         logger.debug(f"{json_data}")
 
+    scrobble = None
     media_type = data_dict.get("ItemType", "")
 
-    track = None
-    video = None
     if media_type in JELLYFIN_AUDIO_ITEM_TYPES:
-        if not data_dict.get("Provider_musicbrainztrack", None):
-            logger.error(
-                "No MBrainz Track ID received. This is likely because all metadata is bad, not scrobbling"
-            )
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
-
-        artist_dict = {
-            'name': data_dict.get(KEYS["ARTIST_NAME"], None),
-            'musicbrainz_id': data_dict.get(KEYS["ARTIST_MB_ID"], None),
-        }
-
-        album_dict = {
-            "name": data_dict.get(KEYS["ALBUM_NAME"], None),
-            "year": data_dict.get(KEYS["YEAR"], ""),
-            "musicbrainz_id": data_dict.get(KEYS['ALBUM_MB_ID']),
-            "musicbrainz_releasegroup_id": data_dict.get(
-                KEYS["RELEASEGROUP_MB_ID"]
-            ),
-            "musicbrainz_albumartist_id": data_dict.get(KEYS["ARTIST_MB_ID"]),
-        }
-
-        # Convert ticks from Jellyfin from microseconds to nanoseconds
-        # Ain't nobody got time for nanoseconds
-        track_dict = {
-            "title": data_dict.get("Name", ""),
-            "run_time_ticks": data_dict.get(KEYS["RUN_TIME_TICKS"], None)
-            // 10000,
-            "run_time": convert_to_seconds(
-                data_dict.get(KEYS["RUN_TIME"], None)
-            ),
-        }
-        track = Track.find_or_create(artist_dict, album_dict, track_dict)
+        scrobble = jellyfin_scrobble_track(data_dict, request.user.id)
 
     if media_type in JELLYFIN_VIDEO_ITEM_TYPES:
-        if not data_dict.get("Provider_imdb", None):
-            logger.error(
-                "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
-            )
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
-        video = Video.find_or_create(data_dict)
-
-    # Now we run off a scrobble
-    jellyfin_data = {
-        "user_id": request.user.id,
-        "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_ticks": data_dict.get("PlaybackPositionTicks")
-        // 10000,
-        "playback_position": convert_to_seconds(
-            data_dict.get("PlaybackPosition")
-        ),
-        "source": "Jellyfin",
-        "source_id": data_dict.get('MediaSourceId'),
-        "is_paused": data_dict.get("IsPaused") in TRUTHY_VALUES,
-    }
-
-    scrobble = None
-    if video:
-        scrobble = Scrobble.create_or_update_for_video(
-            video, request.user.id, jellyfin_data
-        )
-    if track:
-        # Prefer Mopidy MD IDs to Jellyfin, so skip if we already have one
-        if not track.musicbrainz_id:
-            track.musicbrainz_id = data_dict.get(KEYS["TRACK_MB_ID"], None)
-            track.save()
-        scrobble = Scrobble.create_or_update_for_track(
-            track, request.user.id, jellyfin_data
-        )
+        scrobble = jellyfin_scrobble_video(data_dict, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)

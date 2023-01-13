@@ -10,10 +10,11 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "timestamp",
         "media_name",
         "media_type",
+        "playback_percent",
         "source",
-        "playback_position",
         "in_progress",
         "is_paused",
+        "played_to_completion",
     )
     list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)
@@ -33,3 +34,6 @@ class ScrobbleAdmin(admin.ModelAdmin):
             return "Track"
         if obj.podcast_episode:
             return "Podcast"
+
+    def playback_percent(self, obj):
+        return obj.percent_played

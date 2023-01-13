@@ -49,7 +49,7 @@ DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
 DUMP_REQUEST_DATA = os.getenv("VROBBLER_DUMP_REQUEST_DATA", False)
 
 VIDEO_BACKOFF_MINUTES = os.getenv("VROBBLER_VIDEO_BACKOFF_MINUTES", 15)
-MUSIC_BACKOFF_SECONDS = os.getenv("VROBBLER_VIDEO_BACKOFF_SECONDS", 5)
+MUSIC_BACKOFF_SECONDS = os.getenv("VROBBLER_VIDEO_BACKOFF_SECONDS", 1)
 
 # If you stop waching or listening to a track, how long should we wait before we
 # give up on the old scrobble and start a new one? This could also be considered
