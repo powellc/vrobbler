@@ -56,12 +56,9 @@ class RecentScrobbleList(ListView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         now = timezone.now()
-        last_eight_minutes = timezone.now() - timedelta(minutes=8)
-        # Find scrobbles from the last 10 minutes
         data['now_playing_list'] = Scrobble.objects.filter(
             in_progress=True,
             is_paused=False,
-            modified__gte=last_eight_minutes,
             timestamp__lte=now,
         )
         data['video_scrobble_list'] = Scrobble.objects.filter(
