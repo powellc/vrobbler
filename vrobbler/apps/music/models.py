@@ -58,7 +58,13 @@ class Album(TimeStampedModel):
                     'artist-credit'
                 ][0]['artist']['id']
             if not self.year:
-                self.year = mb_data['release']['date'][0:4]
+                try:
+                    self.year = mb_data['release']['date'][0:4]
+                except KeyError:
+                    pass
+                except IndexError:
+                    pass
+
             self.save(update_fields=['musicbrainz_albumartist_id', 'year'])
 
             new_artist = Artist.objects.filter(
