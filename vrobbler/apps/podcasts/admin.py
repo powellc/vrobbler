@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
 from django.contrib import admin
 from podcasts.models import Episode, Podcast, Producer
+from scrobbles.admin import ScrobbleInline
 
 
 @admin.register(Producer)
@@ -31,3 +31,6 @@ class EpisodeAdmin(admin.ModelAdmin):
     )
     list_filter = ("podcast",)
     ordering = ("-created",)
+    inlines = [
+        ScrobbleInline,
+    ]

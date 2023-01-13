@@ -3,6 +3,13 @@ from django.contrib import admin
 from scrobbles.models import Scrobble
 
 
+class ScrobbleInline(admin.TabularInline):
+    model = Scrobble
+    extra = 0
+    raw_id_fields = ('video', 'podcast_episode', 'track')
+    exclude = ('source_id', 'scrobble_log')
+
+
 @admin.register(Scrobble)
 class ScrobbleAdmin(admin.ModelAdmin):
     date_hierarchy = "timestamp"
@@ -16,6 +23,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "is_paused",
         "played_to_completion",
     )
+    raw_id_fields = ('video', 'podcast_episode', 'track')
     list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)
 

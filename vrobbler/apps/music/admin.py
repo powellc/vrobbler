@@ -2,6 +2,8 @@ from django.contrib import admin
 
 from music.models import Artist, Album, Track
 
+from scrobbles.admin import ScrobbleInline
+
 
 @admin.register(Album)
 class AlbumAdmin(admin.ModelAdmin):
@@ -33,3 +35,6 @@ class TrackAdmin(admin.ModelAdmin):
     )
     list_filter = ("album", "artist")
     ordering = ("-created",)
+    inlines = [
+        ScrobbleInline,
+    ]
