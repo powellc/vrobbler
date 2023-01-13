@@ -16,7 +16,6 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
-from scrobbles.forms import ScrobbleForm
 from scrobbles.imdb import lookup_video_from_imdb
 from scrobbles.models import Scrobble
 from scrobbles.scrobblers import (
@@ -34,6 +33,7 @@ from vrobbler.apps.music.aggregators import (
     top_tracks,
     week_of_scrobbles,
 )
+from scrobbles.forms import ImdbScrobbleForm
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +77,7 @@ class RecentScrobbleList(ListView):
 
         data["weekly_data"] = week_of_scrobbles()
         data['counts'] = scrobble_counts()
+        data['imdb_form'] = ImdbScrobbleForm
         return data
 
     def get_queryset(self):
@@ -86,7 +87,7 @@ class RecentScrobbleList(ListView):
 
 
 class ManualImdbScrobbleView(FormView):
-    form_class = ScrobbleForm
+    form_class = ImdbScrobbleForm
     template_name = 'scrobbles/manual_form.html'
 
     def form_valid(self, form):

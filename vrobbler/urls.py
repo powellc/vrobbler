@@ -18,7 +18,7 @@ urlpatterns = [
     path(
         'manual/imdb/',
         scrobbles_views.ManualImdbScrobbleView.as_view(),
-        name='manual-scrobble',
+        name='imdb-manual-scrobble',
     ),
     path("", include(video_urls, namespace="videos")),
     path("", scrobbles_views.RecentScrobbleList.as_view(), name="home"),
