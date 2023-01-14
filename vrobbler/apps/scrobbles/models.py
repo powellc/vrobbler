@@ -11,6 +11,7 @@ from music.models import Track
 from podcasts.models import Episode
 from scrobbles.utils import check_scrobble_for_finish
 from videos.models import Video
+from sports.models import SportEvent
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -26,6 +27,9 @@ class Scrobble(TimeStampedModel):
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
     podcast_episode = models.ForeignKey(
         Episode, on_delete=models.DO_NOTHING, **BNULL
+    )
+    sport_event = models.ForeignKey(
+        SportEvent, on_delete=models.DO_NOTHING, **BNULL
     )
     user = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.DO_NOTHING
@@ -73,6 +77,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.track
         if self.podcast_episode:
             media_obj = self.podcast_episode
+        if self.sport_event:
+            media_obj = self.sport_event
         return media_obj
 
     def __str__(self):
@@ -179,14 +185,14 @@ class Scrobble(TimeStampedModel):
                 return scrobble.resume()
 
             # We're not changing the scrobble, but we don't want to walk over an existing one
-            scrobble_is_finished = (
-                not scrobble.in_progress and scrobble.modified < backoff
-            )
-            if scrobble_is_finished:
-                logger.info(
-                    'Found a very recent scrobble for this item, holding off scrobbling again'
-                )
-                return
+            # scrobble_is_finished = (
+            #    not scrobble.in_progress and scrobble.modified < backoff
+            # )
+            # if scrobble_is_finished:
+            #    logger.info(
+            #        'Found a very recent scrobble for this item, holding off scrobbling again'
+            #    )
+            #    return
 
         if not scrobble:
             # If we default this to "" we can probably remove this

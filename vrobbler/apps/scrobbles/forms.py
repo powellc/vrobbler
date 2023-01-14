@@ -1,8 +1,8 @@
 from django import forms
 
 
-class ImdbScrobbleForm(forms.Form):
-    imdb_id = forms.CharField(
+class ScrobbleForm(forms.Form):
+    item_id = forms.CharField(
         label="",
         widget=forms.TextInput(
             attrs={

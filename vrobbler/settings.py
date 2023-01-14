@@ -58,6 +58,10 @@ MUSIC_BACKOFF_SECONDS = os.getenv("VROBBLER_VIDEO_BACKOFF_SECONDS", 1)
 VIDEO_WAIT_PERIOD_DAYS = os.getenv("VROBBLER_VIDEO_WAIT_PERIOD_DAYS", 1)
 MUSIC_WAIT_PERIOD_MINUTES = os.getenv("VROBBLER_VIDEO_BACKOFF_MINUTES", 1)
 
+THESPORTSDB_API_KEY = os.getenv("VROBBLER_THESPORTSDB_API_KEY", "2")
+THESPORTSDB_BASE_URL = os.getenv(
+    "VROBBLER_THESPORTSDB_BASE_URL", "https://www.thesportsdb.com/api/v1/json/"
+)
 TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -94,6 +98,7 @@ INSTALLED_APPS = [
     "videos",
     "music",
     "podcasts",
+    "sports",
     "rest_framework",
     "allauth",
     "allauth.account",

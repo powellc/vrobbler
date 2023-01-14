@@ -17,7 +17,7 @@ urlpatterns = [
     path("api/v1/scrobbles/", include(scrobble_urls, namespace="scrobbles")),
     path(
         'manual/imdb/',
-        scrobbles_views.ManualImdbScrobbleView.as_view(),
+        scrobbles_views.ManualScrobbleView.as_view(),
         name='imdb-manual-scrobble',
     ),
     path("", include(video_urls, namespace="videos")),

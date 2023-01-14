@@ -23,7 +23,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "is_paused",
         "played_to_completion",
     )
-    raw_id_fields = ('video', 'podcast_episode', 'track')
+    raw_id_fields = ('video', 'podcast_episode', 'track', 'sport_event')
     list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)
 
@@ -34,6 +34,8 @@ class ScrobbleAdmin(admin.ModelAdmin):
             return obj.track
         if obj.podcast_episode:
             return obj.podcast_episode
+        if obj.sport_event:
+            return obj.sport_event
 
     def media_type(self, obj):
         if obj.video:
@@ -42,6 +44,8 @@ class ScrobbleAdmin(admin.ModelAdmin):
             return "Track"
         if obj.podcast_episode:
             return "Podcast"
+        if obj.sport_event:
+            return "Sport Event"
 
     def playback_percent(self, obj):
         return obj.percent_played
