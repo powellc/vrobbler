@@ -1,4 +1,5 @@
-#+title: Readme
+Vrobbler
+========
 
 Vrobbler is a pretty simple Django-powered web app for scrobbling video plays from you favorite Jellyfin installation.
 
