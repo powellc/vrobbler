@@ -138,7 +138,7 @@
                             {% for scrobble in video_scrobble_list %}
                             <tr>
                                 <td>{{scrobble.timestamp|naturaltime}}</td>
-                                <td>{% if scrobble.video.tv_series %}E{{scrobble.video.season_number}}S{{scrobble.video.season_number}} -{% endif %} {{scrobble.video.title}}</td>
+                                <td>{% if scrobble.video.tv_series %}S{{scrobble.video.season_number}}E{{scrobble.video.episode_number}} -{% endif %} {{scrobble.video.title}}</td>
                                 <td>{% if scrobble.video.tv_series %}{{scrobble.video.tv_series}}{% endif %}</td>
                             </tr>
                             {% endfor %}
