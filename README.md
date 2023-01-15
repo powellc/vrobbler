@@ -1,6 +1,8 @@
 Vrobbler
 ========
 
+[![Build Status](https://ci.unbl.ink/api/badges/secstate/vrobbler/status.svg)](https://ci.unbl.ink/secstate/vrobbler)
+
 Vrobbler is a pretty simple Django-powered web app for scrobbling video plays from you favorite Jellyfin installation.
 
 At the most basic level, you should be able to run `pip install vrobbler` to the latest version from pypi.org.
