@@ -16,16 +16,19 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
+from scrobbles.forms import ScrobbleForm
 from scrobbles.imdb import lookup_video_from_imdb
 from scrobbles.models import Scrobble
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
+    manual_scrobble_event,
     manual_scrobble_video,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
 from scrobbles.serializers import ScrobbleSerializer
+from scrobbles.thesportsdb import lookup_event_from_thesportsdb
 
 from vrobbler.apps.music.aggregators import (
     scrobble_counts,
@@ -33,7 +36,6 @@ from vrobbler.apps.music.aggregators import (
     top_tracks,
     week_of_scrobbles,
 )
-from scrobbles.forms import ScrobbleForm
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +97,7 @@ class ManualScrobbleView(FormView):
 
     def form_valid(self, form):
 
-        item_id = form.cleaned_data.get('itme_id')
+        item_id = form.cleaned_data.get('item_id')
         data_dict = None
         if 'tt' in item_id:
             data_dict = lookup_video_from_imdb(
@@ -104,12 +106,13 @@ class ManualScrobbleView(FormView):
             if data_dict:
                 manual_scrobble_video(data_dict, self.request.user.id)
 
-        # if not data_dict:
-        #    data_dict = lookup_event_from_thesportsdb(
-        #        form.cleaned_data.get('item_id')
-        #    )
-        #    if data_dict:
-        #        manual_scrobble_event(data_dict, self.request.user.id)
+        if not data_dict:
+            logger.debug(f"Looking for sport event with ID {item_id}")
+            data_dict = lookup_event_from_thesportsdb(
+                form.cleaned_data.get('item_id')
+            )
+            if data_dict:
+                manual_scrobble_event(data_dict, self.request.user.id)
 
         return HttpResponseRedirect(reverse("home"))
 

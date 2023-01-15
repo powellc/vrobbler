@@ -96,7 +96,6 @@ class Video(ScrobblableMixin):
 
         video, created = cls.objects.get_or_create(**video_dict)
 
-        logger.debug(data_dict)
         run_time_ticks = data_dict.get("RunTimeTicks", None)
         if run_time_ticks:
             run_time_ticks = run_time_ticks // 10000

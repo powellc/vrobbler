@@ -9,6 +9,7 @@ from podcasts.models import Episode
 from scrobbles.models import Scrobble
 from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
 from videos.models import Video
+from sports.models import SportEvent
 
 logger = logging.getLogger(__name__)
 
@@ -104,18 +105,23 @@ def create_jellyfin_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     if data_dict.get("PlayedToCompletion"):
         jellyfin_status = "stopped"
 
-    playback_position_ticks = data_dict.get("PlaybackPositionTicks") // 10000
-    if playback_position_ticks <= 0:
-        playback_position_ticks = None
+    playback_position_ticks = None
+    if data_dict.get("PlaybackPositionTicks"):
+        playback_position_ticks = (
+            data_dict.get("PlaybackPositionTicks") // 10000
+        )
+        if playback_position_ticks <= 0:
+            playback_position_ticks = None
 
-    logger.debug(playback_position_ticks)
+    playback_position = data_dict.get("PlaybackPosition")
+    if playback_position:
+        playback_position = convert_to_seconds(playback_position)
+
     return {
         "user_id": user_id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
         "playback_position_ticks": playback_position_ticks,
-        "playback_position": convert_to_seconds(
-            data_dict.get("PlaybackPosition")
-        ),
+        "playback_position": playback_position,
         "source": "Jellyfin",
         "source_id": data_dict.get('MediaSourceId'),
         "jellyfin_status": jellyfin_status,
@@ -193,3 +199,18 @@ def manual_scrobble_video(data_dict: dict, user_id: Optional[int]):
     scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
 
     return Scrobble.create_or_update_for_video(video, user_id, scrobble_dict)
+
+
+def manual_scrobble_event(data_dict: dict, user_id: Optional[int]):
+    if not data_dict.get("Provider_thesportsdb", None):
+        logger.error(
+            "No TheSportsDB ID received. This is likely because all metadata is bad, not scrobbling"
+        )
+        return
+    event = SportEvent.find_or_create(data_dict)
+
+    scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
+
+    return Scrobble.create_or_update_for_sport_event(
+        event, user_id, scrobble_dict
+    )

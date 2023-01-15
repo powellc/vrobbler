@@ -78,27 +78,35 @@ class SportEvent(ScrobblableMixin):
         exist.
 
         """
-        league_dict = {"name": data_dict.get("LeagueName", "")}
+        league_dict = {
+            "abbreviation_str": data_dict.get("LeagueName", ""),
+            "thesportsdb_id": data_dict.get("LeagueId", ""),
+        }
         league, _created = League.objects.get_or_create(**league_dict)
 
         home_team_dict = {
             "name": data_dict.get("HomeTeamName", ""),
+            "thesportsdb_id": data_dict.get("HomeTeamId", ""),
             "league": league,
         }
         home_team, _created = Team.objects.get_or_create(**home_team_dict)
 
         away_team_dict = {
             "name": data_dict.get("AwayTeamName", ""),
+            "thesportsdb_id": data_dict.get("AwayTeamId", ""),
             "league": league,
         }
         away_team, _created = Team.objects.get_or_create(**away_team_dict)
 
         event_dict = {
-            "event_type": SportEvent.Type.GAME,
+            "title": data_dict.get("Name"),
+            "event_type": data_dict.get("ItemType"),
             "home_team": home_team,
             "away_team": away_team,
-            "start_utc": data_dict['SportEventStart'],
+            "start": data_dict['Start'],
             "league": league,
+            "run_time_ticks": data_dict.get("RunTimeTicks"),
+            "run_time": data_dict.get("RunTime", ""),
         }
         event, _created = cls.objects.get_or_create(**event_dict)
 

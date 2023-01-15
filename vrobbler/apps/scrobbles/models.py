@@ -149,6 +149,25 @@ class Scrobble(TimeStampedModel):
         )
 
     @classmethod
+    def create_or_update_for_sport_event(
+        cls, event: "SportEvent", user_id: int, jellyfin_data: dict
+    ) -> "Scrobble":
+        jellyfin_data['sport_event_id'] = event.id
+        scrobble = (
+            cls.objects.filter(sport_event=event, user_id=user_id)
+            .order_by('-modified')
+            .first()
+        )
+
+        # Backoff is how long until we consider this a new scrobble
+        backoff = timezone.now() + timedelta(minutes=VIDEO_BACKOFF)
+        wait_period = timezone.now() + timedelta(days=VIDEO_WAIT_PERIOD)
+
+        return cls.update_or_create(
+            scrobble, backoff, wait_period, jellyfin_data
+        )
+
+    @classmethod
     def update_or_create(
         cls,
         scrobble: Optional["Scrobble"],
