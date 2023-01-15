@@ -132,7 +132,7 @@ class Track(ScrobblableMixin):
 
         artist, artist_created = Artist.objects.get_or_create(**artist_dict)
         if artist_created:
-            logger.debug(f"Created new album {artist}")
+            logger.debug(f"Created new artist {artist}")
         else:
             logger.debug(f"Found album {artist}")
 
