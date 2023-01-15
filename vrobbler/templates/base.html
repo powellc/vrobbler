@@ -203,6 +203,7 @@
                                 {% if scrobble.track %}<em>{{scrobble.track.artist}}</em><br/>{% endif %}
                                 {% if scrobble.podcast_episode%}<em>{{scrobble.podcast_episode.podcast}}</em><br/>{% endif %}
                                 {% if scrobble.video.tv_series %}<em>{{scrobble.video.tv_series }}</em><br/>{% endif %}
+                                {% if scrobble.sport_event %}<em>{{scrobble.sport_event.league.abbreviation}}</em><br/>{% endif %}
                                 <small>{{scrobble.timestamp|naturaltime}}<br/>
                                     from {{scrobble.source}}</small>
                                 <div class="progress-bar" style="margin-right:5px;">

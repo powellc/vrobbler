@@ -63,10 +63,13 @@ class RecentScrobbleList(ListView):
         )
         data['video_scrobble_list'] = Scrobble.objects.filter(
             video__isnull=False, played_to_completion=True
-        ).order_by('-timestamp')[:10]
+        ).order_by('-timestamp')[:15]
         data['podcast_scrobble_list'] = Scrobble.objects.filter(
             podcast_episode__isnull=False, played_to_completion=True
-        ).order_by('-timestamp')[:10]
+        ).order_by('-timestamp')[:15]
+        data['sport_scrobble_list'] = Scrobble.objects.filter(
+            sport_event__isnull=False, played_to_completion=True
+        ).order_by('-timestamp')[:15]
         data['top_daily_tracks'] = top_tracks()
         data['top_weekly_tracks'] = top_tracks(filter='week')
         data['top_monthly_tracks'] = top_tracks(filter='month')
@@ -86,16 +89,27 @@ class RecentScrobbleList(ListView):
         ).order_by('-timestamp')[:15]
 
 
-class ManualImdbScrobbleView(FormView):
-    form_class = ImdbScrobbleForm
+class ManualScrobbleView(FormView):
+    form_class = ScrobbleForm
     template_name = 'scrobbles/manual_form.html'
 
     def form_valid(self, form):
 
-        # look for video via IMDB id
-        data_dict = lookup_video_from_imdb(form.cleaned_data.get('imdb_id'))
+        item_id = form.cleaned_data.get('itme_id')
+        data_dict = None
+        if 'tt' in item_id:
+            data_dict = lookup_video_from_imdb(
+                form.cleaned_data.get('item_id')
+            )
+            if data_dict:
+                manual_scrobble_video(data_dict, self.request.user.id)
 
-        manual_scrobble_video(data_dict, self.request.user.id)
+        # if not data_dict:
+        #    data_dict = lookup_event_from_thesportsdb(
+        #        form.cleaned_data.get('item_id')
+        #    )
+        #    if data_dict:
+        #        manual_scrobble_event(data_dict, self.request.user.id)
 
         return HttpResponseRedirect(reverse("home"))
 
