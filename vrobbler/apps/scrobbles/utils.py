@@ -87,5 +87,3 @@ def check_scrobble_for_finish(scrobble: "Scrobble") -> None:
         if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
             scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
             scrobble.save(update_fields=['scrobble_log'])
-
-    return scrobble

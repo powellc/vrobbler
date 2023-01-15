@@ -308,6 +308,7 @@ LOGGING = {
             "propagate": True,
         },
         "django.db.backends": {"handlers": ["null"]},
+        "django.server": {"handlers": ["null"]},
         "vrobbler": {
             "handlers": ["console", "file"],
             "propagate": True,

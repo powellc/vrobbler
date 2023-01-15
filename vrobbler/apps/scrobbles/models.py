@@ -89,9 +89,6 @@ class Scrobble(TimeStampedModel):
         cls, video: "Video", user_id: int, jellyfin_data: dict
     ) -> "Scrobble":
         jellyfin_data['video_id'] = video.id
-        logger.debug(
-            f"Creating or updating scrobble for video {video} with data {jellyfin_data}"
-        )
         scrobble = (
             cls.objects.filter(video=video, user_id=user_id)
             .order_by('-modified')
@@ -116,10 +113,11 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
-        logger.debug(
-            f"Found existing scrobble for track {track}, updating",
-            {"scrobble_data": scrobble_data},
-        )
+        if scrobble:
+            logger.debug(
+                f"Found existing scrobble for track {track}, updating",
+                {"scrobble_data": scrobble_data},
+            )
 
         backoff = timezone.now() + timedelta(seconds=TRACK_BACKOFF)
         wait_period = timezone.now() + timedelta(minutes=TRACK_WAIT_PERIOD)
@@ -169,8 +167,10 @@ class Scrobble(TimeStampedModel):
             )
             return
 
-        logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
         if scrobble:
+            logger.debug(
+                f"Scrobbling to {scrobble} with status {scrobble_status}"
+            )
             scrobble.update_ticks(scrobble_data)
 
             # On stop, stop progress and send it to the check for completion
@@ -184,6 +184,10 @@ class Scrobble(TimeStampedModel):
             if scrobble_status == "resumed":
                 return scrobble.resume()
 
+            for key, value in scrobble_data.items():
+                setattr(scrobble, key, value)
+            scrobble.save()
+
             # We're not changing the scrobble, but we don't want to walk over an existing one
             # scrobble_is_finished = (
             #    not scrobble.in_progress and scrobble.modified < backoff
@@ -193,48 +197,42 @@ class Scrobble(TimeStampedModel):
             #        'Found a very recent scrobble for this item, holding off scrobbling again'
             #    )
             #    return
-
-        if not scrobble:
+            check_scrobble_for_finish(scrobble)
+        else:
+            logger.debug(
+                f"Creating new scrobble with status {scrobble_status}"
+            )
             # If we default this to "" we can probably remove this
             scrobble_data['scrobble_log'] = ""
             scrobble = cls.objects.create(
                 **scrobble_data,
             )
-        else:
-            for key, value in scrobble_data.items():
-                setattr(scrobble, key, value)
-            scrobble.save()
-
-        # If we hit our completion threshold, save it and get ready
-        # to scrobble again if we re-watch this.
-        scrobble = check_scrobble_for_finish(scrobble)
 
         return scrobble
 
-    def stop(self):
+    def stop(self) -> None:
         if not self.in_progress:
             logger.warning("Scrobble already stopped")
             return
         self.in_progress = False
         self.save(update_fields=['in_progress'])
-        return check_scrobble_for_finish(self)
+        check_scrobble_for_finish(self)
 
-    def pause(self):
+    def pause(self) -> None:
         if self.is_paused:
             logger.warning("Scrobble already paused")
             return
         self.is_paused = True
         self.save(update_fields=["is_paused"])
-        return check_scrobble_for_finish(self)
+        check_scrobble_for_finish(self)
 
-    def resume(self):
+    def resume(self) -> None:
         if self.is_paused or not self.in_progress:
             self.is_paused = False
             self.in_progress = True
             return self.save(update_fields=["is_paused", "in_progress"])
-        return self
 
-    def update_ticks(self, data):
+    def update_ticks(self, data) -> None:
         self.playback_position_ticks = data.get("playback_position_ticks")
         self.playback_position = data.get("playback_position")
         logger.debug(
@@ -243,4 +241,3 @@ class Scrobble(TimeStampedModel):
         self.save(
             update_fields=['playback_position_ticks', 'playback_position']
         )
-        return self
