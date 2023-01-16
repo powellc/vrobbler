@@ -1,8 +1,6 @@
 import logging
 from datetime import timedelta
-from typing import Optional
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
@@ -16,10 +14,6 @@ from sports.models import SportEvent
 logger = logging.getLogger(__name__)
 User = get_user_model()
 BNULL = {"blank": True, "null": True}
-VIDEO_BACKOFF = getattr(settings, 'VIDEO_BACKOFF_MINUTES')
-TRACK_BACKOFF = getattr(settings, 'MUSIC_BACKOFF_SECONDS')
-VIDEO_WAIT_PERIOD = getattr(settings, 'VIDEO_WAIT_PERIOD_DAYS')
-TRACK_WAIT_PERIOD = getattr(settings, 'MUSIC_WAIT_PERIOD_MINUTES')
 
 
 class Scrobble(TimeStampedModel):
@@ -84,98 +78,165 @@ class Scrobble(TimeStampedModel):
     def __str__(self):
         return f"Scrobble of {self.media_obj} {self.timestamp.year}-{self.timestamp.month}"
 
+    @property
+    def resumable(self):
+        """Check if a scrobble is not finished or beyond the configured resume limit.
+
+        The idea here is to check whether a scrobble should be resumed, or a new
+        one created. If this method returns true, we should update an existing
+        scrobble, suggesting the user just paused their scrobble. This limit
+        should be different for different media. We are more likely to pause a video
+        or sports event for a while, and expect to resume it than an audio track or
+        a podcast.
+
+        """
+        diff = None
+        # Default finish expectation
+        percent_for_completion = 100
+        # By default, assume we're not beyond resume limits
+        # This is to avoid spam scrobbles if webhooks go crazy
+        beyond_resume_limit = False
+        now = timezone.now()
+
+        if self.video:
+            diff = timedelta(seconds=Video.RESUME_LIMIT)
+            percent_for_completion = Video.COMPLETION_PERCENT
+        if self.track:
+            diff = timedelta(seconds=Track.RESUME_LIMIT)
+            percent_for_completion = Track.COMPLETION_PERCENT
+        if self.podcast_episode:
+            diff = timedelta(seconds=Episode.RESUME_LIMIT)
+            percent_for_completion = Episode.COMPLETION_PERCENT
+        if self.sport_event:
+            diff = timedelta(seconds=SportEvent.RESUME_LIMIT)
+            percent_for_completion = SportEvent.COMPLETION_PERCENT
+
+        if diff and self.timestamp:
+            beyond_resume_limit = self.timestamp + diff <= now
+
+        finished = self.percent_played >= percent_for_completion
+
+        resumable = not finished or not beyond_resume_limit
+
+        if not finished:
+            logger.debug(
+                f"{self} resumable, percent played {self.percent_played} is less than {percent_for_completion}"
+            )
+        if not beyond_resume_limit:
+            logger.debug(
+                f"{self} resumable, started less than {diff.seconds} seconds ago"
+            )
+
+        return not finished and not beyond_resume_limit
+
     @classmethod
     def create_or_update_for_video(
-        cls, video: "Video", user_id: int, jellyfin_data: dict
+        cls, video: "Video", user_id: int, scrobble_data: dict
     ) -> "Scrobble":
-        jellyfin_data['video_id'] = video.id
+        scrobble_data['video_id'] = video.id
+
         scrobble = (
             cls.objects.filter(video=video, user_id=user_id)
             .order_by('-modified')
             .first()
         )
+        if scrobble and scrobble.resumable:
+            logger.info(
+                f"Found existing scrobble for video {video}, updating",
+                {"scrobble_data": scrobble_data},
+            )
+            return cls.update(scrobble, scrobble_data)
 
-        # Backoff is how long until we consider this a new scrobble
-        backoff = timezone.now() + timedelta(minutes=VIDEO_BACKOFF)
-        wait_period = timezone.now() + timedelta(days=VIDEO_WAIT_PERIOD)
-
-        return cls.update_or_create(
-            scrobble, backoff, wait_period, jellyfin_data
+        logger.debug(
+            f"No existing scrobble for video {video}, creating",
+            {"scrobble_data": scrobble_data},
         )
+        # If creating a new scrobble, we don't need status
+        scrobble_data.pop('jellyfin_status')
+        return cls.create(scrobble_data)
 
     @classmethod
     def create_or_update_for_track(
         cls, track: "Track", user_id: int, scrobble_data: dict
     ) -> "Scrobble":
+        """Look up any existing scrobbles for a track and compare
+        the appropriate backoff time for music tracks to the setting
+        so we can avoid duplicating scrobbles."""
         scrobble_data['track_id'] = track.id
+
         scrobble = (
             cls.objects.filter(track=track, user_id=user_id)
             .order_by('-modified')
             .first()
         )
-        if scrobble:
+        if scrobble and scrobble.resumable:
             logger.debug(
                 f"Found existing scrobble for track {track}, updating",
                 {"scrobble_data": scrobble_data},
             )
+            return cls.update(scrobble, scrobble_data)
 
-        backoff = timezone.now() + timedelta(seconds=TRACK_BACKOFF)
-        wait_period = timezone.now() + timedelta(minutes=TRACK_WAIT_PERIOD)
-
-        return cls.update_or_create(
-            scrobble, backoff, wait_period, scrobble_data
+        logger.debug(
+            f"No existing scrobble for track {track}, creating",
+            {"scrobble_data": scrobble_data},
         )
+        # If creating a new scrobble, we don't need status
+        scrobble_data.pop('mopidy_status')
+        return cls.create(scrobble_data)
 
     @classmethod
     def create_or_update_for_podcast_episode(
         cls, episode: "Episode", user_id: int, scrobble_data: dict
     ) -> "Scrobble":
         scrobble_data['podcast_episode_id'] = episode.id
+
         scrobble = (
             cls.objects.filter(podcast_episode=episode, user_id=user_id)
             .order_by('-modified')
             .first()
         )
+        if scrobble and scrobble.resumable:
+            logger.debug(
+                f"Found existing scrobble for podcast {episode}, updating",
+                {"scrobble_data": scrobble_data},
+            )
+            return cls.update(scrobble, scrobble_data)
+
         logger.debug(
-            f"Found existing scrobble for podcast {episode}, updating",
+            f"No existing scrobble for podcast epsiode {episode}, creating",
             {"scrobble_data": scrobble_data},
         )
-
-        backoff = timezone.now() + timedelta(seconds=TRACK_BACKOFF)
-        wait_period = timezone.now() + timedelta(minutes=TRACK_WAIT_PERIOD)
-
-        return cls.update_or_create(
-            scrobble, backoff, wait_period, scrobble_data
-        )
+        # If creating a new scrobble, we don't need status
+        scrobble_data.pop('mopidy_status')
+        return cls.create(scrobble_data)
 
     @classmethod
     def create_or_update_for_sport_event(
-        cls, event: "SportEvent", user_id: int, jellyfin_data: dict
+        cls, event: "SportEvent", user_id: int, scrobble_data: dict
     ) -> "Scrobble":
-        jellyfin_data['sport_event_id'] = event.id
+        scrobble_data['sport_event_id'] = event.id
         scrobble = (
             cls.objects.filter(sport_event=event, user_id=user_id)
             .order_by('-modified')
             .first()
         )
+        if scrobble and scrobble.resumable:
+            logger.debug(
+                f"Found existing scrobble for sport event {event}, updating",
+                {"scrobble_data": scrobble_data},
+            )
+            return cls.update(scrobble, scrobble_data)
 
-        # Backoff is how long until we consider this a new scrobble
-        backoff = timezone.now() + timedelta(minutes=VIDEO_BACKOFF)
-        wait_period = timezone.now() + timedelta(days=VIDEO_WAIT_PERIOD)
-
-        return cls.update_or_create(
-            scrobble, backoff, wait_period, jellyfin_data
+        logger.debug(
+            f"No existing scrobble for sport event {event}, creating",
+            {"scrobble_data": scrobble_data},
         )
+        # If creating a new scrobble, we don't need status
+        scrobble_data.pop('jellyfin_status')
+        return cls.create(scrobble_data)
 
     @classmethod
-    def update_or_create(
-        cls,
-        scrobble: Optional["Scrobble"],
-        backoff,
-        wait_period,
-        scrobble_data: dict,
-    ) -> Optional["Scrobble"]:
-
+    def update(cls, scrobble: "Scrobble", scrobble_data: dict):
         # Status is a field we get from Mopidy, which refuses to poll us
         scrobble_status = scrobble_data.pop('mopidy_status', None)
         if not scrobble_status:
@@ -186,47 +247,35 @@ class Scrobble(TimeStampedModel):
             )
             return
 
-        if scrobble:
-            logger.debug(
-                f"Scrobbling to {scrobble} with status {scrobble_status}"
-            )
-            scrobble.update_ticks(scrobble_data)
+        logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
+        scrobble.update_ticks(scrobble_data)
 
-            # On stop, stop progress and send it to the check for completion
-            if scrobble_status == "stopped":
-                return scrobble.stop()
+        # On stop, stop progress and send it to the check for completion
+        if scrobble_status == "stopped":
+            return scrobble.stop()
 
-            # On pause, set is_paused and stop scrobbling
-            if scrobble_status == "paused":
-                return scrobble.pause()
+        # On pause, set is_paused and stop scrobbling
+        if scrobble_status == "paused":
+            return scrobble.pause()
 
-            if scrobble_status == "resumed":
-                return scrobble.resume()
+        if scrobble_status == "resumed":
+            return scrobble.resume()
 
-            for key, value in scrobble_data.items():
-                setattr(scrobble, key, value)
-            scrobble.save()
+        for key, value in scrobble_data.items():
+            setattr(scrobble, key, value)
+        scrobble.save()
+        check_scrobble_for_finish(scrobble)
+        return scrobble
 
-            # We're not changing the scrobble, but we don't want to walk over an existing one
-            # scrobble_is_finished = (
-            #    not scrobble.in_progress and scrobble.modified < backoff
-            # )
-            # if scrobble_is_finished:
-            #    logger.info(
-            #        'Found a very recent scrobble for this item, holding off scrobbling again'
-            #    )
-            #    return
-            check_scrobble_for_finish(scrobble)
-        else:
-            logger.debug(
-                f"Creating new scrobble with status {scrobble_status}"
-            )
-            # If we default this to "" we can probably remove this
-            scrobble_data['scrobble_log'] = ""
-            scrobble = cls.objects.create(
-                **scrobble_data,
-            )
-
+    @classmethod
+    def create(
+        cls,
+        scrobble_data: dict,
+    ) -> "Scrobble":
+        scrobble_data['scrobble_log'] = ""
+        scrobble = cls.objects.create(
+            **scrobble_data,
+        )
         return scrobble
 
     def stop(self) -> None:

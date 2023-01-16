@@ -2,6 +2,7 @@ import logging
 from typing import Dict
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -32,6 +33,9 @@ class Series(TimeStampedModel):
 
 
 class Video(ScrobblableMixin):
+    RESUME_LIMIT = getattr(settings, 'VIDEO_RESUME_LIMIT', (12 * 60) * 60)
+    COMPLETION_PERCENT = getattr(settings, 'VIDEO_COMPLETION_PERCENT', 90)
+
     class VideoType(models.TextChoices):
         UNKNOWN = 'U', _('Unknown')
         TV_EPISODE = 'E', _('TV Episode')

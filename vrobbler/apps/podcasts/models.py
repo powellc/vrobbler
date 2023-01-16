@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Optional
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
@@ -34,6 +35,9 @@ class Podcast(TimeStampedModel):
 
 
 class Episode(ScrobblableMixin):
+    RESUME_LIMIT = getattr(settings, 'PODCAST_RESUME_LIMIT', 180 * 60)
+    COMPLETION_PERCENT = getattr(settings, 'PODCAST_COMPLETION_PERCENT', 90)
+
     podcast = models.ForeignKey(Podcast, on_delete=models.DO_NOTHING)
     number = models.IntegerField(**BNULL)
     pub_date = models.DateField(**BNULL)

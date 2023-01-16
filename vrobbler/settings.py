@@ -37,10 +37,6 @@ KEEP_DETAILED_SCROBBLE_LOGS = os.getenv(
     "VROBBLER_KEEP_DETAILED_SCROBBLE_LOGS", False
 )
 
-PODCAST_COMPLETION_PERCENT = os.getenv(
-    "VROBBLER_PODCAST_COMPLETION_PERCENT", 25
-)
-MUSIC_COMPLETION_PERCENT = os.getenv("VROBBLER_MUSIC_COMPLETION_PERCENT", 90)
 
 # Should we cull old in-progress scrobbles that are beyond the wait period for resuming?
 DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
@@ -48,15 +44,6 @@ DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
 # Used to dump data coming from srobbling sources, helpful for building new inputs
 DUMP_REQUEST_DATA = os.getenv("VROBBLER_DUMP_REQUEST_DATA", False)
 
-VIDEO_BACKOFF_MINUTES = os.getenv("VROBBLER_VIDEO_BACKOFF_MINUTES", 15)
-MUSIC_BACKOFF_SECONDS = os.getenv("VROBBLER_VIDEO_BACKOFF_SECONDS", 1)
-
-# If you stop waching or listening to a track, how long should we wait before we
-# give up on the old scrobble and start a new one? This could also be considered
-# a "continue in progress scrobble" time period. So if you pause the media and
-# start again, should it be a new scrobble.
-VIDEO_WAIT_PERIOD_DAYS = os.getenv("VROBBLER_VIDEO_WAIT_PERIOD_DAYS", 1)
-MUSIC_WAIT_PERIOD_MINUTES = os.getenv("VROBBLER_VIDEO_BACKOFF_MINUTES", 1)
 
 THESPORTSDB_API_KEY = os.getenv("VROBBLER_THESPORTSDB_API_KEY", "2")
 THESPORTSDB_BASE_URL = os.getenv(

@@ -2,6 +2,7 @@ import logging
 from typing import Dict
 from uuid import uuid4
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -38,6 +39,9 @@ class Team(TimeStampedModel):
 
 
 class SportEvent(ScrobblableMixin):
+    RESUME_LIMIT = getattr(settings, 'SPORT_RESUME_LIMIT', (12 * 60) * 60)
+    COMPLETION_PERCENT = getattr(settings, 'SPORT_COMPLETION_PERCENT', 90)
+
     class Type(models.TextChoices):
         UNKNOWN = 'UK', _('Unknown')
         GAME = 'GA', _('Game')

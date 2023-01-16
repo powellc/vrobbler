@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import musicbrainzngs
 from django.apps.config import cached_property
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -93,6 +94,9 @@ class Album(TimeStampedModel):
 
 
 class Track(ScrobblableMixin):
+    RESUME_LIMIT = getattr(settings, 'MUSIC_RESUME_LIMIT', 60 * 60)
+    COMPLETION_PERCENT = getattr(settings, 'MUSIC_COMPLETION_PERCENT', 90)
+
     class Opinion(models.IntegerChoices):
         DOWN = -1, 'Thumbs down'
         NEUTRAL = 0, 'No opinion'
