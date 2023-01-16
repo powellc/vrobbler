@@ -288,17 +288,17 @@ LOGGING = {
             "class": "logging.NullHandler",
             "level": LOG_LEVEL,
         },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "".join([LOG_FILE_PATH, "vrobbler.log"]),
-            "formatter": LOG_TYPE,
-            "level": LOG_LEVEL,
+        'sql': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': ''.join([LOG_FILE_PATH, 'vrobbler_sql.', LOG_TYPE]),
+            'formatter': LOG_TYPE,
+            'level': LOG_LEVEL,
         },
-        "requests_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "".join([LOG_FILE_PATH, "vrobbler_requests.log"]),
-            "formatter": LOG_TYPE,
-            "level": LOG_LEVEL,
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': ''.join([LOG_FILE_PATH, 'vrobbler.', LOG_TYPE]),
+            'formatter': LOG_TYPE,
+            'level': LOG_LEVEL,
         },
     },
     "loggers": {
@@ -310,12 +310,13 @@ LOGGING = {
         "django.db.backends": {"handlers": ["null"]},
         "django.server": {"handlers": ["null"]},
         "vrobbler": {
-            "handlers": ["console", "file"],
+            "handlers": ["file"],
             "propagate": True,
         },
     },
 }
 
-if DEBUG:
-    # We clear out a db with lots of games all the time in dev
-    DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
+LOG_TO_CONSOLE = os.getenv("VROBBLER_LOG_TO_CONSOLE", False)
+if LOG_TO_CONSOLE:
+    LOGGING['loggers']['django']['handlers'] = ["console"]
+    LOGGING['loggers']['vrobbler']['handlers'] = ["console"]
