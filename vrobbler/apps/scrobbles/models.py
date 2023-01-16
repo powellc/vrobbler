@@ -78,8 +78,7 @@ class Scrobble(TimeStampedModel):
     def __str__(self):
         return f"Scrobble of {self.media_obj} {self.timestamp.year}-{self.timestamp.month}"
 
-    @property
-    def resumable(self):
+    def resumable(self, playback_ticks):
         """Check if a scrobble is not finished or beyond the configured resume limit.
 
         The idea here is to check whether a scrobble should be resumed, or a new
@@ -97,6 +96,10 @@ class Scrobble(TimeStampedModel):
         # This is to avoid spam scrobbles if webhooks go crazy
         beyond_resume_limit = False
         now = timezone.now()
+
+        if self.playback_position_ticks == playback_ticks:
+            # shortcircut in the case where we've resumed a track at the same playback ticks
+            return True
 
         if self.video:
             diff = timedelta(seconds=Video.RESUME_LIMIT)
@@ -140,7 +143,9 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable:
+        if scrobble and scrobble.resumable(
+            scrobble_data['playback_position_ticks']
+        ):
             logger.info(
                 f"Found existing scrobble for video {video}, updating",
                 {"scrobble_data": scrobble_data},
@@ -169,7 +174,9 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable:
+        if scrobble and scrobble.resumable(
+            scrobble_data['playback_position_ticks']
+        ):
             logger.debug(
                 f"Found existing scrobble for track {track}, updating",
                 {"scrobble_data": scrobble_data},
@@ -195,7 +202,9 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable:
+        if scrobble and scrobble.resumable(
+            scrobble_data['playback_position_ticks']
+        ):
             logger.debug(
                 f"Found existing scrobble for podcast {episode}, updating",
                 {"scrobble_data": scrobble_data},
@@ -220,7 +229,9 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable:
+        if scrobble and scrobble.resumable(
+            scrobble_data['playback_position_ticks']
+        ):
             logger.debug(
                 f"Found existing scrobble for sport event {event}, updating",
                 {"scrobble_data": scrobble_data},
@@ -236,30 +247,25 @@ class Scrobble(TimeStampedModel):
         return cls.create(scrobble_data)
 
     @classmethod
-    def update(cls, scrobble: "Scrobble", scrobble_data: dict):
+    def update(cls, scrobble: "Scrobble", scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
         scrobble_status = scrobble_data.pop('mopidy_status', None)
         if not scrobble_status:
             scrobble_status = scrobble_data.pop('jellyfin_status', None)
         if not scrobble_status:
-            logger.warning(
-                f"No status update found in message, not scrobbling"
-            )
-            return
+            scrobble_status = 'resumed'
 
         logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
         scrobble.update_ticks(scrobble_data)
 
         # On stop, stop progress and send it to the check for completion
         if scrobble_status == "stopped":
-            return scrobble.stop()
-
+            scrobble.stop()
         # On pause, set is_paused and stop scrobbling
         if scrobble_status == "paused":
-            return scrobble.pause()
-
+            scrobble.pause()
         if scrobble_status == "resumed":
-            return scrobble.resume()
+            scrobble.resume()
 
         for key, value in scrobble_data.items():
             setattr(scrobble, key, value)
@@ -287,7 +293,7 @@ class Scrobble(TimeStampedModel):
         check_scrobble_for_finish(self)
 
     def pause(self) -> None:
-        if self.is_paused:
+        if self.is_paused and not self.played_to_completion:
             logger.warning("Scrobble already paused")
             return
         self.is_paused = True
@@ -295,10 +301,15 @@ class Scrobble(TimeStampedModel):
         check_scrobble_for_finish(self)
 
     def resume(self) -> None:
-        if self.is_paused or not self.in_progress:
+        if self.is_paused or not self.played_to_completion:
             self.is_paused = False
             self.in_progress = True
-            return self.save(update_fields=["is_paused", "in_progress"])
+            return self.save(
+                update_fields=[
+                    "is_paused",
+                    "in_progress",
+                ]
+            )
 
     def update_ticks(self, data) -> None:
         self.playback_position_ticks = data.get("playback_position_ticks")

@@ -148,9 +148,7 @@ def jellyfin_websocket(request):
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response(
-        {'scrobble_id': scrobble.id}, status=status.HTTP_201_CREATED
-    )
+    return Response({'scrobble_id': scrobble.id}, status=status.HTTP_200_OK)
 
 
 @csrf_exempt
@@ -171,6 +169,4 @@ def mopidy_websocket(request):
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response(
-        {'scrobble_id': scrobble.id}, status=status.HTTP_201_CREATED
-    )
+    return Response({'scrobble_id': scrobble.id}, status=status.HTTP_200_OK)

@@ -76,6 +76,9 @@ def check_scrobble_for_finish(scrobble: "Scrobble") -> None:
             settings, "PODCAST_COMPLETION_PERCENT", 25
         )
     if scrobble.percent_played >= completion_percent:
+        logger.debug(
+            f"Beyond completion percent {completion_percent}, finishing scrobble"
+        )
         scrobble.in_progress = False
         scrobble.is_paused = False
         scrobble.played_to_completion = True

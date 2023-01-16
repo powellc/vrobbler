@@ -86,15 +86,12 @@ def mopidy_scrobble_track(
         "mopidy_status": data_dict.get("status"),
     }
 
-    scrobble = None
+    # Jellyfin MB ids suck, so always overwrite with Mopidy if they're offering
+    track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
+    track.save()
 
-    if track:
-        # Jellyfin MB ids suck, so always overwrite with Mopidy if they're offering
-        track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
-        track.save()
-        scrobble = Scrobble.create_or_update_for_track(
-            track, user_id, mopidy_data
-        )
+    scrobble = Scrobble.create_or_update_for_track(track, user_id, mopidy_data)
+
     return scrobble
 
 
