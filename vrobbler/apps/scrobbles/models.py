@@ -40,26 +40,20 @@ class Scrobble(TimeStampedModel):
 
     @property
     def percent_played(self) -> int:
-        playback_ticks = None
-        percent_played = 100
-
         if not self.media_obj.run_time_ticks:
             logger.warning(
                 f"{self} has no run_time_ticks value, cannot show percent played"
             )
-            return percent_played
+            return 100
 
         playback_ticks = self.playback_position_ticks
         if not playback_ticks:
-            logger.info(
-                "No playback_position_ticks, estimating based on creation time"
-            )
             playback_ticks = (timezone.now() - self.timestamp).seconds * 1000
 
-        percent = int((playback_ticks / self.media_obj.run_time_ticks) * 100)
+            if self.played_to_completion:
+                playback_ticks = self.media_obj.run_time_ticks
 
-        if percent > 100:
-            percent = 100
+        percent = int((playback_ticks / self.media_obj.run_time_ticks) * 100)
         return percent
 
     @property
