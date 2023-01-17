@@ -94,7 +94,6 @@ class Album(TimeStampedModel):
 
 
 class Track(ScrobblableMixin):
-    RESUME_LIMIT = getattr(settings, 'MUSIC_RESUME_LIMIT', 60 * 60)
     COMPLETION_PERCENT = getattr(settings, 'MUSIC_COMPLETION_PERCENT', 90)
 
     class Opinion(models.IntegerChoices):

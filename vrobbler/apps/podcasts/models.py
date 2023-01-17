@@ -35,7 +35,6 @@ class Podcast(TimeStampedModel):
 
 
 class Episode(ScrobblableMixin):
-    RESUME_LIMIT = getattr(settings, 'PODCAST_RESUME_LIMIT', 180 * 60)
     COMPLETION_PERCENT = getattr(settings, 'PODCAST_COMPLETION_PERCENT', 90)
 
     podcast = models.ForeignKey(Podcast, on_delete=models.DO_NOTHING)

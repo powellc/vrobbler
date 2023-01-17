@@ -33,7 +33,6 @@ class Series(TimeStampedModel):
 
 
 class Video(ScrobblableMixin):
-    RESUME_LIMIT = getattr(settings, 'VIDEO_RESUME_LIMIT', (12 * 60) * 60)
     COMPLETION_PERCENT = getattr(settings, 'VIDEO_COMPLETION_PERCENT', 90)
 
     class VideoType(models.TextChoices):

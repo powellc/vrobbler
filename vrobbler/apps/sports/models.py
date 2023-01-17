@@ -39,7 +39,6 @@ class Team(TimeStampedModel):
 
 
 class SportEvent(ScrobblableMixin):
-    RESUME_LIMIT = getattr(settings, 'SPORT_RESUME_LIMIT', (12 * 60) * 60)
     COMPLETION_PERCENT = getattr(settings, 'SPORT_COMPLETION_PERCENT', 90)
 
     class Type(models.TextChoices):

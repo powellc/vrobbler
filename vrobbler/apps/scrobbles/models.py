@@ -72,60 +72,6 @@ class Scrobble(TimeStampedModel):
     def __str__(self):
         return f"Scrobble of {self.media_obj} {self.timestamp.year}-{self.timestamp.month}"
 
-    def resumable(self, playback_ticks):
-        """Check if a scrobble is not finished or beyond the configured resume limit.
-
-        The idea here is to check whether a scrobble should be resumed, or a new
-        one created. If this method returns true, we should update an existing
-        scrobble, suggesting the user just paused their scrobble. This limit
-        should be different for different media. We are more likely to pause a video
-        or sports event for a while, and expect to resume it than an audio track or
-        a podcast.
-
-        """
-        diff = None
-        # Default finish expectation
-        percent_for_completion = 100
-        # By default, assume we're not beyond resume limits
-        # This is to avoid spam scrobbles if webhooks go crazy
-        beyond_resume_limit = False
-        now = timezone.now()
-
-        if self.playback_position_ticks == playback_ticks:
-            # shortcircut in the case where we've resumed a track at the same playback ticks
-            return True
-
-        if self.video:
-            diff = timedelta(seconds=Video.RESUME_LIMIT)
-            percent_for_completion = Video.COMPLETION_PERCENT
-        if self.track:
-            diff = timedelta(seconds=Track.RESUME_LIMIT)
-            percent_for_completion = Track.COMPLETION_PERCENT
-        if self.podcast_episode:
-            diff = timedelta(seconds=Episode.RESUME_LIMIT)
-            percent_for_completion = Episode.COMPLETION_PERCENT
-        if self.sport_event:
-            diff = timedelta(seconds=SportEvent.RESUME_LIMIT)
-            percent_for_completion = SportEvent.COMPLETION_PERCENT
-
-        if diff and self.timestamp:
-            beyond_resume_limit = self.timestamp + diff <= now
-
-        finished = self.percent_played >= percent_for_completion
-
-        resumable = not finished or not beyond_resume_limit
-
-        if not finished:
-            logger.debug(
-                f"{self} resumable, percent played {self.percent_played} is less than {percent_for_completion}"
-            )
-        if not beyond_resume_limit:
-            logger.debug(
-                f"{self} resumable, started less than {diff.seconds} seconds ago"
-            )
-
-        return not finished and not beyond_resume_limit
-
     @classmethod
     def create_or_update_for_video(
         cls, video: "Video", user_id: int, scrobble_data: dict
@@ -133,13 +79,15 @@ class Scrobble(TimeStampedModel):
         scrobble_data['video_id'] = video.id
 
         scrobble = (
-            cls.objects.filter(video=video, user_id=user_id)
+            cls.objects.filter(
+                video=video,
+                user_id=user_id,
+                played_to_completion=False,
+            )
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable(
-            scrobble_data['playback_position_ticks']
-        ):
+        if scrobble:
             logger.info(
                 f"Found existing scrobble for video {video}, updating",
                 {"scrobble_data": scrobble_data},
@@ -164,13 +112,15 @@ class Scrobble(TimeStampedModel):
         scrobble_data['track_id'] = track.id
 
         scrobble = (
-            cls.objects.filter(track=track, user_id=user_id)
+            cls.objects.filter(
+                track=track,
+                user_id=user_id,
+                played_to_completion=False,
+            )
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable(
-            scrobble_data['playback_position_ticks']
-        ):
+        if scrobble:
             logger.debug(
                 f"Found existing scrobble for track {track}, updating",
                 {"scrobble_data": scrobble_data},
@@ -192,13 +142,15 @@ class Scrobble(TimeStampedModel):
         scrobble_data['podcast_episode_id'] = episode.id
 
         scrobble = (
-            cls.objects.filter(podcast_episode=episode, user_id=user_id)
+            cls.objects.filter(
+                podcast_episode=episode,
+                user_id=user_id,
+                played_to_completion=False,
+            )
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable(
-            scrobble_data['playback_position_ticks']
-        ):
+        if scrobble:
             logger.debug(
                 f"Found existing scrobble for podcast {episode}, updating",
                 {"scrobble_data": scrobble_data},
@@ -219,13 +171,15 @@ class Scrobble(TimeStampedModel):
     ) -> "Scrobble":
         scrobble_data['sport_event_id'] = event.id
         scrobble = (
-            cls.objects.filter(sport_event=event, user_id=user_id)
+            cls.objects.filter(
+                sport_event=event,
+                user_id=user_id,
+                played_to_completion=False,
+            )
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.resumable(
-            scrobble_data['playback_position_ticks']
-        ):
+        if scrobble:
             logger.debug(
                 f"Found existing scrobble for sport event {event}, updating",
                 {"scrobble_data": scrobble_data},
@@ -246,8 +200,6 @@ class Scrobble(TimeStampedModel):
         scrobble_status = scrobble_data.pop('mopidy_status', None)
         if not scrobble_status:
             scrobble_status = scrobble_data.pop('jellyfin_status', None)
-        if not scrobble_status:
-            scrobble_status = "resumed"
 
         logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
         scrobble.update_ticks(scrobble_data)
