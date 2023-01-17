@@ -246,8 +246,6 @@ class Scrobble(TimeStampedModel):
         scrobble_status = scrobble_data.pop('mopidy_status', None)
         if not scrobble_status:
             scrobble_status = scrobble_data.pop('jellyfin_status', None)
-        if not scrobble_status:
-            scrobble_status = 'resumed'
 
         logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
         scrobble.update_ticks(scrobble_data)
