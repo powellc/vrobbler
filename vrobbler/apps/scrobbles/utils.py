@@ -70,9 +70,8 @@ def check_scrobble_for_finish(scrobble: "Scrobble") -> None:
     completion_percent = scrobble.media_obj.COMPLETION_PERCENT
 
     if scrobble.percent_played >= completion_percent:
-        logger.debug(
-            f"Beyond completion percent {completion_percent}, finishing scrobble"
-        )
+        logger.debug(f"Completion percent {completion_percent} met, finishing")
+
         scrobble.in_progress = False
         scrobble.is_paused = False
         scrobble.played_to_completion = True
