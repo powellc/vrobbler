@@ -71,8 +71,8 @@ def top_tracks(filter: str = "today", limit: int = 15) -> List["Track"]:
         time_filter = Q(scrobble__timestamp__gte=STARTING_DAY_OF_CURRENT_YEAR)
 
     return (
-        Track.objects.annotate(num_scrobbles=Count("scrobble", distinct=True))
-        .filter(time_filter)
+        Track.objects.filter(time_filter)
+        .annotate(num_scrobbles=Count("scrobble", distinct=True))
         .order_by("-num_scrobbles")[:limit]
     )
 
@@ -93,10 +93,8 @@ def top_artists(filter: str = "today", limit: int = 15) -> List["Artist"]:
         )
 
     return (
-        Artist.objects.annotate(
-            num_scrobbles=Count("track__scrobble", distinct=True)
-        )
-        .filter(time_filter)
+        Artist.objects.filter(time_filter)
+        .annotate(num_scrobbles=Count("track__scrobble", distinct=True))
         .order_by("-num_scrobbles")[:limit]
     )
 

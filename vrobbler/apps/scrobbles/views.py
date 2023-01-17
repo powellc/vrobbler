@@ -39,18 +39,6 @@ from vrobbler.apps.music.aggregators import (
 
 logger = logging.getLogger(__name__)
 
-TRUTHY_VALUES = [
-    'true',
-    '1',
-    't',
-    'y',
-    'yes',
-    'yeah',
-    'yup',
-    'certainly',
-    'uh-huh',
-]
-
 
 class RecentScrobbleList(ListView):
     model = Scrobble
