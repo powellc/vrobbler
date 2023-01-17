@@ -246,6 +246,8 @@ class Scrobble(TimeStampedModel):
         scrobble_status = scrobble_data.pop('mopidy_status', None)
         if not scrobble_status:
             scrobble_status = scrobble_data.pop('jellyfin_status', None)
+        if not scrobble_status:
+            scrobble_status = "resumed"
 
         logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
         scrobble.update_ticks(scrobble_data)
@@ -285,7 +287,7 @@ class Scrobble(TimeStampedModel):
         check_scrobble_for_finish(self)
 
     def pause(self) -> None:
-        if self.is_paused and not self.played_to_completion:
+        if self.is_paused:
             logger.warning("Scrobble already paused")
             return
         self.is_paused = True
@@ -293,15 +295,10 @@ class Scrobble(TimeStampedModel):
         check_scrobble_for_finish(self)
 
     def resume(self) -> None:
-        if self.is_paused or not self.played_to_completion:
+        if self.is_paused or not self.in_progress:
             self.is_paused = False
             self.in_progress = True
-            return self.save(
-                update_fields=[
-                    "is_paused",
-                    "in_progress",
-                ]
-            )
+            return self.save(update_fields=["is_paused", "in_progress"])
 
     def update_ticks(self, data) -> None:
         self.playback_position_ticks = data.get("playback_position_ticks")
