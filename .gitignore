@@ -1,4 +1,4 @@
 db.sqlite3
 vrobbler.conf
-/media/
-/dist/
+media/
+dist/
