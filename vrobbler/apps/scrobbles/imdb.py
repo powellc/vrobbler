@@ -19,7 +19,11 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
     lookup_id = imdb_id.strip('tt')
     media = imdb_client.get_movie(lookup_id)
 
-    run_time_seconds = int(media.get('runtimes')[0]) * 60
+    run_time_seconds = 60 * 60
+    runtimes = media.get("runtimes")
+    if runtimes:
+        run_time_seconds = int(runtimes)[0] * 60
+
     # Ticks otherwise known as miliseconds
     run_time_ticks = run_time_seconds * 1000 * 1000
 
