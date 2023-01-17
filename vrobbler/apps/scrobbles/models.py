@@ -132,7 +132,8 @@ class Scrobble(TimeStampedModel):
             {"scrobble_data": scrobble_data},
         )
         # If creating a new scrobble, we don't need status
-        scrobble_data.pop('mopidy_status')
+        scrobble_data.pop('mopidy_status', None)
+        scrobble_data.pop('jellyfin_status', None)
         return cls.create(scrobble_data)
 
     @classmethod
