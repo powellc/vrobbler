@@ -30,6 +30,7 @@ whitenoise = "^6.3.0"
 musicbrainzngs = "^0.7.1"
 cinemagoer = "^2022.12.27"
 pysportsdb = "^0.1.0"
+django-cachalot = "^2.5.2"
 
 [tool.poetry.dev-dependencies]
 Werkzeug = "2.0.3"

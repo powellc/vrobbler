@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "django_filters",
     "django_extensions",
     'rest_framework.authtoken',
+    "cachalot",
     "scrobbles",
     "videos",
     "music",
