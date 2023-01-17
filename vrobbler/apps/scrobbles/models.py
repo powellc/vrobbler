@@ -83,12 +83,11 @@ class Scrobble(TimeStampedModel):
             cls.objects.filter(
                 video=video,
                 user_id=user_id,
-                played_to_completion=False,
             )
             .order_by('-modified')
             .first()
         )
-        if scrobble:
+        if scrobble and scrobble.playback_perecnt <= 100:
             logger.info(
                 f"Found existing scrobble for video {video}, updating",
                 {"scrobble_data": scrobble_data},
