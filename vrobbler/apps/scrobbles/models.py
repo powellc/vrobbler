@@ -70,7 +70,8 @@ class Scrobble(TimeStampedModel):
         return media_obj
 
     def __str__(self):
-        return f"Scrobble of {self.media_obj} {self.timestamp.year}-{self.timestamp.month}"
+        timestamp = self.timestamp.strftime('%Y-%m-%d')
+        return f"Scrobble of {self.media_obj} ({timestamp})"
 
     @classmethod
     def create_or_update_for_video(
