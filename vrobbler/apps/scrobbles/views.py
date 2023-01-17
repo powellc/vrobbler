@@ -60,11 +60,11 @@ class RecentScrobbleList(ListView):
         data['sport_scrobble_list'] = Scrobble.objects.filter(
             sport_event__isnull=False, played_to_completion=True
         ).order_by('-timestamp')[:15]
-        data['top_daily_tracks'] = top_tracks()
-        data['top_weekly_tracks'] = top_tracks(filter='week')
+        # data['top_daily_tracks'] = top_tracks()
+        # data['top_weekly_tracks'] = top_tracks(filter='week')
         data['top_monthly_tracks'] = top_tracks(filter='month')
 
-        data['top_daily_artists'] = top_artists()
+        # data['top_daily_artists'] = top_artists()
         data['top_weekly_artists'] = top_artists(filter='week')
         data['top_monthly_artists'] = top_artists(filter='month')
 
