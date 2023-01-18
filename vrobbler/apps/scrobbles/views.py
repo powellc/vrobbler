@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
 from django.views.generic.list import ListView
+import pytz
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -45,31 +46,44 @@ class RecentScrobbleList(ListView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
+        user = self.request.user
         now = timezone.now()
-        data['now_playing_list'] = Scrobble.objects.filter(
-            in_progress=True,
-            is_paused=False,
-            timestamp__lte=now,
-        )
-        data['video_scrobble_list'] = Scrobble.objects.filter(
-            video__isnull=False, played_to_completion=True
-        ).order_by('-timestamp')[:15]
-        data['podcast_scrobble_list'] = Scrobble.objects.filter(
-            podcast_episode__isnull=False, played_to_completion=True
-        ).order_by('-timestamp')[:15]
-        data['sport_scrobble_list'] = Scrobble.objects.filter(
-            sport_event__isnull=False, played_to_completion=True
-        ).order_by('-timestamp')[:15]
-        # data['top_daily_tracks'] = top_tracks()
-        # data['top_weekly_tracks'] = top_tracks(filter='week')
-        data['top_monthly_tracks'] = top_tracks(filter='month')
+        if self.request.user.is_authenticated:
+            timezone.activate(pytz.timezone(user.profile.timezone))
+            now = timezone.localtime(timezone.now())
+            data['now_playing_list'] = Scrobble.objects.filter(
+                in_progress=True,
+                is_paused=False,
+                timestamp__lte=now,
+                user=user,
+            )
 
-        # data['top_daily_artists'] = top_artists()
-        data['top_weekly_artists'] = top_artists(filter='week')
-        data['top_monthly_artists'] = top_artists(filter='month')
+            completed_for_user = Scrobble.objects.filter(
+                played_to_completion=True, user=user
+            )
+            data['video_scrobble_list'] = completed_for_user.filter(
+                video__isnull=False
+            ).order_by('-timestamp')[:15]
 
-        data["weekly_data"] = week_of_scrobbles()
-        data['counts'] = scrobble_counts()
+            data['podcast_scrobble_list'] = completed_for_user.filter(
+                podcast_episode__isnull=False
+            ).order_by('-timestamp')[:15]
+
+            data['sport_scrobble_list'] = completed_for_user.filter(
+                sport_event__isnull=False
+            ).order_by('-timestamp')[:15]
+
+            # data['top_daily_tracks'] = top_tracks()
+            data['top_weekly_tracks'] = top_tracks(user, filter='week')
+            data['top_monthly_tracks'] = top_tracks(user, filter='month')
+
+            # data['top_daily_artists'] = top_artists()
+            data['top_weekly_artists'] = top_artists(user, filter='week')
+            data['top_monthly_artists'] = top_artists(user, filter='month')
+
+        data["weekly_data"] = week_of_scrobbles(user=user)
+
+        data['counts'] = scrobble_counts(user)
         data['imdb_form'] = ScrobbleForm
         return data
 
