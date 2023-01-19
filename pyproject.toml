@@ -57,7 +57,6 @@ minversion = "6.0"
 addopts = "-ra -q"
 testpaths = [
     "tests",
-    "integration",
 ]
 DJANGO_SETTINGS_MODULE='vrobbler.settings'
 
