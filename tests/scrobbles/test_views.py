@@ -1,0 +1,52 @@
+import json
+import pytest
+
+from django.urls import reverse
+
+from scrobbles.models import Scrobble
+from music.models import Track
+from podcasts.models import Episode
+
+
+def test_get_not_allowed_from_mopidy(client):
+    url = reverse('scrobbles:mopidy-websocket')
+    response = client.get(url)
+    assert response.status_code == 405
+
+
+def test_bad_mopidy_request_data(client):
+    url = reverse('scrobbles:mopidy-websocket')
+    response = client.post(url)
+    assert response.status_code == 400
+    assert (
+        response.data['detail']
+        == 'JSON parse error - Expecting value: line 1 column 1 (char 0)'
+    )
+
+
+@pytest.mark.django_db
+def test_scrobble_mopidy_track(client, mopidy_track_request_data):
+    url = reverse('scrobbles:mopidy-websocket')
+    response = client.post(
+        url, mopidy_track_request_data, content_type='application/json'
+    )
+    assert response.status_code == 200
+    assert response.data == {'scrobble_id': 1}
+
+    scrobble = Scrobble.objects.get(id=1)
+    assert scrobble.media_obj.__class__ == Track
+    assert scrobble.media_obj.title == "Same in the End"
+
+
+@pytest.mark.django_db
+def test_scrobble_mopidy_podcast(client, mopidy_podcast_request_data):
+    url = reverse('scrobbles:mopidy-websocket')
+    response = client.post(
+        url, mopidy_podcast_request_data, content_type='application/json'
+    )
+    assert response.status_code == 200
+    assert response.data == {'scrobble_id': 1}
+
+    scrobble = Scrobble.objects.get(id=1)
+    assert scrobble.media_obj.__class__ == Episode
+    assert scrobble.media_obj.title == "Up First"
