@@ -16,7 +16,7 @@ steps:
       - pip install poetry
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
-      - poetry run python manage.py test
+      - poetry run pytest
     environment:
       VROBBLER_DATABASE_URL: sqlite:///test.db
     volumes:
