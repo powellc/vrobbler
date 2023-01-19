@@ -8,7 +8,7 @@ name: run_tests
 
 steps:
   # Run tests against Python/Flask engine backend (with pytest)
-  - name: coverage
+  - name: pytest with coverage
     image: python:3.10.4
     commands:
       # Install dependencies
@@ -16,22 +16,7 @@ steps:
       - pip install poetry
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
-      - poetry run pytest --cov-report term --cov=vrobbler tests
-    environment:
-      VROBBLER_DATABASE_URL: sqlite:///test.db
-    volumes:
-      # Mount pip cache from host
-      - name: pip_cache
-        path: /root/.cache/pip
-  - name: pytest
-    image: python:3.10.4
-    commands:
-      # Install dependencies
-      - cp vrobbler.conf.test vrobbler.conf
-      - pip install poetry
-      - poetry install
-      # Start with a fresh database (which is already running as a service from Drone)
-      - poetry run pytest
+      - poetry run pytest --cov-report term:skip-covered --cov=vrobbler tests
     environment:
       VROBBLER_DATABASE_URL: sqlite:///test.db
     volumes:

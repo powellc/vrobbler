@@ -39,8 +39,16 @@ class MopidyRequest:
 
 
 @pytest.fixture
-def mopidy_track_request_data(**kwargs):
-    return MopidyRequest(**kwargs).request_json
+def mopidy_track_request_data():
+    return MopidyRequest().request_json
+
+
+@pytest.fixture
+def mopidy_track_diff_album_request_data(**kwargs):
+    mb_album_id = "0c56c457-afe1-4679-baab-759ba8dd2a58"
+    return MopidyRequest(
+        album="Gold", musicbrainz_album_id=mb_album_id
+    ).request_json
 
 
 @pytest.fixture

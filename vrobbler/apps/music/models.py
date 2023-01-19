@@ -103,7 +103,10 @@ class Track(ScrobblableMixin):
 
     artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING)
     album = models.ForeignKey(Album, on_delete=models.DO_NOTHING, **BNULL)
-    musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
+    musicbrainz_id = models.CharField(max_length=255, **BNULL)
+
+    class Meta:
+        unique_together = [['album', 'musicbrainz_id']]
 
     def __str__(self):
         return f"{self.title} by {self.artist}"

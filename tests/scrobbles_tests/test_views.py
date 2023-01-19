@@ -39,6 +39,31 @@ def test_scrobble_mopidy_track(client, mopidy_track_request_data):
 
 
 @pytest.mark.django_db
+def test_scrobble_mopidy_same_track_different_album(
+    client, mopidy_track_request_data, mopidy_track_diff_album_request_data
+):
+    url = reverse('scrobbles:mopidy-websocket')
+    response = client.post(
+        url, mopidy_track_request_data, content_type='application/json'
+    )
+    assert response.status_code == 200
+    assert response.data == {'scrobble_id': 1}
+    scrobble = Scrobble.objects.get(id=1)
+    assert scrobble.media_obj.album.name == "Sublime"
+
+    response = client.post(
+        url,
+        mopidy_track_diff_album_request_data,
+        content_type='application/json',
+    )
+
+    scrobble = Scrobble.objects.get(id=2)
+    assert scrobble.media_obj.__class__ == Track
+    assert scrobble.media_obj.album.name == "Gold"
+    assert scrobble.media_obj.title == "Same in the End"
+
+
+@pytest.mark.django_db
 def test_scrobble_mopidy_podcast(client, mopidy_podcast_request_data):
     url = reverse('scrobbles:mopidy-websocket')
     response = client.post(
