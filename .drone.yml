@@ -12,7 +12,7 @@ steps:
     image: python:3.10.4
     commands:
       # Install dependencies
-      - cp vrobbler.conf.example vrobbler.conf
+      - cp vrobbler.conf.test vrobbler.conf
       - pip install poetry
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
@@ -27,7 +27,7 @@ steps:
     image: python:3.10.4
     commands:
       # Install dependencies
-      - cp vrobbler.conf.example vrobbler.conf
+      - cp vrobbler.conf.test vrobbler.conf
       - pip install poetry
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
