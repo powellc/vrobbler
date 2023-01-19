@@ -55,9 +55,7 @@ bandit = "^1.7.4"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 DJANGO_SETTINGS_MODULE='vrobbler.settings'
 
 [tool.black]
