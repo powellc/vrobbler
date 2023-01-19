@@ -16,7 +16,7 @@ steps:
       - pip install poetry
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
-      - poetry run pytest --cov-report --cov=vrobbler tests
+      - poetry run pytest --cov-report term --cov=vrobbler tests
     environment:
       VROBBLER_DATABASE_URL: sqlite:///test.db
     volumes:
