@@ -22,14 +22,14 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
     run_time_seconds = 60 * 60
     runtimes = media.get("runtimes")
     if runtimes:
-        run_time_seconds = int(runtimes)[0] * 60
+        run_time_seconds = int(runtimes[0]) * 60
 
     # Ticks otherwise known as miliseconds
     run_time_ticks = run_time_seconds * 1000 * 1000
 
-    item_type = Video.VideoType.MOVIE
+    item_type = "Movie"
     if media.get('series title'):
-        item_type = Video.VideoType.TV_EPISODE
+        item_type = "Episode"
 
     try:
         plot = media.get('plot')[0]
@@ -38,6 +38,7 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
     except IndexError:
         plot = ""
 
+    logger.debug(f"Received data from IMDB: {media.__dict__}")
     # Build a rough approximation of a Jellyfin data response
     data_dict = {
         "ItemType": item_type,
@@ -57,5 +58,6 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
         "IsPaused": False,
         "PlayedToCompletion": False,
     }
+    logger.debug(f"Parsed data from IMDB data: {data_dict}")
 
     return data_dict

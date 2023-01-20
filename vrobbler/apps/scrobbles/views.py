@@ -49,8 +49,9 @@ class RecentScrobbleList(ListView):
         user = self.request.user
         now = timezone.now()
         if self.request.user.is_authenticated:
-            timezone.activate(pytz.timezone(user.profile.timezone))
-            now = timezone.localtime(timezone.now())
+            if user.profile:
+                timezone.activate(pytz.timezone(user.profile.timezone))
+                now = timezone.localtime(timezone.now())
             data['now_playing_list'] = Scrobble.objects.filter(
                 in_progress=True,
                 is_paused=False,
