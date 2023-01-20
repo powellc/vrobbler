@@ -177,3 +177,36 @@ def mopidy_websocket(request):
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({'scrobble_id': scrobble.id}, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def scrobble_finish(request, uuid):
+    user = request.user
+    if not user.is_authenticated:
+        return Response({}, status=status.HTTP_403_FORBIDDEN)
+
+    scrobble = Scrobble.objects.filter(user=user, uuid=uuid).first()
+    if not scrobble:
+        return Response({}, status=status.HTTP_404_NOT_FOUND)
+    scrobble.stop(force_finish=True)
+    return Response(
+        {'id': scrobble.id, 'status': scrobble.status},
+        status=status.HTTP_200_OK,
+    )
+
+
+@csrf_exempt
+@api_view(['GET'])
+def scrobble_cancel(request, uuid):
+    user = request.user
+    if not user.is_authenticated:
+        return Response({}, status=status.HTTP_403_FORBIDDEN)
+
+    scrobble = Scrobble.objects.filter(user=user, uuid=uuid).first()
+    if not scrobble:
+        return Response({}, status=status.HTTP_404_NOT_FOUND)
+    scrobble.cancel()
+    return Response(
+        {'id': scrobble.id, 'status': 'cancelled'}, status=status.HTTP_200_OK
+    )

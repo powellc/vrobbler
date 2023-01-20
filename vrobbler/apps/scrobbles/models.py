@@ -1,5 +1,6 @@
 import logging
 from datetime import timedelta
+from uuid import uuid4
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -8,8 +9,8 @@ from django_extensions.db.models import TimeStampedModel
 from music.models import Track
 from podcasts.models import Episode
 from scrobbles.utils import check_scrobble_for_finish
-from videos.models import Video
 from sports.models import SportEvent
+from videos.models import Video
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -17,6 +18,7 @@ BNULL = {"blank": True, "null": True}
 
 
 class Scrobble(TimeStampedModel):
+    uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
     podcast_episode = models.ForeignKey(
@@ -37,6 +39,22 @@ class Scrobble(TimeStampedModel):
     source_id = models.TextField(**BNULL)
     in_progress = models.BooleanField(default=True)
     scrobble_log = models.TextField(**BNULL)
+
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = uuid4()
+
+        return super(Scrobble, self).save(*args, **kwargs)
+
+    @property
+    def status(self) -> str:
+        if self.is_paused:
+            return 'paused'
+        if self.played_to_completion:
+            return 'finished'
+        if self.in_progress:
+            return 'in-progress'
+        return 'zombie'
 
     @property
     def percent_played(self) -> int:
@@ -231,13 +249,13 @@ class Scrobble(TimeStampedModel):
         )
         return scrobble
 
-    def stop(self) -> None:
+    def stop(self, force_finish=False) -> None:
         if not self.in_progress:
             logger.warning("Scrobble already stopped")
             return
         self.in_progress = False
         self.save(update_fields=['in_progress'])
-        check_scrobble_for_finish(self)
+        check_scrobble_for_finish(self, force_finish)
 
     def pause(self) -> None:
         if self.is_paused:
@@ -252,6 +270,10 @@ class Scrobble(TimeStampedModel):
             self.is_paused = False
             self.in_progress = True
             return self.save(update_fields=["is_paused", "in_progress"])
+
+    def cancel(self) -> None:
+        check_scrobble_for_finish(self, force_finish=True)
+        self.delete()
 
     def update_ticks(self, data) -> None:
         self.playback_position_ticks = data.get("playback_position_ticks")

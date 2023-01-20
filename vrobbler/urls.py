@@ -1,12 +1,11 @@
+import scrobbles.views as scrobbles_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
-import scrobbles.views as scrobbles_views
-from videos import urls as video_urls
-
 from scrobbles import urls as scrobble_urls
+from videos import urls as video_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),

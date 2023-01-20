@@ -212,6 +212,8 @@
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
                                 </div>
+                                <a href="{% url "scrobbles:cancel" scrobble.uuid %}">Cancel</a>
+                                <a href="{% url "scrobbles:finish" scrobble.uuid %}">Finish</a>
                             </div>
                             <hr/>
                             {% endfor %}

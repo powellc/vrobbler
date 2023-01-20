@@ -66,10 +66,12 @@ def parse_mopidy_uri(uri: str) -> dict:
     }
 
 
-def check_scrobble_for_finish(scrobble: "Scrobble") -> None:
+def check_scrobble_for_finish(
+    scrobble: "Scrobble", force_finish=False
+) -> None:
     completion_percent = scrobble.media_obj.COMPLETION_PERCENT
 
-    if scrobble.percent_played >= completion_percent:
+    if scrobble.percent_played >= completion_percent or force_finish:
         logger.debug(f"Completion percent {completion_percent} met, finishing")
 
         scrobble.in_progress = False
