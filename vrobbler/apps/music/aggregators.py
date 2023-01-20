@@ -18,11 +18,11 @@ STARTING_DAY_OF_CURRENT_MONTH = NOW.date().replace(day=1)
 STARTING_DAY_OF_CURRENT_YEAR = NOW.date().replace(month=1, day=1)
 
 
-def scrobble_counts(user):
+def scrobble_counts(user=None):
 
     now = timezone.now()
     user_filter = Q()
-    if user.is_authenticated:
+    if user and user.is_authenticated:
         now = now_user_timezone(user.profile)
         user_filter = Q(user=user)
 
@@ -59,7 +59,7 @@ def week_of_scrobbles(user=None, media: str = 'tracks') -> dict[str, int]:
 
     now = timezone.now()
     user_filter = Q()
-    if user.is_authenticated:
+    if user and user.is_authenticated:
         now = now_user_timezone(user.profile)
         user_filter = Q(user=user)
 
