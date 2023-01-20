@@ -1,11 +1,16 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 import pytest
 import time_machine
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
-from music.aggregators import scrobble_counts, top_tracks, week_of_scrobbles
+from music.aggregators import (
+    scrobble_counts,
+    top_artists,
+    top_tracks,
+    week_of_scrobbles,
+)
 from profiles.models import UserProfile
 from scrobbles.models import Scrobble
 
@@ -52,3 +57,51 @@ def test_top_tracks_by_day(client, mopidy_track_request_data):
     user = get_user_model().objects.first()
     tops = top_tracks(user)
     assert tops[0].title == "Same in the End"
+
+
+@pytest.mark.django_db
+def test_top_tracks_by_week(client, mopidy_track_request_data):
+    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+    user = get_user_model().objects.first()
+    tops = top_tracks(user, filter='week')
+    assert tops[0].title == "Same in the End"
+
+
+@pytest.mark.django_db
+def test_top_tracks_by_month(client, mopidy_track_request_data):
+    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+    user = get_user_model().objects.first()
+    tops = top_tracks(user, filter='month')
+    assert tops[0].title == "Same in the End"
+
+
+@pytest.mark.django_db
+def test_top_tracks_by_year(client, mopidy_track_request_data):
+    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+    user = get_user_model().objects.first()
+    tops = top_tracks(user, filter='year')
+    assert tops[0].title == "Same in the End"
+
+
+@pytest.mark.django_db
+def test_top__artists_by_week(client, mopidy_track_request_data):
+    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+    user = get_user_model().objects.first()
+    tops = top_artists(user, filter='week')
+    assert tops[0].name == "Sublime"
+
+
+@pytest.mark.django_db
+def test_top__artists_by_month(client, mopidy_track_request_data):
+    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+    user = get_user_model().objects.first()
+    tops = top_artists(user, filter='month')
+    assert tops[0].name == "Sublime"
+
+
+@pytest.mark.django_db
+def test_top__artists_by_year(client, mopidy_track_request_data):
+    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+    user = get_user_model().objects.first()
+    tops = top_artists(user, filter='year')
+    assert tops[0].name == "Sublime"
