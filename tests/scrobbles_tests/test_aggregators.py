@@ -31,7 +31,7 @@ def test_scrobble_counts_data(client, mopidy_track_request_data):
 
 
 @pytest.mark.django_db
-def test_scrobble_counts_data(client, mopidy_track_request_data):
+def test_week_of_scrobbles_data(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     week = week_of_scrobbles()
     assert list(week.values()) == [1, 1, 1, 1, 1, 1, 1]
