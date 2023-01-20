@@ -3,3 +3,5 @@ omit=
   vrobbler/wsgi.py
   vrobbler/asgi.py
   vrobbler/cli.py
+  *admin.py
+  migrations/*

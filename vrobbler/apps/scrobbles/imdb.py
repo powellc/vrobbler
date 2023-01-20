@@ -2,10 +2,10 @@ import logging
 from typing import Optional
 from django.utils import timezone
 
-import imdb
+from imdb import Cinemagoer
 from videos.models import Video
 
-imdb_client = imdb.Cinemagoer()
+imdb_client = Cinemagoer()
 
 logger = logging.getLogger(__name__)
 
