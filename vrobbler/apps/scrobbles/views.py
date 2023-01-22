@@ -1,6 +1,7 @@
 import json
 import logging
 
+import pytz
 from django.conf import settings
 from django.db.models.fields import timezone
 from django.http import HttpResponseRedirect
@@ -9,9 +10,9 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
 from django.views.generic.list import ListView
-import pytz
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
@@ -48,7 +49,7 @@ class RecentScrobbleList(ListView):
         data = super().get_context_data(**kwargs)
         user = self.request.user
         now = timezone.now()
-        if self.request.user.is_authenticated:
+        if user.is_authenticated:
             if user.profile:
                 timezone.activate(pytz.timezone(user.profile.timezone))
                 now = timezone.localtime(timezone.now())
@@ -131,6 +132,7 @@ def scrobble_endpoint(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def jellyfin_websocket(request):
     data_dict = request.data
 
@@ -156,6 +158,7 @@ def jellyfin_websocket(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def mopidy_websocket(request):
     try:
         data_dict = json.loads(request.data)
@@ -181,6 +184,7 @@ def mopidy_websocket(request):
 
 @csrf_exempt
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def scrobble_finish(request, uuid):
     user = request.user
     if not user.is_authenticated:
@@ -198,6 +202,7 @@ def scrobble_finish(request, uuid):
 
 @csrf_exempt
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def scrobble_cancel(request, uuid):
     user = request.user
     if not user.is_authenticated:
