@@ -145,9 +145,7 @@ CACHES = {
     }
 }
 if REDIS_URL:
-    CACHES["default"][
-        "BACKEND"
-    ] = "django.core.cache.backends.redis.RedisCache"
+    CACHES["default"]["BACKEND"] = "django_redis.cache.RedisCache"
     CACHES["default"]["LOCATION"] = REDIS_URL
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
