@@ -119,7 +119,7 @@ def create_jellyfin_scrobble_dict(data_dict: dict, user_id: int) -> dict:
         "timestamp": parse(data_dict.get("UtcTimestamp")),
         "playback_position_ticks": playback_position_ticks,
         "playback_position": playback_position,
-        "source": data_dict.get("ClientName", "Jellyfin"),
+        "source": data_dict.get("ClientName", "Vrobbler"),
         "source_id": data_dict.get('MediaSourceId'),
         "jellyfin_status": jellyfin_status,
     }

@@ -4,7 +4,7 @@ from dateutil.parser import parse
 from django.conf import settings
 from django.utils import timezone
 from pysportsdb import TheSportsDbClient
-from sports.models import SportEvent
+from sports.models import Sport
 
 logger = logging.getLogger(__name__)
 
@@ -15,18 +15,23 @@ client = TheSportsDbClient(api_key=API_KEY)
 def lookup_event_from_thesportsdb(event_id: str) -> dict:
 
     event = client.lookup_event(event_id)['events'][0]
+    if not event or type(event) != dict:
+        return {}
     league = {}  # client.lookup_league(league_id=event.get('idLeague'))
-    event_type = SportEvent.Type.GAME
-    run_time_seconds = 11700
-    run_time_ticks = run_time_seconds * 1000
+    event_type = "Game"
+    sport = Sport.objects.filter(thesportsdb_id=event.get('strSport')).first()
 
+    logger.debug(event)
     data_dict = {
-        "ItemType": event_type,
-        "Name": event.get('strEventAlternate'),
+        "ItemType": sport.default_event_type,
+        "Name": event.get('strEvent'),
+        "AltName": event.get('strEventAlternate'),
         "Start": parse(event.get('strTimestamp')),
         "Provider_thesportsdb": event.get('idEvent'),
-        "RunTime": run_time_seconds,
-        "RunTimeTicks": run_time_ticks,
+        "RunTime": sport.default_event_run_time,
+        "RunTimeTicks": sport.default_event_run_time_ticks,
+        "Sport": event.get('strSport'),
+        "Season": event.get('strSeason'),
         "LeagueId": event.get('idLeague'),
         "LeagueName": event.get('strLeague'),
         "HomeTeamId": event.get('idHomeTeam'),
@@ -39,6 +44,7 @@ def lookup_event_from_thesportsdb(event_id: str) -> dict:
         "UtcTimestamp": timezone.now().strftime('%Y-%m-%d %H:%M:%S.%f%z'),
         "IsPaused": False,
         "PlayedToCompletion": False,
+        "Source": "Vrobbler",
     }
 
     return data_dict
