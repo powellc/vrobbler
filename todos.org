@@ -1,0 +1,296 @@
+#+title: TODOs
+
+A fun way to keep track of things in the project to fix or improve.
+
+* TODO Move to using more robust mopidy-webhooks pacakge form pypi :improve:
+** Example payloads from mopidy-webhooks
+*** Podcast playback ended
+#+begin_src json
+{
+    "type": "event",
+    "event": "track_playback_ended",
+    "data": {
+        "tl_track": {
+            "__model__": "TlTrack",
+            "tlid": 13,
+            "track": {
+                "__model__": "Track",
+                "uri": "file:///var/lib/mopidy/media/podcasts/The%20Prince/2022-09-28-Wolf-warriors.mp3",
+                "name": "Wolf warriors",
+                "artists": [
+                    {
+                        "__model__": "Artist",
+                        "name": "The Economist"
+                    }
+                ],
+                "album": {
+                    "__model__": "Album",
+                    "name": "The Prince",
+                    "date": "2022"
+                },
+                "genre": "Blues",
+                "date": "2022",
+                "length": 2437778,
+                "bitrate": 127988
+            }
+        },
+        "time_position": 3290
+    }
+}
+#+end_src
+*** Podcast playback state changes
+#+begin_src json
+{
+    "type": "event",
+    "event": "playback_state_changed",
+    "data": {
+        "old_state": "paused",
+        "new_state": "playing"
+    }
+}
+#+end_src
+
+#+begin_src json
+{
+    "type": "event",
+    "event": "playback_state_changed",
+    "data": {
+        "old_state": "stopped",
+        "new_state": "playing"
+    }
+}
+#+end_src
+*** Podcast playback started
+#+begin_src json
+{
+    "type": "event",
+    "event": "track_playback_started",
+    "data": {
+        "tl_track": {
+            "__model__": "TlTrack",
+            "tlid": 13,
+            "track": {
+                "__model__": "Track",
+                "uri": "file:///var/lib/mopidy/media/podcasts/The%20Prince/2022-09-28-Wolf-warriors.mp3",
+                "name": "Wolf warriors",
+                "artists": [
+                    {
+                        "__model__": "Artist",
+                        "name": "The Economist"
+                    }
+                ],
+                "album": {
+                    "__model__": "Album",
+                    "name": "The Prince",
+                    "date": "2022"
+                },
+                "genre": "Blues",
+                "date": "2022",
+                "length": 2437778,
+                "bitrate": 127988
+            }
+        }
+    }
+}
+#+end_src
+*** Podcast playback paused
+#+begin_src  json
+{
+    "type": "status",
+    "data": {
+        "state": "paused",
+        "current_track": {
+            "__model__": "Track",
+            "uri": "file:///var/lib/mopidy/media/podcasts/The%20Prince/2022-09-28-Wolf-warriors.mp3",
+            "name": "Wolf warriors",
+            "artists": [
+                {
+                    "__model__": "Artist",
+                    "name": "The Economist"
+                }
+            ],
+            "album": {
+                "__model__": "Album",
+                "name": "The Prince",
+                "date": "2022"
+            },
+            "genre": "Blues",
+            "date": "2022",
+            "length": 2437778,
+            "bitrate": 127988
+        },
+        "time_position": 2350
+    }
+}
+
+#+end_src
+*** Track playback started
+#+begin_src json
+{
+    "type": "event",
+    "event": "track_playback_started",
+    "data": {
+        "tl_track": {
+            "__model__": "TlTrack",
+            "tlid": 14,
+            "track": {
+                "__model__": "Track",
+                "uri": "local:track:Various%20Artists%20-%202008%20-%20Twilight%20OST/01-muse-supermassive_black_hole.mp3",
+                "name": "Supermassive Black Hole",
+                "artists": [
+                    {
+                        "__model__": "Artist",
+                        "uri": "local:artist:md5:250dd6551b66a58a6b4897aa697f200c",
+                        "name": "Muse",
+                        "musicbrainz_id": "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
+                    }
+                ],
+                "album": {
+                    "__model__": "Album",
+                    "uri": "local:album:md5:455343d54cdd89cb5a3b5ad537ea99d0",
+                    "name": "Twilight: Original Motion Picture Soundtrack",
+                    "artists": [
+                        {
+                            "__model__": "Artist",
+                            "uri": "local:artist:md5:54e4db2d5624f80b0cc290346e696756",
+                            "name": "Various Artists",
+                            "musicbrainz_id": "89ad4ac3-39f7-470e-963a-56509c546377"
+                        }
+                    ],
+                    "num_tracks": 12,
+                    "num_discs": 1,
+                    "date": "2008-11-04",
+                    "musicbrainz_id": "b4889eaf-d9f4-434c-a68d-69227b12b6a4"
+                },
+                "composers": [
+                    {
+                        "__model__": "Artist",
+                        "uri": "local:artist:md5:4d49cbca0b347e0a89047bb019d2779d",
+                        "name": "Matt Bellamy"
+                    }
+                ],
+                "genre": "Rock",
+                "track_no": 1,
+                "disc_no": 1,
+                "date": "2008-11-04",
+                "length": 211121,
+                "musicbrainz_id": "ff1e3e1a-f6e8-4692-b426-355880383bb6",
+                "last_modified": 1672712949510
+            }
+        }
+    }
+}
+#+end_src
+*** Track playback in progress
+#+begin_src json
+{
+    "type": "status",
+    "data": {
+        "state": "playing",
+        "current_track": {
+            "__model__": "Track",
+            "uri": "local:track:Various%20Artists%20-%202008%20-%20Twilight%20OST/01-muse-supermassive_black_hole.mp3",
+            "name": "Supermassive Black Hole",
+            "artists": [
+                {
+                    "__model__": "Artist",
+                    "uri": "local:artist:md5:250dd6551b66a58a6b4897aa697f200c",
+                    "name": "Muse",
+                    "musicbrainz_id": "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
+                }
+            ],
+            "album": {
+                "__model__": "Album",
+                "uri": "local:album:md5:455343d54cdd89cb5a3b5ad537ea99d0",
+                "name": "Twilight: Original Motion Picture Soundtrack",
+                "artists": [
+                    {
+                        "__model__": "Artist",
+                        "uri": "local:artist:md5:54e4db2d5624f80b0cc290346e696756",
+                        "name": "Various Artists",
+                        "musicbrainz_id": "89ad4ac3-39f7-470e-963a-56509c546377"
+                    }
+                ],
+                "num_tracks": 12,
+                "num_discs": 1,
+                "date": "2008-11-04",
+                "musicbrainz_id": "b4889eaf-d9f4-434c-a68d-69227b12b6a4"
+            },
+            "composers": [
+                {
+                    "__model__": "Artist",
+                    "uri": "local:artist:md5:4d49cbca0b347e0a89047bb019d2779d",
+                    "name": "Matt Bellamy"
+                }
+            ],
+            "genre": "Rock",
+            "track_no": 1,
+            "disc_no": 1,
+            "date": "2008-11-04",
+            "length": 211121,
+            "musicbrainz_id": "ff1e3e1a-f6e8-4692-b426-355880383bb6",
+            "last_modified": 1672712949510
+        },
+        "time_position": 17031
+    }
+}
+#+end_src
+*** Track event playback paused
+#+begin_src json
+{
+    "type": "event",
+    "event": "track_playback_paused",
+    "data": {
+        "tl_track": {
+            "__model__": "TlTrack",
+            "tlid": 14,
+            "track": {
+                "__model__": "Track",
+                "uri": "local:track:Various%20Artists%20-%202008%20-%20Twilight%20OST/01-muse-supermassive_black_hole.mp3",
+                "name": "Supermassive Black Hole",
+                "artists": [
+                    {
+                        "__model__": "Artist",
+                        "uri": "local:artist:md5:250dd6551b66a58a6b4897aa697f200c",
+                        "name": "Muse",
+                        "musicbrainz_id": "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
+                    }
+                ],
+                "album": {
+                    "__model__": "Album",
+                    "uri": "local:album:md5:455343d54cdd89cb5a3b5ad537ea99d0",
+                    "name": "Twilight: Original Motion Picture Soundtrack",
+                    "artists": [
+                        {
+                            "__model__": "Artist",
+                            "uri": "local:artist:md5:54e4db2d5624f80b0cc290346e696756",
+                            "name": "Various Artists",
+                            "musicbrainz_id": "89ad4ac3-39f7-470e-963a-56509c546377"
+                        }
+                    ],
+                    "num_tracks": 12,
+                    "num_discs": 1,
+                    "date": "2008-11-04",
+                    "musicbrainz_id": "b4889eaf-d9f4-434c-a68d-69227b12b6a4"
+                },
+                "composers": [
+                    {
+                        "__model__": "Artist",
+                        "uri": "local:artist:md5:4d49cbca0b347e0a89047bb019d2779d",
+                        "name": "Matt Bellamy"
+                    }
+                ],
+                "genre": "Rock",
+                "track_no": 1,
+                "disc_no": 1,
+                "date": "2008-11-04",
+                "length": 211121,
+                "musicbrainz_id": "ff1e3e1a-f6e8-4692-b426-355880383bb6",
+                "last_modified": 1672712949510
+            }
+        },
+        "time_position": 67578
+    }
+}
+#+end_src
+* TODO Fix  Jellyfin scrobbling N+1 past 90 completion perecnt :bug:
