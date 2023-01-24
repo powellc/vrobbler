@@ -105,7 +105,7 @@ class Scrobble(TimeStampedModel):
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.playback_percent <= 100:
+        if scrobble and scrobble.percent_played <= 100:
             logger.info(
                 f"Found existing scrobble for video {video}, updating",
                 {"scrobble_data": scrobble_data},
