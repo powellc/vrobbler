@@ -170,6 +170,7 @@
                         <thead>
                             <tr>
                             <th scope="col">Time</th>
+                            <th scope="col">Album</th>
                             <th scope="col">Track</th>
                             <th scope="col">Artist</th>
                             </tr>
@@ -178,6 +179,7 @@
                             {% for scrobble in object_list %}
                             <tr>
                                 <td>{{scrobble.timestamp|naturaltime}}</td>
+                                <td><img src="{{scrobble.track.album.cover_image.url}}" width=50 height=50 style="border:1px solid black;" /></td>
                                 <td>{{scrobble.track.title}}</td>
                                 <td>{{scrobble.track.artist.name}}</td>
                             </tr>
