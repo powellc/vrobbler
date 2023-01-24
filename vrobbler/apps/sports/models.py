@@ -157,7 +157,7 @@ class SportEvent(ScrobblableMixin):
         )
         if se_created:
             season.name = seid
-            season.save(update_fields['name'])
+            season.save(update_fields=['name'])
 
         # Find or create our Round
         rid = data_dict.get('RoundId')
