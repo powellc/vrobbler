@@ -2,7 +2,7 @@
 
 A fun way to keep track of things in the project to fix or improve.
 
-* TODO Move to using more robust mopidy-webhooks pacakge form pypi :improve:
+* TODO Move to using more robust mopidy-webhooks pacakge form pypi :improvement:
 ** Example payloads from mopidy-webhooks
 *** Podcast playback ended
 #+begin_src json
@@ -293,4 +293,21 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-* TODO Fix  Jellyfin scrobbling N+1 past 90 completion perecnt :bug:
+* TODO Fix Jellyfin music scrobbling N+1 past 90 completion perecnt :bug:
+* TODO Adjust cancel/finish task to use javascript to submit :improvement:
+* TODO Implement keeping track of week/month/year chart-toppers :improvement:
+
+Maloja does this cool thing where artists and tracks get recorded as the top
+track of a given week, month or year. They get gold, silver or bronze stars for
+their place in the time period.
+
+I could see this being implemented as a separate Chart table which gets
+populated at the end of a time period and has a start and end date that defines
+a period, along with a one, two, three instance.
+
+Of course, it could also be a data model without a table, where it runs some fun
+calculations, stores it's values in Redis as a long-term lookup table and just
+has to re-populate when the server restarts.
+* TODO Implement a detail view for TV shows :improvement:
+* TODO Implement a detail view for Moviews :improvement:
+* TODO Consider a purge command for duplicated and stuck in-progress scrobbles :improvement:

@@ -2,6 +2,10 @@ import json
 import pytest
 
 from scrobbles.models import Scrobble
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class MopidyRequest:
@@ -53,6 +57,12 @@ class MopidyRequest:
     @property
     def request_json(self):
         return json.dumps(self.request_data)
+
+
+@pytest.fixture
+def valid_auth_token():
+    user = User.objects.create(email='test@exmaple.com')
+    return Token.objects.create(user=user).key
 
 
 @pytest.fixture

@@ -131,8 +131,8 @@ def scrobble_endpoint(request):
 
 
 @csrf_exempt
-@api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_view(['POST'])
 def jellyfin_websocket(request):
     data_dict = request.data
 
@@ -157,8 +157,8 @@ def jellyfin_websocket(request):
 
 
 @csrf_exempt
-@api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@api_view(['POST'])
 def mopidy_websocket(request):
     try:
         data_dict = json.loads(request.data)
@@ -183,8 +183,8 @@ def mopidy_websocket(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_view(['GET'])
 def scrobble_finish(request, uuid):
     user = request.user
     if not user.is_authenticated:
@@ -201,8 +201,8 @@ def scrobble_finish(request, uuid):
 
 
 @csrf_exempt
-@api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@api_view(['GET'])
 def scrobble_cancel(request, uuid):
     user = request.user
     if not user.is_authenticated:

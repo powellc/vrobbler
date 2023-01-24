@@ -8,15 +8,19 @@ from music.models import Track
 from podcasts.models import Episode
 
 
-def test_get_not_allowed_from_mopidy(client):
+@pytest.mark.django_db
+def test_get_not_allowed_from_mopidy(client, valid_auth_token):
     url = reverse('scrobbles:mopidy-websocket')
-    response = client.get(url)
+    headers = {'Authorization': f'Token {valid_auth_token}'}
+    response = client.get(url, headers=headers)
     assert response.status_code == 405
 
 
-def test_bad_mopidy_request_data(client):
+@pytest.mark.django_db
+def test_bad_mopidy_request_data(client, valid_auth_token):
     url = reverse('scrobbles:mopidy-websocket')
-    response = client.post(url)
+    headers = {'Authorization': f'Token {valid_auth_token}'}
+    response = client.post(url, headers)
     assert response.status_code == 400
     assert (
         response.data['detail']
@@ -25,10 +29,16 @@ def test_bad_mopidy_request_data(client):
 
 
 @pytest.mark.django_db
-def test_scrobble_mopidy_track(client, mopidy_track_request_data):
+def test_scrobble_mopidy_track(
+    client, mopidy_track_request_data, valid_auth_token
+):
     url = reverse('scrobbles:mopidy-websocket')
+    headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(
-        url, mopidy_track_request_data, content_type='application/json'
+        url,
+        mopidy_track_request_data,
+        content_type='application/json',
+        headers=headers,
     )
     assert response.status_code == 200
     assert response.data == {'scrobble_id': 1}
@@ -40,11 +50,18 @@ def test_scrobble_mopidy_track(client, mopidy_track_request_data):
 
 @pytest.mark.django_db
 def test_scrobble_mopidy_same_track_different_album(
-    client, mopidy_track_request_data, mopidy_track_diff_album_request_data
+    client,
+    mopidy_track_request_data,
+    mopidy_track_diff_album_request_data,
+    valid_auth_token,
 ):
     url = reverse('scrobbles:mopidy-websocket')
+    headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(
-        url, mopidy_track_request_data, content_type='application/json'
+        url,
+        mopidy_track_request_data,
+        content_type='application/json',
+        headers=headers,
     )
     assert response.status_code == 200
     assert response.data == {'scrobble_id': 1}
@@ -64,10 +81,16 @@ def test_scrobble_mopidy_same_track_different_album(
 
 
 @pytest.mark.django_db
-def test_scrobble_mopidy_podcast(client, mopidy_podcast_request_data):
+def test_scrobble_mopidy_podcast(
+    client, mopidy_podcast_request_data, valid_auth_token
+):
     url = reverse('scrobbles:mopidy-websocket')
+    headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(
-        url, mopidy_podcast_request_data, content_type='application/json'
+        url,
+        mopidy_podcast_request_data,
+        content_type='application/json',
+        headers=headers,
     )
     assert response.status_code == 200
     assert response.data == {'scrobble_id': 1}
