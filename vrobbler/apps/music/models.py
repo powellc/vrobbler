@@ -77,14 +77,38 @@ class Album(TimeStampedModel):
                 for t in self.track_set.all():
                     self.artists.add(t.artist)
 
-    def fetch_artwork(self):
-        if not self.cover_image:
-            try:
-                img_data = musicbrainzngs.get_image_front(self.musicbrainz_id)
-                name = f"{self.name}_{self.uuid}.jpg"
-                self.cover_image = ContentFile(img_data, name=name)
-            except musicbrainzngs.ResponseError:
-                logger.warning(f'No cover art found for {self.name}')
+    def fetch_artwork(self, force=False):
+        if not self.cover_image and not force:
+            if self.musicbrainz_id:
+                try:
+                    img_data = musicbrainzngs.get_image_front(
+                        self.musicbrainz_id
+                    )
+                    name = f"{self.name}_{self.uuid}.jpg"
+                    self.cover_image = ContentFile(img_data, name=name)
+                    logger.info(f'Setting image to {name}')
+                except musicbrainzngs.ResponseError:
+                    logger.warning(
+                        f'No cover art found for {self.name} by release'
+                    )
+
+            if not self.cover_image and self.musicbrainz_releasegroup_id:
+                try:
+                    img_data = musicbrainzngs.get_release_group_image_front(
+                        self.musicbrainz_releasegroup_id
+                    )
+                    name = f"{self.name}_{self.uuid}.jpg"
+                    self.cover_image = ContentFile(img_data, name=name)
+                    logger.info(f'Setting image to {name}')
+                except musicbrainzngs.ResponseError:
+                    logger.warning(
+                        f'No cover art found for {self.name} by release group'
+                    )
+            if not self.cover_image:
+                logger.debug(
+                    f"No cover art found for release or release group for {self.name}, setting to default"
+                )
+                # TODO Get a placeholder image in here
                 self.cover_image = 'default-image-replace-me'
             self.save()
 
