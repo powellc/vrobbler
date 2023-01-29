@@ -2,7 +2,38 @@
 
 A fun way to keep track of things in the project to fix or improve.
 
-* TODO Move to using more robust mopidy-webhooks pacakge form pypi :improvement:
+* DONE [#A] Fix fetching artwork without release group :bug:
+CLOSED: [2023-01-29 Sun 14:27]
+
+When we get artwork from Musicbrianz, and it's not found, we should check for
+release groups as well. This will stop issues with missing artwork because of
+obscure MB release matches.
+
+* TODO [#A] Fix Jellyfin music scrobbling N+1 past 90 completion perecnt :bug:
+
+If we play music from Jellyfin and the track reaches 90% completion, the
+scrobbling goes crazy and starts creating new scrobbles with every update.
+
+The cause is pretty simple, but the solution is hard. We want to mark a scrobble
+as complete for the following conditions:
+
+- Play stopped and percent played beyond 90%
+- Play completely finished
+
+But if we keep listening beyond 90, we should basically ignore updates (or just
+update the existing scrobble)
+
+* TODO [#A] Add django-storage to store files on S3 :improvement:
+* TODO [#B] Adjust cancel/finish task to use javascript to submit :improvement:
+* TODO [#B] Implement a detail view for TV shows :improvement:
+* TODO [#B] Implement a detail view for Moviews :improvement:
+* TODO [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
+
+This would allow a few nice flows. One, you'd be able to record the play of an
+entire album by just dropping the muscibrainz_id in. This could be helpful for
+offline listening. It would also mean bad metadata from mopidy would not break
+scrobbling.
+* TODO [#C] Move to using more robust mopidy-webhooks pacakge form pypi :improvement:
 ** Example payloads from mopidy-webhooks
 *** Podcast playback ended
 #+begin_src json
@@ -293,9 +324,7 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-* TODO Fix Jellyfin music scrobbling N+1 past 90 completion perecnt :bug:
-* TODO Adjust cancel/finish task to use javascript to submit :improvement:
-* TODO Implement keeping track of week/month/year chart-toppers :improvement:
+* TODO [#C] Implement keeping track of week/month/year chart-toppers :improvement:
 
 Maloja does this cool thing where artists and tracks get recorded as the top
 track of a given week, month or year. They get gold, silver or bronze stars for
@@ -308,6 +337,8 @@ a period, along with a one, two, three instance.
 Of course, it could also be a data model without a table, where it runs some fun
 calculations, stores it's values in Redis as a long-term lookup table and just
 has to re-populate when the server restarts.
-* TODO Implement a detail view for TV shows :improvement:
-* TODO Implement a detail view for Moviews :improvement:
-* TODO Consider a purge command for duplicated and stuck in-progress scrobbles :improvement:
+* TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :improvement:
+* TODO Figure out how to add to web-scrobbler :imropvement:
+
+An example:
+https://github.com/web-scrobbler/web-scrobbler/blob/master/src/core/background/scrobbler/maloja-scrobbler.js
