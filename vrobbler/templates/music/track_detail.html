@@ -1,0 +1,13 @@
+{% extends "base_detail.html" %}
+
+{% block title %}{{object.title}}{% endblock %}
+
+{% block details %}
+<h2>Last scrobbles</h2>
+{% for scrobble in object.scrobble_set.all  %}
+<ul>
+    <li>{{scrobble.timestamp|date:"d M Y h:m"}} - <img src="{{object.album.cover_image.url}}" width=25 height=25 /> - {{object}}</li>
+</ul>
+{% endfor %}
+
+{% endblock %}

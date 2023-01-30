@@ -1,7 +1,7 @@
 from django.urls import path
 from videos import views
 
-app_name = 'scrobbles'
+app_name = 'videos'
 
 
 urlpatterns = [

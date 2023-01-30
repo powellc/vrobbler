@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     "music",
     "podcasts",
     "sports",
+    "mathfilters",
     "rest_framework",
     "allauth",
     "allauth.account",

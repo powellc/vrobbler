@@ -1,0 +1,12 @@
+{% extends "base_list.html" %}
+
+{% block title %}Tracks{% endblock %}
+
+{% block lists %}
+<h2>All time</h2>
+{% for track in object_list %}
+<ul>
+    <li><a href="{{track.get_absolute_url}}">{{track}}</a></li>
+</ul>
+{% endfor %}
+{% endblock %}

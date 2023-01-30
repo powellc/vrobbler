@@ -1,0 +1,72 @@
+{% extends "base_detail.html" %}
+{% load mathfilters %}
+
+{% block title %}{{object.name}}{% endblock %}
+
+{% block details %}
+
+<div class="row">
+    {% for album in artist.album_set.all %}
+    {% if album.cover_image %}
+    <p style="width:150px; float:left;"><img src="{{album.cover_image.url}}" width=150 height=150 /></p>
+    {% endif %}
+    {% endfor %}
+</div>
+<div class="row">
+    <p>{{artist.scrobbles.count}} scrobbles</p>
+    <div class="col-md">
+        <h3>Top tracks</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Track</th>
+                    <th scope="col">Count</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for track in object.tracks %}
+                <tr>
+                    <td>{{rank}}#1</td>
+                    <td>{{track.title}}</td>
+                    <td>{{track.scrobble_count}}</td>
+                    <td>
+                        <div class="progress-bar" style="margin-right:5px;">
+                            <span class="progress-bar-fill" style="width: {{track.scrobble_count|mul:10}}%;"></span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Track</th>
+                    <th scope="col">Album</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scrobble in object.scrobbles %}
+                <tr>
+                    <td>{{scrobble.timestamp}}</td>
+                    <td>{{scrobble.track.title}}</td>
+                    <td>{{scrobble.track.album.name}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

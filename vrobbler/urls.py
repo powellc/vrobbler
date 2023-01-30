@@ -3,8 +3,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework import routers
 from scrobbles import urls as scrobble_urls
+from music import urls as music_urls
 from videos import urls as video_urls
 
 urlpatterns = [
@@ -19,6 +19,7 @@ urlpatterns = [
         scrobbles_views.ManualScrobbleView.as_view(),
         name='imdb-manual-scrobble',
     ),
+    path("", include(music_urls, namespace="music")),
     path("", include(video_urls, namespace="videos")),
     path("", scrobbles_views.RecentScrobbleList.as_view(), name="home"),
 ]

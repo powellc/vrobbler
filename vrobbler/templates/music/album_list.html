@@ -1,0 +1,11 @@
+{% extends "base_list.html" %}
+
+{% block title %}Albums{% endblock %}
+
+{% block lists %}
+{% for album in object_list %}
+<dl style="width: 130px; float: left; margin-right:10px;">
+    <dd><img src="{{album.cover_image.url}}" width=120 height=120 /></dd>
+</dl>
+{% endfor %}
+{% endblock %}

@@ -3,10 +3,10 @@ from typing import Dict, Optional
 from uuid import uuid4
 
 import musicbrainzngs
-from django.apps.config import cached_property
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
@@ -29,6 +29,29 @@ class Artist(TimeStampedModel):
     @property
     def mb_link(self):
         return f"https://musicbrainz.org/artist/{self.musicbrainz_id}"
+
+    def get_absolute_url(self):
+        return reverse('music:artist_detail', kwargs={'slug': self.uuid})
+
+    def scrobbles(self):
+        from scrobbles.models import Scrobble
+
+        return Scrobble.objects.filter(
+            track__in=self.track_set.all()
+        ).order_by('-timestamp')
+
+    @property
+    def tracks(self):
+        return (
+            self.track_set.all()
+            .annotate(scrobble_count=models.Count('scrobble'))
+            .order_by('-scrobble_count')
+        )
+
+    def charts(self):
+        from scrobbles.models import ChartRecord
+
+        return ChartRecord.objects.filter(track__artist=self).order_by('-year')
 
 
 class Album(TimeStampedModel):
@@ -135,13 +158,12 @@ class Track(ScrobblableMixin):
     def __str__(self):
         return f"{self.title} by {self.artist}"
 
+    def get_absolute_url(self):
+        return reverse('music:track_detail', kwargs={'slug': self.uuid})
+
     @property
     def mb_link(self):
         return f"https://musicbrainz.org/recording/{self.musicbrainz_id}"
-
-    @cached_property
-    def scrobble_count(self):
-        return self.scrobble_set.filter(in_progress=False).count()
 
     @classmethod
     def find_or_create(

@@ -1,0 +1,30 @@
+{% extends "base_list.html" %}
+
+{% block title %}Artists{% endblock %}
+
+{% block lists %}
+<div class="row">
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Artist</th>
+                    <th scope="col">Scrobbles</th>
+                    <th scope="col">All time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for artist in object_list %}
+                <tr>
+                    <td><a href="{{artist.get_absolute_url}}">{{artist}}</a></td>
+                    <td>{{artist.scrobbles.count}}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
