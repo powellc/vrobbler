@@ -133,12 +133,11 @@ class Scrobble(TimeStampedModel):
             cls.objects.filter(
                 track=track,
                 user_id=user_id,
-                played_to_completion=False,
             )
             .order_by('-modified')
             .first()
         )
-        if scrobble:
+        if scrobble and scrobble.percent_played <= 100:
             logger.debug(
                 f"Found existing scrobble for track {track}, updating",
                 {"scrobble_data": scrobble_data},
