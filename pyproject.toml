@@ -16,7 +16,7 @@ djangorestframework = "^3.13.1"
 Markdown = "^3.3.6"
 django-filter = "^21.1"
 Pillow = "^9.0.1"
-psycopg2 = {version = "^2.9.3", extras = ["production"]}
+psycopg2 = "^2.9.3"
 dj-database-url = "^0.5.0"
 django-mathfilters = "^1.0.0"
 django-allauth = "^0.50.0"
