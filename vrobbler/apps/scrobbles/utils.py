@@ -77,6 +77,7 @@ def check_scrobble_for_finish(
         scrobble.in_progress = False
         scrobble.is_paused = False
         scrobble.played_to_completion = True
+        scrobble.playback_position_ticks = scrobble.media_obj.run_time_ticks
         scrobble.save(
             update_fields=["in_progress", "is_paused", "played_to_completion"]
         )
