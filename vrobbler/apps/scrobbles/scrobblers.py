@@ -99,26 +99,15 @@ def create_jellyfin_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     jellyfin_status = "resumed"
     if data_dict.get("IsPaused"):
         jellyfin_status = "paused"
-    if data_dict.get("PlayedToCompletion"):
+    if data_dict.get("NotificationType") == 'PlaybackStop':
         jellyfin_status = "stopped"
-
-    playback_position_ticks = None
-    if data_dict.get("PlaybackPositionTicks"):
-        playback_position_ticks = (
-            data_dict.get("PlaybackPositionTicks") // 10000
-        )
-        if playback_position_ticks <= 0:
-            playback_position_ticks = None
-
-    playback_position = data_dict.get("PlaybackPosition")
-    if playback_position:
-        playback_position = convert_to_seconds(playback_position)
 
     return {
         "user_id": user_id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_ticks": playback_position_ticks,
-        "playback_position": playback_position,
+        "playback_position_ticks": data_dict.get("PlaybackPositionTicks", "")
+        // 10000,
+        "playback_position": data_dict.get("PlaybackPosition", ""),
         "source": data_dict.get("ClientName", "Vrobbler"),
         "source_id": data_dict.get('MediaSourceId'),
         "jellyfin_status": jellyfin_status,
@@ -128,6 +117,7 @@ def create_jellyfin_scrobble_dict(data_dict: dict, user_id: int) -> dict:
 def jellyfin_scrobble_track(
     data_dict: dict, user_id: Optional[int]
 ) -> Optional[Scrobble]:
+
     if not data_dict.get("Provider_musicbrainztrack", None):
         logger.error(
             "No MBrainz Track ID received. This is likely because all metadata is bad, not scrobbling"

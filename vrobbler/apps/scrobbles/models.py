@@ -12,6 +12,7 @@ from podcasts.models import Episode
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
+from vrobbler.apps.profiles.utils import now_user_timezone
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -146,7 +147,7 @@ class Scrobble(TimeStampedModel):
             playback_ticks = (timezone.now() - self.timestamp).seconds * 1000
 
             if self.played_to_completion:
-                playback_ticks = self.media_obj.run_time_ticks
+                return 100
 
         percent = int((playback_ticks / self.media_obj.run_time_ticks) * 100)
         return percent
@@ -210,16 +211,25 @@ class Scrobble(TimeStampedModel):
             cls.objects.filter(
                 track=track,
                 user_id=user_id,
+                played_to_completion=False,
             )
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.percent_played <= 100:
+        if scrobble:
             logger.debug(
                 f"Found existing scrobble for track {track}, updating",
                 {"scrobble_data": scrobble_data},
             )
             return cls.update(scrobble, scrobble_data)
+
+        if 'jellyfin_status' in scrobble_data.keys():
+            last_scrobble = Scrobble.objects.last()
+            if (
+                scrobble_data['timestamp'] - last_scrobble.timestamp
+            ).seconds <= 1:
+                logger.warning('Jellyfin spammed us with duplicate updates')
+                return last_scrobble
 
         logger.debug(
             f"No existing scrobble for track {track}, creating",
@@ -311,7 +321,6 @@ class Scrobble(TimeStampedModel):
         for key, value in scrobble_data.items():
             setattr(scrobble, key, value)
         scrobble.save()
-        check_scrobble_for_finish(scrobble)
         return scrobble
 
     @classmethod
@@ -334,6 +343,7 @@ class Scrobble(TimeStampedModel):
         check_scrobble_for_finish(self, force_finish)
 
     def pause(self) -> None:
+        print('Trying to pause it')
         if self.is_paused:
             logger.warning("Scrobble already paused")
             return
@@ -346,6 +356,7 @@ class Scrobble(TimeStampedModel):
             self.is_paused = False
             self.in_progress = True
             return self.save(update_fields=["is_paused", "in_progress"])
+        logger.warning("Resume called but in progress or not paused")
 
     def cancel(self) -> None:
         check_scrobble_for_finish(self, force_finish=True)
