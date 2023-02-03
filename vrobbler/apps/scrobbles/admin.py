@@ -13,7 +13,7 @@ class ScrobbleInline(admin.TabularInline):
 @admin.register(AudioScrobblerTSVImport)
 class AudioScrobblerTSVImportAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("id", "tsv_file", "created")
+    list_display = ("uuid", "created", "process_count", "tsv_file")
     ordering = ("-created",)
 
 

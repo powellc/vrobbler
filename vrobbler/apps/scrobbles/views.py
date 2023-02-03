@@ -11,7 +11,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
 from django.views.generic.list import ListView
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    parser_classes,
+    permission_classes,
+)
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from scrobbles.constants import (
@@ -29,7 +34,10 @@ from scrobbles.scrobblers import (
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
-from scrobbles.serializers import ScrobbleSerializer
+from scrobbles.serializers import (
+    AudioScrobblerTSVImportSerializer,
+    ScrobbleSerializer,
+)
 from scrobbles.thesportsdb import lookup_event_from_thesportsdb
 
 from vrobbler.apps.music.aggregators import (
@@ -185,6 +193,29 @@ def mopidy_websocket(request):
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({'scrobble_id': scrobble.id}, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+@parser_classes([MultiPartParser])
+def import_audioscrobbler_file(request):
+    """Takes a TSV file in the Audioscrobbler format, saves it and processes the
+    scrobbles.
+    """
+    scrobbles_created = []
+    # tsv_file = request.FILES[0]
+
+    file_serializer = AudioScrobblerTSVImportSerializer(data=request.data)
+    if file_serializer.is_valid():
+        import_file = file_serializer.save()
+        return Response(
+            {'scrobble_ids': scrobbles_created}, status=status.HTTP_200_OK
+        )
+    else:
+        return Response(
+            file_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 @csrf_exempt

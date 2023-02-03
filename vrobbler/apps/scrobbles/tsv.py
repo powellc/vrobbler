@@ -96,3 +96,4 @@ def process_audioscrobbler_tsv_file(file_path):
             f"Created {len(created)} scrobbles",
             extra={'created_scrobbles': created},
         )
+        return created

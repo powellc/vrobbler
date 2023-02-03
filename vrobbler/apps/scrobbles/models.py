@@ -18,18 +18,27 @@ BNULL = {"blank": True, "null": True}
 
 
 class AudioScrobblerTSVImport(TimeStampedModel):
-    tsv_file = models.FileField(
-        upload_to="audioscrobbler-uploads/%Y/%m-%d/", **BNULL
-    )
+    def get_path(instance, filename):
+        extension = filename.split('.')[-1]
+        uuid = instance.uuid
+        return f'audioscrobbler-uploads/{uuid}.{extension}'
+
+    uuid = models.UUIDField(editable=False, default=uuid4)
+    tsv_file = models.FileField(upload_to=get_path, **BNULL)
     processed_on = models.DateTimeField(**BNULL)
+    process_log = models.TextField(**BNULL)
+    process_count = models.IntegerField(**BNULL)
 
     def __str__(self):
-        return f"Audioscrobbler TSV upload: {self.tsv_file.path}"
+        if self.tsv_file:
+            return f"Audioscrobbler TSV upload: {self.tsv_file.path}"
+        return f"Audioscrobbler TSV upload {self.id}"
 
     def save(self, **kwargs):
         """On save, attempt to import the TSV file"""
-
-        return super().save(**kwargs)
+        super().save(**kwargs)
+        self.process()
+        return
 
     def process(self, force=False):
         from scrobbles.tsv import process_audioscrobbler_tsv_file
@@ -38,9 +47,21 @@ class AudioScrobblerTSVImport(TimeStampedModel):
             logger.info(f"{self} already processed on {self.processed_on}")
             return
 
-        process_audioscrobbler_tsv_file(self.tsv_file.path)
+        scrobbles = process_audioscrobbler_tsv_file(self.tsv_file.path)
+        if scrobbles:
+            self.process_log = f"Created {len(scrobbles)} scrobbles"
+            for scrobble in scrobbles:
+                scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}\t"
+                self.process_log += f"\n{scrobble_str}"
+            self.process_count = len(scrobbles)
+        else:
+            self.process_log = f"Created no new scrobbles"
+            self.process_count = 0
+
         self.processed_on = timezone.now()
-        self.save(update_fields=['processed_on'])
+        self.save(
+            update_fields=['processed_on', 'process_count', 'process_log']
+        )
 
 
 class ChartRecord(TimeStampedModel):

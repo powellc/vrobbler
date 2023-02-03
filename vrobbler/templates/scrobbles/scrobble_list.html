@@ -179,7 +179,11 @@
                             {% for scrobble in object_list %}
                             <tr>
                                 <td>{{scrobble.timestamp|naturaltime}}</td>
+                                {% if scrobble.track.album.cover_image %}
                                 <td><img src="{{scrobble.track.album.cover_image.url}}" width=50 height=50 style="border:1px solid black;" /></td>
+                                {% else %}
+                                <td>{{scrobble.track.album.name}}</td>
+                                {% endif %}
                                 <td>{{scrobble.track.title}}</td>
                                 <td>{{scrobble.track.artist.name}}</td>
                             </tr>
