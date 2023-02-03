@@ -1,9 +1,7 @@
 import logging
-from typing import Optional
 from django.utils import timezone
 
 from imdb import Cinemagoer
-from videos.models import Video
 
 imdb_client = Cinemagoer()
 
