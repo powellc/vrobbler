@@ -1,5 +1,13 @@
 from django import forms
 
+from scrobbles.models import AudioScrobblerTSVImport
+
+
+class UploadAudioscrobblerFileForm(forms.ModelForm):
+    class Meta:
+        model = AudioScrobblerTSVImport
+        fields = ('tsv_file',)
+
 
 class ScrobbleForm(forms.Form):
     item_id = forms.CharField(

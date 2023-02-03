@@ -1,6 +1,5 @@
 import calendar
 import logging
-from datetime import timedelta
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
@@ -12,11 +11,36 @@ from podcasts.models import Episode
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
-from vrobbler.apps.profiles.utils import now_user_timezone
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 BNULL = {"blank": True, "null": True}
+
+
+class AudioScrobblerTSVImport(TimeStampedModel):
+    tsv_file = models.FileField(
+        upload_to="audioscrobbler-uploads/%Y/%m-%d/", **BNULL
+    )
+    processed_on = models.DateTimeField(**BNULL)
+
+    def __str__(self):
+        return f"Audioscrobbler TSV upload: {self.tsv_file.path}"
+
+    def save(self, **kwargs):
+        """On save, attempt to import the TSV file"""
+
+        return super().save(**kwargs)
+
+    def process(self, force=False):
+        from scrobbles.tsv import process_audioscrobbler_tsv_file
+
+        if self.processed_on and not force:
+            logger.info(f"{self} already processed on {self.processed_on}")
+            return
+
+        process_audioscrobbler_tsv_file(self.tsv_file.path)
+        self.processed_on = timezone.now()
+        self.save(update_fields=['processed_on'])
 
 
 class ChartRecord(TimeStampedModel):

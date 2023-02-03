@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from scrobbles.models import Scrobble
+from scrobbles.models import AudioScrobblerTSVImport, Scrobble
 
 
 class ScrobbleInline(admin.TabularInline):
@@ -8,6 +8,13 @@ class ScrobbleInline(admin.TabularInline):
     extra = 0
     raw_id_fields = ('video', 'podcast_episode', 'track')
     exclude = ('source_id', 'scrobble_log')
+
+
+@admin.register(AudioScrobblerTSVImport)
+class AudioScrobblerTSVImportAdmin(admin.ModelAdmin):
+    date_hierarchy = "created"
+    list_display = ("id", "tsv_file", "created")
+    ordering = ("-created",)
 
 
 @admin.register(Scrobble)

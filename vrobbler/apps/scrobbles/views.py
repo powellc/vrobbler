@@ -18,7 +18,7 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
-from scrobbles.forms import ScrobbleForm
+from scrobbles.forms import ScrobbleForm, UploadAudioscrobblerFileForm
 from scrobbles.imdb import lookup_video_from_imdb
 from scrobbles.models import Scrobble
 from scrobbles.scrobblers import (
@@ -119,6 +119,11 @@ class ManualScrobbleView(FormView):
                 manual_scrobble_event(data_dict, self.request.user.id)
 
         return HttpResponseRedirect(reverse("home"))
+
+
+class AudioScrobblerUploadView(FormView):
+    form_class = UploadAudioscrobblerFileForm
+    template_name = 'scrobbles/upload_form.html'
 
 
 @csrf_exempt

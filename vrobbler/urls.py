@@ -19,6 +19,11 @@ urlpatterns = [
         scrobbles_views.ManualScrobbleView.as_view(),
         name='imdb-manual-scrobble',
     ),
+    path(
+        'manual/audioscrobbler/',
+        scrobbles_views.AudioScrobblerUploadView.as_view(),
+        name='audioscrobbler-file-upload',
+    ),
     path("", include(music_urls, namespace="music")),
     path("", include(video_urls, namespace="videos")),
     path("", scrobbles_views.RecentScrobbleList.as_view(), name="home"),
