@@ -1,12 +1,15 @@
 from django import forms
 
-from scrobbles.models import AudioScrobblerTSVImport
 
+class ExportScrobbleForm(forms.Form):
+    """Provide options for downloading scrobbles"""
 
-class UploadAudioscrobblerFileForm(forms.ModelForm):
-    class Meta:
-        model = AudioScrobblerTSVImport
-        fields = ('tsv_file',)
+    EXPORT_TYPES = (
+        ('as', 'Audioscrobbler'),
+        ('csv', 'CSV'),
+        ('html', 'HTML'),
+    )
+    export_type = forms.ChoiceField(choices=EXPORT_TYPES)
 
 
 class ScrobbleForm(forms.Form):

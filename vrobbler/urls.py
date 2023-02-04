@@ -21,12 +21,14 @@ urlpatterns = [
     ),
     path(
         'manual/audioscrobbler/',
-        scrobbles_views.AudioScrobblerUploadView.as_view(),
+        scrobbles_views.AudioScrobblerImportCreateView.as_view(),
         name='audioscrobbler-file-upload',
     ),
     path("", include(music_urls, namespace="music")),
     path("", include(video_urls, namespace="videos")),
-    path("", scrobbles_views.RecentScrobbleList.as_view(), name="home"),
+    path(
+        "", scrobbles_views.RecentScrobbleList.as_view(), name="vrobbler-home"
+    ),
 ]
 
 if settings.DEBUG:

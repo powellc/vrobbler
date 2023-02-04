@@ -97,3 +97,22 @@ def process_audioscrobbler_tsv_file(file_path):
             extra={'created_scrobbles': created},
         )
         return created
+
+
+def undo_audioscrobbler_tsv_import(process_log, dryrun=True):
+    """Accepts the log from a TSV import and removes the scrobbles"""
+    if not process_log:
+        logger.warning("No lines in process log found to undo")
+        return
+
+    for line_num, line in enumerate(process_log.split('\n')):
+        if line_num == 0:
+            continue
+        scrobble_id = line.split("\t")[0]
+        scrobble = Scrobble.objects.filter(id=scrobble_id).first()
+        if not scrobble:
+            logger.warning(f"Could not find scrobble {scrobble_id} to undo")
+            continue
+        logger.info(f"Removing scrobble {scrobble_id}")
+        if not dryrun:
+            scrobble.delete()

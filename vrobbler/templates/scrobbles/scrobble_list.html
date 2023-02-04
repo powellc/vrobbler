@@ -8,18 +8,17 @@
         <h1 class="h2">Dashboard</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group me-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">Import</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">Export</button>
             </div>
             <div class="dropdown">
-                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" id="graphDateButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" id="graphDateButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span data-feather="calendar"></span>
                     This week
                 </button>
-                <div class="dropdown-menu" aria-labelledby="graphDateButton">
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <a class="dropdown-item" href="#">Something else here</a>
+                <div class="dropdown-menu" data-bs-toggle="#graphDataChange" aria-labelledby="graphDateButton">
+                    <a class="dropdown-item" href="#">This month</a>
+                    <a class="dropdown-item" href="#">This year</a>
                 </div>
             </div>
         </div>
@@ -267,9 +266,65 @@
 
             </div>
         </div>
-        {% else %}
-
         {% endif %}
     </div>
 </main>
+
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import scrobbles</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{% url 'audioscrobbler-file-upload' %}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="tsv_file" class="col-form-label">Audioscrobbler TSV file:</label>
+                            <input type="file" name="tsv_file" class="form-control" id="id_tsv_file">
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Import</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Export scrobbles</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{% url 'scrobbles:export' %}" method="get">
+                <div class="modal-body">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{export_form.as_div}}
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Export</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$('#importModal').on('shown.bs.modal', function () { $('#importInput').trigger('focus') });
+$('#exportModal').on('shown.bs.modal', function () { $('#exportInput').trigger('focus') });
+</script>
 {% endblock %}

@@ -51,7 +51,7 @@ class AudioScrobblerTSVImport(TimeStampedModel):
         if scrobbles:
             self.process_log = f"Created {len(scrobbles)} scrobbles"
             for scrobble in scrobbles:
-                scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}\t"
+                scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}"
                 self.process_log += f"\n{scrobble_str}"
             self.process_count = len(scrobbles)
         else:
@@ -62,6 +62,11 @@ class AudioScrobblerTSVImport(TimeStampedModel):
         self.save(
             update_fields=['processed_on', 'process_count', 'process_log']
         )
+
+    def undo(self, dryrun=True):
+        from scrobbles.tsv import undo_audioscrobbler_tsv_import
+
+        undo_audioscrobbler_tsv_import(self.process_log, dryrun)
 
 
 class ChartRecord(TimeStampedModel):

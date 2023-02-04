@@ -1,14 +1,16 @@
 import json
 import logging
+from datetime import datetime
 
 import pytz
 from django.conf import settings
 from django.db.models.fields import timezone
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.http import FileResponse, HttpResponseRedirect, JsonResponse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
+from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from rest_framework import status
 from rest_framework.decorators import (
@@ -23,9 +25,9 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
-from scrobbles.forms import ScrobbleForm, UploadAudioscrobblerFileForm
+from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
 from scrobbles.imdb import lookup_video_from_imdb
-from scrobbles.models import Scrobble
+from scrobbles.models import AudioScrobblerTSVImport, Scrobble
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
@@ -46,6 +48,7 @@ from vrobbler.apps.music.aggregators import (
     top_tracks,
     week_of_scrobbles,
 )
+from vrobbler.apps.scrobbles.export import export_scrobbles
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +98,7 @@ class RecentScrobbleList(ListView):
 
         data['counts'] = scrobble_counts(user)
         data['imdb_form'] = ScrobbleForm
+        data['export_form'] = ExportScrobbleForm
         return data
 
     def get_queryset(self):
@@ -129,9 +133,38 @@ class ManualScrobbleView(FormView):
         return HttpResponseRedirect(reverse("home"))
 
 
-class AudioScrobblerUploadView(FormView):
-    form_class = UploadAudioscrobblerFileForm
+class JsonableResponseMixin:
+    """
+    Mixin to add JSON support to a form.
+    Must be used with an object-based FormView (e.g. CreateView)
+    """
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.accepts('text/html'):
+            return response
+        else:
+            return JsonResponse(form.errors, status=400)
+
+    def form_valid(self, form):
+        # We make sure to call the parent's form_valid() method because
+        # it might do some processing (in the case of CreateView, it will
+        # call form.save() for example).
+        response = super().form_valid(form)
+        if self.request.accepts('text/html'):
+            return response
+        else:
+            data = {
+                'pk': self.object.pk,
+            }
+            return JsonResponse(data)
+
+
+class AudioScrobblerImportCreateView(JsonableResponseMixin, CreateView):
+    model = AudioScrobblerTSVImport
+    fields = ['tsv_file']
     template_name = 'scrobbles/upload_form.html'
+    success_url = reverse_lazy('vrobbler-home')
 
 
 @csrf_exempt
@@ -251,3 +284,23 @@ def scrobble_cancel(request, uuid):
     return Response(
         {'id': scrobble.id, 'status': 'cancelled'}, status=status.HTTP_200_OK
     )
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def export(request):
+    format = request.GET.get('export_type', 'csv')
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    logger.debug(f"Exporting all scrobbles in format {format}")
+
+    temp_file, extension = export_scrobbles(
+        start_date=start, end_date=end, format=format
+    )
+
+    now = datetime.now()
+    filename = f"vrobbler-export-{str(now)}.{extension}"
+    response = FileResponse(open(temp_file, 'rb'))
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
