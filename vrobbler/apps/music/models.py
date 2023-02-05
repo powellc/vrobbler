@@ -183,16 +183,7 @@ class Track(ScrobblableMixin):
             return
 
         artist, artist_created = Artist.objects.get_or_create(**artist_dict)
-        if artist_created:
-            logger.debug(f"Created new artist {artist}")
-        else:
-            logger.debug(f"Found album {artist}")
-
         album, album_created = Album.objects.get_or_create(**album_dict)
-        if album_created:
-            logger.debug(f"Created new album {album}")
-        else:
-            logger.debug(f"Found album {album}")
 
         album.fix_metadata()
         if not album.cover_image:
@@ -202,9 +193,5 @@ class Track(ScrobblableMixin):
         track_dict['artist_id'] = artist.id
 
         track, created = cls.objects.get_or_create(**track_dict)
-        if created:
-            logger.debug(f"Created new track: {track}")
-        else:
-            logger.debug(f"Found track {track}")
 
         return track
