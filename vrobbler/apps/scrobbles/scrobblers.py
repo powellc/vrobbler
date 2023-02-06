@@ -50,9 +50,7 @@ def mopidy_scrobble_podcast(
 
     scrobble = None
     if episode:
-        scrobble = Scrobble.create_or_update_for_podcast_episode(
-            episode, user_id, mopidy_data
-        )
+        scrobble = Scrobble.create_or_update(episode, user_id, mopidy_data)
     return scrobble
 
 
@@ -90,23 +88,26 @@ def mopidy_scrobble_track(
     track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
     track.save()
 
-    scrobble = Scrobble.create_or_update_for_track(track, user_id, mopidy_data)
+    scrobble = Scrobble.create_or_update(track, user_id, mopidy_data)
 
     return scrobble
 
 
-def create_jellyfin_scrobble_dict(data_dict: dict, user_id: int) -> dict:
+def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     jellyfin_status = "resumed"
     if data_dict.get("IsPaused"):
         jellyfin_status = "paused"
-    if data_dict.get("NotificationType") == 'PlaybackStop':
+    elif data_dict.get("NotificationType") == 'PlaybackStop':
         jellyfin_status = "stopped"
+
+    playback_ticks = data_dict.get("PlaybackPositionTicks", "")
+    if playback_ticks:
+        playback_ticks = playback_ticks // 10000
 
     return {
         "user_id": user_id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_ticks": data_dict.get("PlaybackPositionTicks", "")
-        // 10000,
+        "playback_position_ticks": playback_ticks,
         "playback_position": data_dict.get("PlaybackPosition", ""),
         "source": data_dict.get("ClientName", "Vrobbler"),
         "source_id": data_dict.get('MediaSourceId'),
@@ -119,9 +120,20 @@ def jellyfin_scrobble_track(
 ) -> Optional[Scrobble]:
 
     if not data_dict.get("Provider_musicbrainztrack", None):
+        # TODO we should be able to look up tracks via MB rather than error out
         logger.error(
             "No MBrainz Track ID received. This is likely because all metadata is bad, not scrobbling"
         )
+        return
+
+    null_position_on_progress = (
+        data_dict.get("PlaybackPosition") == "00:00:00"
+        and data_dict.get("NotificationType") == "PlaybackProgress"
+    )
+
+    # Jellyfin has some race conditions with it's webhooks, these hacks fix some of them
+    if not data_dict.get("PlaybackPositionTicks") or null_position_on_progress:
+        logger.error("No playback position tick from Jellyfin, aborting")
         return
 
     artist_dict = {
@@ -157,9 +169,13 @@ def jellyfin_scrobble_track(
         )
         track.save()
 
-    scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
+    scrobble_dict = build_scrobble_dict(data_dict, user_id)
 
-    return Scrobble.create_or_update_for_track(track, user_id, scrobble_dict)
+    # A hack to make Jellyfin work more like Mopidy for music tracks
+    scrobble_dict["playback_position_ticks"] = 0
+    scrobble_dict["playback_position"] = ""
+
+    return Scrobble.create_or_update(track, user_id, scrobble_dict)
 
 
 def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
@@ -170,9 +186,9 @@ def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
         return
     video = Video.find_or_create(data_dict)
 
-    scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
+    scrobble_dict = build_scrobble_dict(data_dict, user_id)
 
-    return Scrobble.create_or_update_for_video(video, user_id, scrobble_dict)
+    return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
 def manual_scrobble_video(data_dict: dict, user_id: Optional[int]):
@@ -183,9 +199,9 @@ def manual_scrobble_video(data_dict: dict, user_id: Optional[int]):
         return
     video = Video.find_or_create(data_dict)
 
-    scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
+    scrobble_dict = build_scrobble_dict(data_dict, user_id)
 
-    return Scrobble.create_or_update_for_video(video, user_id, scrobble_dict)
+    return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
 def manual_scrobble_event(data_dict: dict, user_id: Optional[int]):
@@ -196,8 +212,6 @@ def manual_scrobble_event(data_dict: dict, user_id: Optional[int]):
         return
     event = SportEvent.find_or_create(data_dict)
 
-    scrobble_dict = create_jellyfin_scrobble_dict(data_dict, user_id)
+    scrobble_dict = build_scrobble_dict(data_dict, user_id)
 
-    return Scrobble.create_or_update_for_sport_event(
-        event, user_id, scrobble_dict
-    )
+    return Scrobble.create_or_update(event, user_id, scrobble_dict)

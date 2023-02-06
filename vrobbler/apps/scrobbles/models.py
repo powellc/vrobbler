@@ -11,6 +11,7 @@ from podcasts.models import Episode
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
+from vrobbler.apps.profiles.utils import now_user_timezone
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -146,6 +147,8 @@ class ChartRecord(TimeStampedModel):
 
 
 class Scrobble(TimeStampedModel):
+    """A scrobble tracks played media items by a user."""
+
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
@@ -185,22 +188,42 @@ class Scrobble(TimeStampedModel):
         return 'zombie'
 
     @property
+    def is_stale(self) -> bool:
+        """Mark scrobble as stale if it's been more than an hour since it was updated"""
+        is_stale = False
+        now = timezone.now()
+        seconds_since_last_update = (now - self.modified).seconds
+        if seconds_since_last_update >= self.media_obj.SECONDS_TO_STALE:
+            is_stale = True
+        return is_stale
+
+    @property
     def percent_played(self) -> int:
         if not self.media_obj.run_time_ticks:
-            logger.warning(
-                f"{self} has no run_time_ticks value, cannot show percent played"
-            )
+            return 100
+
+        if not self.playback_position_ticks and self.played_to_completion:
             return 100
 
         playback_ticks = self.playback_position_ticks
         if not playback_ticks:
             playback_ticks = (timezone.now() - self.timestamp).seconds * 1000
 
-            if self.played_to_completion:
-                return 100
-
         percent = int((playback_ticks / self.media_obj.run_time_ticks) * 100)
+        if percent > 100:
+            percent = 100
         return percent
+
+    @property
+    def can_be_updated(self) -> bool:
+        updatable = True
+        if self.percent_played > 100:
+            logger.info(f"No - 100% played - {self.id} - {self.source}")
+            updatable = False
+        if self.is_stale:
+            logger.info(f"No - stale - {self.id} - {self.source}")
+            updatable = False
+        return updatable
 
     @property
     def media_obj(self):
@@ -220,158 +243,71 @@ class Scrobble(TimeStampedModel):
         return f"Scrobble of {self.media_obj} ({timestamp})"
 
     @classmethod
-    def create_or_update_for_video(
-        cls, video: "Video", user_id: int, scrobble_data: dict
+    def create_or_update(
+        cls, media, user_id: int, scrobble_data: dict
     ) -> "Scrobble":
-        scrobble_data['video_id'] = video.id
+
+        if media.__class__.__name__ == 'Track':
+            media_query = models.Q(track=media)
+            scrobble_data['track_id'] = media.id
+        if media.__class__.__name__ == 'Video':
+            media_query = models.Q(video=media)
+            scrobble_data['video_id'] = media.id
+        if media.__class__.__name__ == 'Episode':
+            media_query = models.Q(podcast_episode=media)
+            scrobble_data['podcast_id'] = media.id
+        if media.__class__.__name__ == 'SportEvent':
+            media_query = models.Q(sport_event=media)
+            scrobble_data['sport_event_id'] = media.id
 
         scrobble = (
             cls.objects.filter(
-                video=video,
+                media_query,
                 user_id=user_id,
             )
             .order_by('-modified')
             .first()
         )
-        if scrobble and scrobble.percent_played <= 100:
+        if scrobble and scrobble.can_be_updated:
             logger.info(
-                f"Found existing scrobble for video {video}, updating",
-                {"scrobble_data": scrobble_data},
+                f"Updating {scrobble.id}",
+                {"scrobble_data": scrobble_data, "media": media},
             )
-            return cls.update(scrobble, scrobble_data)
+            return scrobble.update(scrobble_data)
 
-        logger.debug(
-            f"No existing scrobble for video {video}, creating",
-            {"scrobble_data": scrobble_data},
-        )
-        # If creating a new scrobble, we don't need status
-        scrobble_data.pop('jellyfin_status')
-        return cls.create(scrobble_data)
-
-    @classmethod
-    def create_or_update_for_track(
-        cls, track: "Track", user_id: int, scrobble_data: dict
-    ) -> "Scrobble":
-        """Look up any existing scrobbles for a track and compare
-        the appropriate backoff time for music tracks to the setting
-        so we can avoid duplicating scrobbles."""
-        scrobble_data['track_id'] = track.id
-
-        scrobble = (
-            cls.objects.filter(
-                track=track,
-                user_id=user_id,
-                played_to_completion=False,
-            )
-            .order_by('-modified')
-            .first()
-        )
-        if scrobble:
-            logger.debug(
-                f"Found existing scrobble for track {track}, updating",
-                {"scrobble_data": scrobble_data},
-            )
-            return cls.update(scrobble, scrobble_data)
-
-        if 'jellyfin_status' in scrobble_data.keys():
-            last_scrobble = Scrobble.objects.last()
-            if (
-                scrobble_data['timestamp'] - last_scrobble.timestamp
-            ).seconds <= 1:
-                logger.warning('Jellyfin spammed us with duplicate updates')
-                return last_scrobble
-
-        logger.debug(
-            f"No existing scrobble for track {track}, creating",
-            {"scrobble_data": scrobble_data},
+        source = scrobble_data['source']
+        logger.info(
+            f"Creating for {media.id} - {source}",
+            {"scrobble_data": scrobble_data, "media": media},
         )
         # If creating a new scrobble, we don't need status
         scrobble_data.pop('mopidy_status', None)
         scrobble_data.pop('jellyfin_status', None)
         return cls.create(scrobble_data)
 
-    @classmethod
-    def create_or_update_for_podcast_episode(
-        cls, episode: "Episode", user_id: int, scrobble_data: dict
-    ) -> "Scrobble":
-        scrobble_data['podcast_episode_id'] = episode.id
-
-        scrobble = (
-            cls.objects.filter(
-                podcast_episode=episode,
-                user_id=user_id,
-                played_to_completion=False,
-            )
-            .order_by('-modified')
-            .first()
-        )
-        if scrobble:
-            logger.debug(
-                f"Found existing scrobble for podcast {episode}, updating",
-                {"scrobble_data": scrobble_data},
-            )
-            return cls.update(scrobble, scrobble_data)
-
-        logger.debug(
-            f"No existing scrobble for podcast epsiode {episode}, creating",
-            {"scrobble_data": scrobble_data},
-        )
-        # If creating a new scrobble, we don't need status
-        scrobble_data.pop('mopidy_status')
-        return cls.create(scrobble_data)
-
-    @classmethod
-    def create_or_update_for_sport_event(
-        cls, event: "SportEvent", user_id: int, scrobble_data: dict
-    ) -> "Scrobble":
-        scrobble_data['sport_event_id'] = event.id
-        scrobble = (
-            cls.objects.filter(
-                sport_event=event,
-                user_id=user_id,
-                played_to_completion=False,
-            )
-            .order_by('-modified')
-            .first()
-        )
-        if scrobble:
-            logger.debug(
-                f"Found existing scrobble for sport event {event}, updating",
-                {"scrobble_data": scrobble_data},
-            )
-            return cls.update(scrobble, scrobble_data)
-
-        logger.debug(
-            f"No existing scrobble for sport event {event}, creating",
-            {"scrobble_data": scrobble_data},
-        )
-        # If creating a new scrobble, we don't need status
-        scrobble_data.pop('jellyfin_status')
-        return cls.create(scrobble_data)
-
-    @classmethod
-    def update(cls, scrobble: "Scrobble", scrobble_data: dict) -> "Scrobble":
+    def update(self, scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
         scrobble_status = scrobble_data.pop('mopidy_status', None)
         if not scrobble_status:
             scrobble_status = scrobble_data.pop('jellyfin_status', None)
 
-        logger.debug(f"Scrobbling to {scrobble} with status {scrobble_status}")
-        scrobble.update_ticks(scrobble_data)
+        if self.percent_played < 100:
+            # Only worry about ticks if we haven't gotten to the end
+            self.update_ticks(scrobble_data)
 
         # On stop, stop progress and send it to the check for completion
         if scrobble_status == "stopped":
-            scrobble.stop()
+            self.stop()
         # On pause, set is_paused and stop scrobbling
         if scrobble_status == "paused":
-            scrobble.pause()
+            self.pause()
         if scrobble_status == "resumed":
-            scrobble.resume()
+            self.resume()
 
         for key, value in scrobble_data.items():
-            setattr(scrobble, key, value)
-        scrobble.save()
-        return scrobble
+            setattr(self, key, value)
+        self.save()
+        return self
 
     @classmethod
     def create(
@@ -386,27 +322,27 @@ class Scrobble(TimeStampedModel):
 
     def stop(self, force_finish=False) -> None:
         if not self.in_progress:
-            logger.warning("Scrobble already stopped")
             return
         self.in_progress = False
         self.save(update_fields=['in_progress'])
+        logger.info(f"{self.id} - {self.source}")
         check_scrobble_for_finish(self, force_finish)
 
     def pause(self) -> None:
-        print('Trying to pause it')
         if self.is_paused:
-            logger.warning("Scrobble already paused")
+            logger.warning(f"{self.id} - already paused - {self.source}")
             return
         self.is_paused = True
         self.save(update_fields=["is_paused"])
+        logger.info(f"{self.id} - pausing - {self.source}")
         check_scrobble_for_finish(self)
 
     def resume(self) -> None:
         if self.is_paused or not self.in_progress:
             self.is_paused = False
             self.in_progress = True
+            logger.info(f"{self.id} - resuming - {self.source}")
             return self.save(update_fields=["is_paused", "in_progress"])
-        logger.warning("Resume called but in progress or not paused")
 
     def cancel(self) -> None:
         check_scrobble_for_finish(self, force_finish=True)
@@ -415,8 +351,8 @@ class Scrobble(TimeStampedModel):
     def update_ticks(self, data) -> None:
         self.playback_position_ticks = data.get("playback_position_ticks")
         self.playback_position = data.get("playback_position")
-        logger.debug(
-            f"Updating scrobble ticks to {self.playback_position_ticks}"
+        logger.info(
+            f"{self.id} - {self.playback_position_ticks} - {self.source}"
         )
         self.save(
             update_fields=['playback_position_ticks', 'playback_position']

@@ -49,7 +49,12 @@ class Sport(TheSportsDbMixin):
     # run_time_ticks = run_time_seconds * 1000
     @property
     def default_event_run_time_ticks(self):
-        return self.default_event_run_time * 1000
+        default_run_time = getattr(
+            settings, 'DEFAULT_EVENT_RUNTIME_SECONDS', 14400
+        )
+        if self.default_event_run_time:
+            default_run_time = self.default_event_run_time
+        return default_run_time * 1000
 
 
 class League(TheSportsDbMixin):

@@ -34,6 +34,7 @@ class Series(TimeStampedModel):
 
 class Video(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, 'VIDEO_COMPLETION_PERCENT', 90)
+    SECONDS_TO_STALE = getattr(settings, 'VIDEO_SECONDS_TO_STALE', 14400)
 
     class VideoType(models.TextChoices):
         UNKNOWN = 'U', _('Unknown')
@@ -91,10 +92,6 @@ class Video(ScrobblableMixin):
             series, series_created = Series.objects.get_or_create(
                 name=series_name
             )
-            if series_created:
-                logger.debug(f"Created new series {series}")
-            else:
-                logger.debug(f"Found series {series}")
             video_dict['video_type'] = Video.VideoType.TV_EPISODE
 
         video, created = cls.objects.get_or_create(**video_dict)
@@ -119,11 +116,8 @@ class Video(ScrobblableMixin):
             video_extra_dict["tv_series_id"] = series.id
 
         if not video.run_time_ticks:
-            logger.debug(f"Created new video: {video}")
             for key, value in video_extra_dict.items():
                 setattr(video, key, value)
             video.save()
-        else:
-            logger.debug(f"Found video {video}")
 
         return video

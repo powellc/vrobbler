@@ -7,6 +7,8 @@ BNULL = {"blank": True, "null": True}
 
 
 class ScrobblableMixin(TimeStampedModel):
+    SECONDS_TO_STALE = 1600
+
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     title = models.CharField(max_length=255, **BNULL)
     run_time = models.CharField(max_length=8, **BNULL)

@@ -130,7 +130,7 @@ class ManualScrobbleView(FormView):
             if data_dict:
                 manual_scrobble_event(data_dict, self.request.user.id)
 
-        return HttpResponseRedirect(reverse("home"))
+        return HttpResponseRedirect(reverse("vrobbler-home"))
 
 
 class JsonableResponseMixin:
@@ -181,6 +181,12 @@ def scrobble_endpoint(request):
 @api_view(['POST'])
 def jellyfin_websocket(request):
     data_dict = request.data
+
+    if (
+        data_dict['NotificationType'] == 'PlaybackProgress'
+        and data_dict['ItemType'] == 'Audio'
+    ):
+        return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
     # For making things easier to build new input processors
     if getattr(settings, "DUMP_REQUEST_DATA", False):
