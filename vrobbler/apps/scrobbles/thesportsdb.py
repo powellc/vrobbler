@@ -19,9 +19,10 @@ def lookup_event_from_thesportsdb(event_id: str) -> dict:
         return {}
     league = {}  # client.lookup_league(league_id=event.get('idLeague'))
     event_type = "Game"
-    sport = Sport.objects.filter(thesportsdb_id=event.get('strSport')).first()
+    sport, _created = Sport.objects.get_or_create(
+        thesportsdb_id=event.get('strSport')
+    )
 
-    logger.debug(event)
     data_dict = {
         "ItemType": sport.default_event_type,
         "Name": event.get('strEvent'),
