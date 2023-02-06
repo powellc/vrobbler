@@ -13,7 +13,9 @@ def export_scrobbles(start_date=None, end_date=None, format="AS"):
     if start_date:
         end_query = Q(timestamp__lte=end_date)
 
-    scrobble_qs = Scrobble.objects.filter(start_query, end_query)
+    scrobble_qs = Scrobble.objects.filter(
+        start_query, end_query, track__isnull=False
+    )
     headers = []
     extension = 'tsv'
     delimiter = '\t'
