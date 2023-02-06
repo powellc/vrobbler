@@ -255,7 +255,7 @@ class Scrobble(TimeStampedModel):
             scrobble_data['video_id'] = media.id
         if media.__class__.__name__ == 'Episode':
             media_query = models.Q(podcast_episode=media)
-            scrobble_data['podcast_id'] = media.id
+            scrobble_data['podcast_episode_id'] = media.id
         if media.__class__.__name__ == 'SportEvent':
             media_query = models.Q(sport_event=media)
             scrobble_data['sport_event_id'] = media.id
