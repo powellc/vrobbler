@@ -24,6 +24,7 @@ class AudioScrobblerTSVImport(TimeStampedModel):
         uuid = instance.uuid
         return f'audioscrobbler-uploads/{uuid}.{extension}'
 
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
     uuid = models.UUIDField(editable=False, default=uuid4)
     tsv_file = models.FileField(upload_to=get_path, **BNULL)
     processed_on = models.DateTimeField(**BNULL)
@@ -48,7 +49,10 @@ class AudioScrobblerTSVImport(TimeStampedModel):
             logger.info(f"{self} already processed on {self.processed_on}")
             return
 
-        scrobbles = process_audioscrobbler_tsv_file(self.tsv_file.path)
+        tz = None
+        if self.user:
+            tz = self.user.profile.tzinfo
+        scrobbles = process_audioscrobbler_tsv_file(self.tsv_file.path, tz=tz)
         if scrobbles:
             self.process_log = f"Created {len(scrobbles)} scrobbles"
             for scrobble in scrobbles:

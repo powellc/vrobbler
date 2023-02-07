@@ -1,3 +1,5 @@
+import pytz
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
@@ -16,3 +18,7 @@ class UserProfile(TimeStampedModel):
 
     def __str__(self):
         return f"User profile for {self.user}"
+
+    @property
+    def tzinfo(self):
+        return pytz.timezone(self.timezone)

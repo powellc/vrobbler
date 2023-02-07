@@ -4,6 +4,7 @@ from datetime import datetime
 
 import pytz
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.fields import timezone
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
@@ -160,11 +161,19 @@ class JsonableResponseMixin:
             return JsonResponse(data)
 
 
-class AudioScrobblerImportCreateView(JsonableResponseMixin, CreateView):
+class AudioScrobblerImportCreateView(
+    LoginRequiredMixin, JsonableResponseMixin, CreateView
+):
     model = AudioScrobblerTSVImport
     fields = ['tsv_file']
     template_name = 'scrobbles/upload_form.html'
     success_url = reverse_lazy('vrobbler-home')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 @csrf_exempt

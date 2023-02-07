@@ -9,9 +9,11 @@ from scrobbles.models import Scrobble
 logger = logging.getLogger(__name__)
 
 
-def process_audioscrobbler_tsv_file(file_path):
+def process_audioscrobbler_tsv_file(file_path, tz=None):
     """Takes a path to a file of TSV data and imports it as past scrobbles"""
     new_scrobbles = []
+    if not tz:
+        tz = pytz.utc
 
     with open(file_path) as infile:
         source = 'Audioscrobbler File'
@@ -70,7 +72,7 @@ def process_audioscrobbler_tsv_file(file_path):
                 track.save()
 
             timestamp = datetime.utcfromtimestamp(int(row[6])).replace(
-                tzinfo=pytz.utc
+                tzinfo=tz
             )
             source = 'Audioscrobbler File'
 
