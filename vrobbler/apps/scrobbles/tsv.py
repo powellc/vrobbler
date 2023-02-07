@@ -72,6 +72,7 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                     ]
                 )
                 album.artists.add(artist)
+                album.fetch_artwork()
 
             track, track_created = Track.objects.get_or_create(
                 title=row[2],
