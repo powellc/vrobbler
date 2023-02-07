@@ -52,7 +52,9 @@ class AudioScrobblerTSVImport(TimeStampedModel):
         tz = None
         if self.user:
             tz = self.user.profile.tzinfo
-        scrobbles = process_audioscrobbler_tsv_file(self.tsv_file.path, tz=tz)
+        scrobbles = process_audioscrobbler_tsv_file(
+            self.tsv_file.path, user_tz=tz
+        )
         if scrobbles:
             self.process_log = f"Created {len(scrobbles)} scrobbles"
             for scrobble in scrobbles:
