@@ -6,6 +6,11 @@ import pytz
 from music.models import Album, Artist, Track
 from scrobbles.models import Scrobble
 
+from vrobbler.apps.scrobbles.musicbrainz import (
+    lookup_album_dict_from_mb,
+    lookup_artist_id_from_mb,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,9 +37,8 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                 continue
             artist, artist_created = Artist.objects.get_or_create(name=row[0])
             if artist_created:
-                logger.debug(f"Created artist {artist}")
-            else:
-                logger.debug(f"Found artist {artist}")
+                artist.musicbrainz_id = lookup_artist_id_from_mb(artist.name)
+                artist.save(update_fields=["musicbrainz_id"])
 
             album = None
             album_created = False
@@ -52,9 +56,22 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                 album.artists.add(artist)
 
             if album_created:
-                logger.debug(f"Created album {album}")
-            else:
-                logger.debug(f"Found album {album}")
+                album_dict = lookup_album_dict_from_mb(
+                    album.name, artist_name=artist.name
+                )
+                album.year = album_dict["year"]
+                album.musicbrainz_id = album_dict["mb_id"]
+                album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
+                album.musicbrainz_albumartist_id = artist.musicbrainz_id
+                album.save(
+                    update_fields=[
+                        "year",
+                        "musicbrainz_id",
+                        "musicbrainz_releasegroup_id",
+                        "musicbrainz_albumartist_id",
+                    ]
+                )
+                album.artists.add(artist)
 
             track, track_created = Track.objects.get_or_create(
                 title=row[2],
@@ -63,12 +80,9 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
             )
 
             if track_created:
-                logger.debug(f"Created track {track}")
-            else:
-                logger.debug(f"Found track {track}")
-
-            if track_created:
                 track.musicbrainz_id = row[7]
+                track.run_time = int(row[4])
+                track.run_time_ticks = int(row[4]) * 1000
                 track.save()
 
             timestamp = (
