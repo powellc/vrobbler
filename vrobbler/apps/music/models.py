@@ -72,11 +72,19 @@ class Album(TimeStampedModel):
         return self.artists.first()
 
     def fix_metadata(self):
-        if not self.musicbrainz_albumartist_id or not self.year:
+        if (
+            not self.musicbrainz_albumartist_id
+            or not self.year
+            or not self.musicbrainz_releasegroup_id
+        ):
             musicbrainzngs.set_useragent('vrobbler', '0.3.0')
             mb_data = musicbrainzngs.get_release_by_id(
-                self.musicbrainz_id, includes=['artists']
+                self.musicbrainz_id, includes=['artists', 'release-groups']
             )
+            if not self.musicbrainz_releasegroup_id:
+                self.musicbrainz_releasegroup_id = mb_data['release'][
+                    'release-group'
+                ]['id']
             if not self.musicbrainz_albumartist_id:
                 self.musicbrainz_albumartist_id = mb_data['release'][
                     'artist-credit'
@@ -89,7 +97,13 @@ class Album(TimeStampedModel):
                 except IndexError:
                     pass
 
-            self.save(update_fields=['musicbrainz_albumartist_id', 'year'])
+            self.save(
+                update_fields=[
+                    'musicbrainz_albumartist_id',
+                    'musicbrainz_releasegroup_id',
+                    'year',
+                ]
+            )
 
             new_artist = Artist.objects.filter(
                 musicbrainz_id=self.musicbrainz_albumartist_id
@@ -99,6 +113,11 @@ class Album(TimeStampedModel):
             if not new_artist:
                 for t in self.track_set.all():
                     self.artists.add(t.artist)
+            if (
+                not self.cover_image
+                or self.cover_image == 'default-image-replace-me'
+            ):
+                self.fetch_artwork()
 
     def fetch_artwork(self, force=False):
         if not self.cover_image and not force:
@@ -115,7 +134,10 @@ class Album(TimeStampedModel):
                         f'No cover art found for {self.name} by release'
                     )
 
-            if not self.cover_image and self.musicbrainz_releasegroup_id:
+            if (
+                not self.cover_image
+                or self.cover_image == "default-image-replace-me"
+            ) and self.musicbrainz_releasegroup_id:
                 try:
                     img_data = musicbrainzngs.get_release_group_image_front(
                         self.musicbrainz_releasegroup_id
@@ -131,8 +153,6 @@ class Album(TimeStampedModel):
                 logger.debug(
                     f"No cover art found for release or release group for {self.name}, setting to default"
                 )
-                # TODO Get a placeholder image in here
-                self.cover_image = 'default-image-replace-me'
             self.save()
 
     @property
