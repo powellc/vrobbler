@@ -78,10 +78,10 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                 title=row[2],
                 artist=artist,
                 album=album,
+                musicbrainz_id=row[7],
             )
 
             if track_created:
-                track.musicbrainz_id = row[7]
                 track.run_time = int(row[4])
                 track.run_time_ticks = int(row[4]) * 1000
                 track.save()
