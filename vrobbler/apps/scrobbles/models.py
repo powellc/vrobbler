@@ -56,10 +56,12 @@ class AudioScrobblerTSVImport(TimeStampedModel):
             self.tsv_file.path, user_tz=tz
         )
         if scrobbles:
-            self.process_log = f"Created {len(scrobbles)} scrobbles"
-            for scrobble in scrobbles:
+            for count, scrobble in enumerate(scrobbles):
                 scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}"
-                self.process_log += f"\n{scrobble_str}"
+                log_line = f"{scrobble_str}"
+                if count > 0:
+                    log_line = "\n" + log_line
+                self.process_log += log_line
             self.process_count = len(scrobbles)
         else:
             self.process_log = f"Created no new scrobbles"

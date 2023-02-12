@@ -124,9 +124,7 @@ def undo_audioscrobbler_tsv_import(process_log, dryrun=True):
         logger.warning("No lines in process log found to undo")
         return
 
-    for line_num, line in enumerate(process_log.split('\n')):
-        if line_num == 0:
-            continue
+    for line in process_log.split('\n'):
         scrobble_id = line.split("\t")[0]
         scrobble = Scrobble.objects.filter(id=scrobble_id).first()
         if not scrobble:
