@@ -3,12 +3,11 @@ import logging
 from datetime import datetime
 
 import pytz
-from music.models import Album, Artist, Track
 from scrobbles.models import Scrobble
-
-from vrobbler.apps.scrobbles.musicbrainz import (
-    lookup_album_dict_from_mb,
-    lookup_artist_id_from_mb,
+from music.utils import (
+    get_or_create_album,
+    get_or_create_artist,
+    get_or_create_track,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,56 +34,17 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                     extra={'row': row},
                 )
                 continue
-            artist, artist_created = Artist.objects.get_or_create(name=row[0])
-            if artist_created:
-                artist.musicbrainz_id = lookup_artist_id_from_mb(artist.name)
-                artist.save(update_fields=["musicbrainz_id"])
+            artist = get_or_create_artist(row[0])
+            album = get_or_create_album(row[1])
 
-            album = None
-            album_created = False
-            albums = Album.objects.filter(name=row[1])
-            if albums.count() == 1:
-                album = albums.first()
-            else:
-                for potential_album in albums:
-                    if artist in album.artist_set.all():
-                        album = potential_album
-            if not album:
-                album_created = True
-                album = Album.objects.create(name=row[1])
-                album.save()
-                album.artists.add(artist)
-
-            if album_created:
-                album_dict = lookup_album_dict_from_mb(
-                    album.name, artist_name=artist.name
-                )
-                album.year = album_dict["year"]
-                album.musicbrainz_id = album_dict["mb_id"]
-                album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
-                album.musicbrainz_albumartist_id = artist.musicbrainz_id
-                album.save(
-                    update_fields=[
-                        "year",
-                        "musicbrainz_id",
-                        "musicbrainz_releasegroup_id",
-                        "musicbrainz_albumartist_id",
-                    ]
-                )
-                album.artists.add(artist)
-                album.fetch_artwork()
-
-            track, track_created = Track.objects.get_or_create(
+            track = get_or_create_track(
                 title=row[2],
+                mbid=row[7],
                 artist=artist,
                 album=album,
-                musicbrainz_id=row[7],
+                run_time=row[4],
+                run_time_ticks=row[4] * 1000,
             )
-
-            if track_created:
-                track.run_time = int(row[4])
-                track.run_time_ticks = int(row[4]) * 1000
-                track.save()
 
             timestamp = (
                 datetime.utcfromtimestamp(int(row[6]))
