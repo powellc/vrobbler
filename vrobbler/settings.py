@@ -37,6 +37,12 @@ KEEP_DETAILED_SCROBBLE_LOGS = os.getenv(
     "VROBBLER_KEEP_DETAILED_SCROBBLE_LOGS", False
 )
 
+# Key must be 16, 24 or 32 bytes long and will be converted to a byte stream
+ENCRYPTED_FIELD_KEY = os.getenv(
+    "VROBBLER_ENCRYPTED_FIELD_KEY", "12345678901234567890123456789012"
+)
+
+DJANGO_ENCRYPTED_FIELD_KEY = bytes(ENCRYPTED_FIELD_KEY, "utf-8")
 
 # Should we cull old in-progress scrobbles that are beyond the wait period for resuming?
 DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
@@ -50,6 +56,9 @@ THESPORTSDB_BASE_URL = os.getenv(
     "VROBBLER_THESPORTSDB_BASE_URL", "https://www.thesportsdb.com/api/v1/json/"
 )
 TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
+
+LASTFM_API_KEY = os.getenv("VROBBLER_LASTFM_API_KEY")
+LASTFM_SECRET_KEY = os.getenv("VROBBLER_LASTFM_SECRET_KEY")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -75,7 +84,8 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_filters",
     "django_extensions",
-    'rest_framework.authtoken',
+    "rest_framework.authtoken",
+    "encrypted_field",
     "cachalot",
     "profiles",
     "scrobbles",

@@ -12,6 +12,7 @@ from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
 from vrobbler.apps.profiles.utils import now_user_timezone
+from vrobbler.apps.scrobbles.lastfm import LastFM
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -76,6 +77,66 @@ class AudioScrobblerTSVImport(TimeStampedModel):
         from scrobbles.tsv import undo_audioscrobbler_tsv_import
 
         undo_audioscrobbler_tsv_import(self.process_log, dryrun)
+
+
+class LastFmImport(TimeStampedModel):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
+    uuid = models.UUIDField(editable=False, default=uuid4)
+    processed_on = models.DateTimeField(**BNULL)
+    process_log = models.TextField(**BNULL)
+    process_count = models.IntegerField(**BNULL)
+
+    def __str__(self):
+        return f"LastFM Import: {self.uuid}"
+
+    def process(self, import_all=False):
+        """Import scrobbles found on LastFM"""
+        if self.processed_on:
+            logger.info(f"{self} already processed on {self.processed_on}")
+            return
+
+        last_import = None
+        if not import_all:
+            try:
+                last_import = LastFmImport.objects.exclude(id=self.id).last()
+            except:
+                pass
+
+        if not import_all and not last_import:
+            logger.warn(
+                "No previous import, to import all Last.fm scrobbles, pass import_all=True"
+            )
+            return
+
+        lastfm = LastFM(self.user)
+        last_processed = None
+        if last_import:
+            last_processed = last_import.processed_on
+
+        scrobbles = lastfm.import_from_lastfm(last_processed)
+        self.process_log = ""
+        if scrobbles:
+            for count, scrobble in enumerate(scrobbles):
+                scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}"
+                log_line = f"{scrobble_str}"
+                if count > 0:
+                    log_line = "\n" + log_line
+                self.process_log += log_line
+            self.process_count = len(scrobbles)
+        else:
+            self.process_log = f"Created no new scrobbles"
+            self.process_count = 0
+
+        self.processed_on = timezone.now()
+        self.save(
+            update_fields=['processed_on', 'process_count', 'process_log']
+        )
+
+    def undo(self, dryrun=False):
+        """Undo import of scrobbles from LastFM"""
+        LastFM.undo_lastfm_import(self.process_log, dryrun)
+        self.processed_on = None
+        self.save(update_fields=['processed_on'])
 
 
 class ChartRecord(TimeStampedModel):

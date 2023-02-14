@@ -1,6 +1,10 @@
 from django.contrib import admin
-
-from scrobbles.models import AudioScrobblerTSVImport, Scrobble
+from scrobbles.models import (
+    AudioScrobblerTSVImport,
+    ChartRecord,
+    LastFmImport,
+    Scrobble,
+)
 
 
 class ScrobbleInline(admin.TabularInline):
@@ -15,6 +19,38 @@ class AudioScrobblerTSVImportAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = ("uuid", "created", "process_count", "tsv_file")
     ordering = ("-created",)
+
+
+@admin.register(LastFmImport)
+class LastFmImportAdmin(admin.ModelAdmin):
+    date_hierarchy = "created"
+    list_display = ("uuid", "created", "process_count", "processed_on")
+    ordering = ("-created",)
+
+
+@admin.register(ChartRecord)
+class ChartRecordAdmin(admin.ModelAdmin):
+    date_hierarchy = "created"
+    list_display = (
+        "user",
+        "rank",
+        "year",
+        "week",
+        "month",
+        "day",
+        "media_name",
+    )
+    ordering = ("-created",)
+
+    def media_name(self, obj):
+        if obj.video:
+            return obj.video
+        if obj.track:
+            return obj.track
+        if obj.podcast_episode:
+            return obj.podcast_episode
+        if obj.sport_event:
+            return obj.sport_event
 
 
 @admin.register(Scrobble)

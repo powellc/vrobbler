@@ -1,9 +1,11 @@
-#!/usr/bin/env python3
-from typing import Optional
+import logging
+
 from scrobbles.musicbrainz import (
     lookup_album_dict_from_mb,
     lookup_artist_id_from_mb,
 )
+
+logger = logging.getLogger(__name__)
 
 
 from music.models import Artist, Album, Track
@@ -20,7 +22,7 @@ def get_or_create_artist(name: str) -> Artist:
 def get_or_create_album(name: str, artist: Artist) -> Album:
     album = None
     album_created = False
-    albums = Album.objects.filter(name=name)
+    albums = Album.objects.filter(name__iexact=name)
     if albums.count() == 1:
         album = albums.first()
     else:
@@ -62,16 +64,24 @@ def get_or_create_track(
     run_time=None,
     run_time_ticks=None,
 ) -> Track:
-    track, track_created = Track.objects.get_or_create(
-        title=title,
-        artist=artist,
-        musicbrainz_id=mbid,
-    )
+    track = None
+    if mbid:
+        track = Track.objects.filter(
+            musicbrainz_id=mbid,
+        ).first()
+    if not track:
+        track = Track.objects.filter(
+            title=title, artist=artist, album=album
+        ).first()
 
-    if track_created:
-        track.album = album
-        track.run_time = run_time
-        track.run_time_ticks = run_time_ticks
-        track.save(update_fields=['album', 'run_time', 'run_time_ticks'])
+    if not track:
+        track = Track.objects.create(
+            title=title,
+            artist=artist,
+            album=album,
+            musicbrainz_id=mbid,
+            run_time=run_time,
+            run_time_ticks=run_time_ticks,
+        )
 
     return track
