@@ -70,7 +70,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-CACHALOT_TIMEOUT = os.getenv("VROBBLER_CACHALOT_TIMEOUT", 3600)
 REDIS_URL = os.getenv("VROBBLER_REDIS_URL", None)
 
 INSTALLED_APPS = [
@@ -86,7 +85,6 @@ INSTALLED_APPS = [
     "django_extensions",
     "rest_framework.authtoken",
     "encrypted_field",
-    "cachalot",
     "profiles",
     "scrobbles",
     "videos",
@@ -296,9 +294,12 @@ LOGGING = {
         },
         "django.db.backends": {"handlers": ["null"]},
         "django.server": {"handlers": ["null"]},
+        "pylast": {"handlers": ["null"], "propagate": False},
+        "musicbrainzngs": {"handlers": ["null"], "propagate": False},
+        "httpx": {"handlers": ["null"], "propagate": False},
         "vrobbler": {
-            "handlers": ["file"],
-            "propagate": True,
+            "handlers": ["console"],
+            "propagate": False,
         },
     },
 }

@@ -393,17 +393,6 @@ requests = "*"
 requests-oauthlib = ">=0.3.0"
 
 [[package]]
-name = "django-cachalot"
-version = "2.5.2"
-description = "Caches your Django ORM queries and automatically invalidates them."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-Django = ">=2.2,<4.2"
-
-[[package]]
 name = "django-celery-results"
 version = "2.4.0"
 description = "Celery result backends for Django."
@@ -1609,7 +1598,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "4dd19487f8d9467b920e75a7b3e0c5ae0c735e27b39695d4445537b7524f9065"
+content-hash = "9d9a0b85a6cb22dd5adba7db19813ef01cf843f229a44d4ea0e2d4b899353d43"
 
 [metadata.files]
 amqp = [
@@ -1964,10 +1953,6 @@ django = [
 ]
 django-allauth = [
     {file = "django-allauth-0.50.0.tar.gz", hash = "sha256:ee3a174e249771caeb1d037e64b2704dd3c56cfec44f2058fae2214b224d35e8"},
-]
-django-cachalot = [
-    {file = "django-cachalot-2.5.2.tar.gz", hash = "sha256:bf0420cb8fa5cb4ceebd373a069cf91bb7afb995850cc35e91ccdadfa6cc41b1"},
-    {file = "django_cachalot-2.5.2-py3-none-any.whl", hash = "sha256:7db091320ae352e9ad88c22336cff8d64fb928571287f1fae5299a187fc1a17e"},
 ]
 django-celery-results = [
     {file = "django_celery_results-2.4.0-py3-none-any.whl", hash = "sha256:be91307c02fbbf0dda21993c3001c60edb74595444ccd6ad696552fe3689e85b"},
