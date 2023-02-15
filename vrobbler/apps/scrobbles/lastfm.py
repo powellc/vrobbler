@@ -69,11 +69,11 @@ class LastFM:
                 in_progress=False,
             )
             # Vrobbler scrobbles on finish, LastFM scrobbles on start
-            ten_seconds_eariler = timestamp - timedelta(seconds=15)
-            ten_seconds_later = timestamp + timedelta(seconds=15)
+            seconds_eariler = timestamp - timedelta(seconds=20)
+            seconds_later = timestamp + timedelta(seconds=20)
             existing = Scrobble.objects.filter(
-                timestamp__gte=ten_seconds_eariler,
-                timestamp__lte=ten_seconds_later,
+                created__gte=seconds_eariler,
+                created__lte=seconds_later,
                 track=track,
             ).first()
             if existing:
