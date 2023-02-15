@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pylast
 import pytz
 from django.conf import settings
+from django.utils import timezone
 from music.utils import (
     get_or_create_album,
     get_or_create_artist,
@@ -71,8 +72,8 @@ class LastFM:
             ten_seconds_eariler = timestamp - timedelta(seconds=15)
             ten_seconds_later = timestamp + timedelta(seconds=15)
             existing = Scrobble.objects.filter(
-                created__gte=ten_seconds_eariler,
-                created__lte=ten_seconds_later,
+                timestamp__gte=ten_seconds_eariler,
+                timestamp__lte=ten_seconds_later,
                 track=track,
             ).first()
             if existing:
@@ -112,32 +113,42 @@ class LastFM:
     def get_last_scrobbles(self, time_from=None, time_to=None):
         """Given a user, Last.fm api key, and secret key, grab a list of scrobbled
         tracks"""
+        lfm_params = {}
         scrobbles = []
         if time_from:
-            time_from = int(time_from.timestamp())
+            lfm_params["time_from"] = int(time_from.timestamp())
         if time_to:
-            time_to = int(time_to.timestamp())
+            lfm_params["time_to"] = int(time_to.timestamp())
 
-        if not time_from and not time_to:
-            found_scrobbles = self.user.get_recent_tracks(limit=None)
-        else:
-            found_scrobbles = self.user.get_recent_tracks(
-                time_from=time_from, time_to=time_to
-            )
+        # if not time_from and not time_to:
+        lfm_params['limit'] = None
+
+        found_scrobbles = self.user.get_recent_tracks(**lfm_params)
+
         for scrobble in found_scrobbles:
-            run_time_ticks = scrobble.track.get_duration()
-            run_time = run_time_ticks / 1000
+            try:
+                run_time_ticks = scrobble.track.get_duration()
+                run_time = int(run_time_ticks / 1000)
+            except pylast.MalformedResponseError:
+                run_time_ticks = None
+                run_time = None
+                logger.warn(f"Track {scrobble.track} has no duration")
+
+            timestamp = datetime.utcfromtimestamp(
+                int(scrobble.timestamp)
+            ).replace(tzinfo=pytz.utc)
+            artist = scrobble.track.get_artist().name
+
+            logger.debug(f"{artist},{scrobble.track.title},{timestamp}")
             scrobbles.append(
                 {
-                    "artist": scrobble.track.get_artist().name,
+                    "artist": artist,
                     "album": scrobble.album,
                     "title": scrobble.track.title,
                     "mbid": scrobble.track.get_mbid(),
-                    "run_time": int(run_time),
+                    "run_time": run_time,
                     "run_time_ticks": run_time_ticks,
-                    "timestamp": datetime.utcfromtimestamp(
-                        int(scrobble.timestamp)
-                    ).replace(tzinfo=pytz.utc),
+                    "timestamp": timestamp,
                 }
             )
         return scrobbles

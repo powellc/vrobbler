@@ -10,6 +10,11 @@ from scrobbles.models import Scrobble
 from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
 from videos.models import Video
 from sports.models import SportEvent
+from vrobbler.apps.music.utils import (
+    get_or_create_album,
+    get_or_create_artist,
+    get_or_create_track,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,23 +62,23 @@ def mopidy_scrobble_podcast(
 def mopidy_scrobble_track(
     data_dict: dict, user_id: Optional[int]
 ) -> Optional[Scrobble]:
-    artist_dict = {
-        "name": data_dict.get("artist", None),
-        "musicbrainz_id": data_dict.get("musicbrainz_artist_id", None),
-    }
-
-    album_dict = {
-        "name": data_dict.get("album"),
-        "musicbrainz_id": data_dict.get("musicbrainz_album_id"),
-    }
-
-    track_dict = {
-        "title": data_dict.get("name"),
-        "run_time_ticks": data_dict.get("run_time_ticks"),
-        "run_time": data_dict.get("run_time"),
-    }
-
-    track = Track.find_or_create(artist_dict, album_dict, track_dict)
+    artist = get_or_create_artist(
+        data_dict.get("artist"),
+        mbid=data_dict.get("musicbrainz_artist_id", None),
+    )
+    album = get_or_create_album(
+        data_dict.get("album"),
+        artist=artist,
+        mbid=data_dict.get("musicbrainz_album_id"),
+    )
+    track = get_or_create_track(
+        title=data_dict.get("name"),
+        mbid=data_dict.get("musicbrainz_track_id"),
+        artist=artist,
+        album=album,
+        run_time_ticks=data_dict.get("run_time_ticks"),
+        run_time=data_dict.get("run_time"),
+    )
 
     # Now we run off a scrobble
     mopidy_data = {
@@ -136,38 +141,30 @@ def jellyfin_scrobble_track(
         logger.error("No playback position tick from Jellyfin, aborting")
         return
 
-    artist_dict = {
-        'name': data_dict.get(JELLYFIN_POST_KEYS["ARTIST_NAME"], None),
-        'musicbrainz_id': data_dict.get(
-            JELLYFIN_POST_KEYS["ARTIST_MB_ID"], None
-        ),
-    }
+    artist = get_or_create_artist(
+        data_dict.get(JELLYFIN_POST_KEYS["ARTIST_NAME"]),
+        mbid=data_dict.get(JELLYFIN_POST_KEYS["ARTIST_MB_ID"]),
+    )
+    album = get_or_create_album(
+        data_dict.get(JELLYFIN_POST_KEYS["ALBUM_NAME"]),
+        artist=artist,
+        mbid=data_dict.get(JELLYFIN_POST_KEYS['ALBUM_MB_ID']),
+    )
 
-    album_dict = {
-        "name": data_dict.get(JELLYFIN_POST_KEYS["ALBUM_NAME"], None),
-        "musicbrainz_id": data_dict.get(JELLYFIN_POST_KEYS['ALBUM_MB_ID']),
-    }
-
-    # Convert ticks from Jellyfin from microseconds to nanoseconds
-    # Ain't nobody got time for nanoseconds
-    track_dict = {
-        "title": data_dict.get("Name", ""),
-        "run_time_ticks": data_dict.get(
-            JELLYFIN_POST_KEYS["RUN_TIME_TICKS"], None
-        )
-        // 10000,
-        "run_time": convert_to_seconds(
-            data_dict.get(JELLYFIN_POST_KEYS["RUN_TIME"], None)
-        ),
-    }
-    track = Track.find_or_create(artist_dict, album_dict, track_dict)
-
-    # Prefer Mopidy MD IDs to Jellyfin, so skip if we already have one
-    if not track.musicbrainz_id:
-        track.musicbrainz_id = data_dict.get(
-            JELLYFIN_POST_KEYS["TRACK_MB_ID"], None
-        )
-        track.save()
+    run_time_ticks = (
+        data_dict.get(JELLYFIN_POST_KEYS["RUN_TIME_TICKS"]) // 10000
+    )
+    run_time = convert_to_seconds(
+        data_dict.get(JELLYFIN_POST_KEYS["RUN_TIME"])
+    )
+    track = get_or_create_track(
+        title=data_dict.get("Name"),
+        mbid=data_dict.get(JELLYFIN_POST_KEYS["TRACK_MB_ID"]),
+        artist=artist,
+        album=album,
+        run_time_ticks=run_time_ticks,
+        run_time=run_time,
+    )
 
     scrobble_dict = build_scrobble_dict(data_dict, user_id)
 

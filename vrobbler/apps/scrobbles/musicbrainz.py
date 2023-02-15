@@ -62,9 +62,12 @@ def lookup_album_dict_from_mb(release_name: str, artist_name: str) -> dict:
             extra={"result": top_result},
         )
         return {}
-    print(top_result)
+    year = None
+    if top_result.get("date"):
+        year = parse(top_result["date"]).year
+
     return {
-        "year": parse(top_result["date"]).year,
+        "year": year,
         "mb_id": top_result["id"],
         "mb_group_id": top_result["release-group"]["id"],
     }
