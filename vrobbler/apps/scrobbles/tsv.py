@@ -26,6 +26,8 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
         source_id = ""
         for row_num, row in enumerate(rows):
             if row_num in [0, 1, 2]:
+                if "Rockbox" in row[0]:
+                    source = "Rockbox"
                 source_id += row[0] + "\n"
                 continue
             if len(row) > 8:
