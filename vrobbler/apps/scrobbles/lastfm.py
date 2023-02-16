@@ -139,7 +139,7 @@ class LastFM:
             ).replace(tzinfo=pytz.utc)
             artist = scrobble.track.get_artist().name
 
-            logger.debug(f"{artist},{scrobble.track.title},{timestamp}")
+            logger.info(f"{artist},{scrobble.track.title},{timestamp}")
             scrobbles.append(
                 {
                     "artist": artist,
