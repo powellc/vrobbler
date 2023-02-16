@@ -2,7 +2,7 @@ import logging
 
 from scrobbles.musicbrainz import (
     lookup_album_dict_from_mb,
-    lookup_artist_id_from_mb,
+    lookup_artist_from_mb,
 )
 
 logger = logging.getLogger(__name__)
@@ -12,16 +12,18 @@ from music.models import Artist, Album, Track
 
 
 def get_or_create_artist(name: str, mbid: str = None) -> Artist:
+    if 'feat.' in name:
+        name = name.split('feat.')[0]
     if mbid:
-        artist, artist_created = Artist.objects.get_or_create(
-            name=name, musicbrainz_id=mbid
-        )
+        artist, created = Artist.objects.get_or_create(musicbrainz_id=mbid)
     else:
-        artist, artist_created = Artist.objects.get_or_create(name=name)
+        artist, created = Artist.objects.get_or_create(name=name)
 
-    if not mbid:
-        artist.musicbrainz_id = lookup_artist_id_from_mb(artist.name)
-        artist.save(update_fields=["musicbrainz_id"])
+    if created or not mbid:
+        artist_dict = lookup_artist_from_mb(name)
+        artist.musicbrainz_id = artist_dict["id"]
+        artist.name = artist_dict["name"]
+        artist.save(update_fields=["musicbrainz_id", "name"])
     return artist
 
 
@@ -80,6 +82,7 @@ def get_or_create_track(
             title=title, artist=artist, album=album
         ).first()
 
+    # TODO Can we look up mbid for tracks?
     if not track:
         track = Track.objects.create(
             title=title,

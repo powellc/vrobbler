@@ -124,13 +124,6 @@ def jellyfin_scrobble_track(
     data_dict: dict, user_id: Optional[int]
 ) -> Optional[Scrobble]:
 
-    if not data_dict.get("Provider_musicbrainztrack", None):
-        # TODO we should be able to look up tracks via MB rather than error out
-        logger.error(
-            "No MBrainz Track ID received. This is likely because all metadata is bad, not scrobbling"
-        )
-        return
-
     null_position_on_progress = (
         data_dict.get("PlaybackPosition") == "00:00:00"
         and data_dict.get("NotificationType") == "PlaybackProgress"

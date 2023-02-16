@@ -7,12 +7,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-from sqlalchemy import update
 from scrobbles.mixins import ScrobblableMixin
-from vrobbler.apps.sports.utils import (
-    get_players_from_event,
-    get_round_name_from_event,
-)
+from sports.utils import get_players_from_event, get_round_name_from_event
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}

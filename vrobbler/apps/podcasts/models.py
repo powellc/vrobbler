@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
-from vrobbler.apps.scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}

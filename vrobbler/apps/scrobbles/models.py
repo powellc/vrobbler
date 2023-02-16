@@ -8,11 +8,11 @@ from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 from music.models import Artist, Track
 from podcasts.models import Episode
+from profiles.utils import now_user_timezone
+from scrobbles.lastfm import LastFM
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
-from vrobbler.apps.profiles.utils import now_user_timezone
-from vrobbler.apps.scrobbles.lastfm import LastFM
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

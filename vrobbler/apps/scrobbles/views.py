@@ -13,6 +13,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
+from music.aggregators import (
+    scrobble_counts,
+    top_artists,
+    top_tracks,
+    week_of_scrobbles,
+)
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -26,9 +32,10 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
 )
+from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
 from scrobbles.imdb import lookup_video_from_imdb
-from scrobbles.models import AudioScrobblerTSVImport, Scrobble
+from scrobbles.models import AudioScrobblerTSVImport, LastFmImport, Scrobble
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
@@ -41,15 +48,8 @@ from scrobbles.serializers import (
     AudioScrobblerTSVImportSerializer,
     ScrobbleSerializer,
 )
+from scrobbles.tasks import process_lastfm_import
 from scrobbles.thesportsdb import lookup_event_from_thesportsdb
-
-from vrobbler.apps.music.aggregators import (
-    scrobble_counts,
-    top_artists,
-    top_tracks,
-    week_of_scrobbles,
-)
-from vrobbler.apps.scrobbles.export import export_scrobbles
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +174,17 @@ class AudioScrobblerImportCreateView(
         self.object.user = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def lastfm_import(request):
+    lfm_import = LastFmImport.objects.create(user=request.user)
+
+    process_lastfm_import.delay(lfm_import.id)
+
+    success_url = reverse_lazy('vrobbler-home')
+    return HttpResponseRedirect(success_url)
 
 
 @csrf_exempt
