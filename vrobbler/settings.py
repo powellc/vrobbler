@@ -72,6 +72,12 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 
 REDIS_URL = os.getenv("VROBBLER_REDIS_URL", None)
 
+CELERY_TASK_ALWAYS_EAGER = os.getenv("VROBBLER_SKIP_CELERY", False)
+CELERY_BROKER_URL = REDIS_URL if REDIS_URL else "memory://localhost/"
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_TIMEZONE = os.getenv("VROBBLER_TIME_ZONE", "US/Eastern")
+CELERY_TASK_TRACK_STARTED = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
