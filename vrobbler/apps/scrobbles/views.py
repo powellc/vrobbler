@@ -179,7 +179,9 @@ class AudioScrobblerImportCreateView(
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def lastfm_import(request):
-    lfm_import = LastFmImport.objects.create(user=request.user)
+    lfm_import, created = LastFmImport.objects.get_or_create(
+        user=request.user, processed_on__isnull=True
+    )
 
     process_lastfm_import.delay(lfm_import.id)
 
