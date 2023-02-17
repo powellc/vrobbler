@@ -49,6 +49,15 @@ An example of the format:
 311	311	Misdirected Hostility	7	179	S	1740496085	61ff2c1a-fc9c-44c3-8da1-5e50a44245af
 ,
 #+end_src
+* DONE [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
+CLOSED: [2023-02-17 Fri 00:10]
+
+This would allow a few nice flows. One, you'd be able to record the play of an
+entire album by just dropping the muscibrainz_id in. This could be helpful for
+offline listening. It would also mean bad metadata from mopidy would not break
+scrobbling.
+* DONE When updating musicbrainz IDs, clear and run fetch artwrok :improvement:
+CLOSED: [2023-02-17 Fri 00:11]
 * TODO [#A] Add ability to manually scrobble albums or tracks from MB :improvement:
 
 Given a UUID from musicbrainz, we should be able to scrobble an album or
@@ -58,12 +67,6 @@ individual track.
 * TODO [#B] Adjust cancel/finish task to use javascript to submit :improvement:
 * TODO [#B] Implement a detail view for TV shows :improvement:
 * TODO [#B] Implement a detail view for Moviews :improvement:
-* TODO [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
-
-This would allow a few nice flows. One, you'd be able to record the play of an
-entire album by just dropping the muscibrainz_id in. This could be helpful for
-offline listening. It would also mean bad metadata from mopidy would not break
-scrobbling.
 * TODO [#C] Implement keeping track of week/month/year chart-toppers :improvement:
 :LOGBOOK:
 CLOCK: [2023-01-30 Mon 16:30]--[2023-01-30 Mon 18:00] =>  1:30
@@ -372,9 +375,8 @@ has to re-populate when the server restarts.
 }
 #+end_src
 * TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :improvement:
-* TODO Figure out how to add to web-scrobbler :imropvement:
+* TODO [#C] Figure out how to add to web-scrobbler :imropvement:
 
 An example:
 https://github.com/web-scrobbler/web-scrobbler/blob/master/src/core/background/scrobbler/maloja-scrobbler.js
 
-* TODO When updating musicbrainz IDs, clear and run fetch artwrok :improvement:

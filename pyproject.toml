@@ -35,6 +35,7 @@ django-redis = "^5.2.0"
 pylast = "^5.1.0"
 django-encrypted-field = "^1.0.5"
 celery = "^5.2.7"
+honcho = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 Werkzeug = "2.0.3"
