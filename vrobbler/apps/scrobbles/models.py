@@ -56,6 +56,7 @@ class AudioScrobblerTSVImport(TimeStampedModel):
         scrobbles = process_audioscrobbler_tsv_file(
             self.tsv_file.path, user_tz=tz
         )
+        self.process_log = ""
         if scrobbles:
             for count, scrobble in enumerate(scrobbles):
                 scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}"

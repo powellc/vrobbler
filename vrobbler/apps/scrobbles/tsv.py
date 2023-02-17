@@ -26,7 +26,7 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
         source_id = ""
         for row_num, row in enumerate(rows):
             if row_num in [0, 1, 2]:
-                if "Rockbox" in row[0]:
+                if "Rockbox" in row[2]:
                     source = "Rockbox"
                 source_id += row[0] + "\n"
                 continue
@@ -37,7 +37,7 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                 )
                 continue
             artist = get_or_create_artist(row[0])
-            album = get_or_create_album(row[1])
+            album = get_or_create_album(row[1], artist)
 
             track = get_or_create_track(
                 title=row[2],
@@ -45,11 +45,11 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
                 artist=artist,
                 album=album,
                 run_time=row[4],
-                run_time_ticks=row[4] * 1000,
+                run_time_ticks=int(row[4]) * 1000,
             )
 
             timestamp = (
-                datetime.utcfromtimestamp(int(row[6]))
+                datetime.fromtimestamp(int(row[6]))
                 .replace(tzinfo=user_tz)
                 .astimezone(pytz.utc)
             )
