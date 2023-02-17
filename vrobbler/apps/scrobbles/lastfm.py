@@ -90,7 +90,7 @@ class LastFM:
         return created
 
     @staticmethod
-    def undo_lastfm_import(process_log, dryrun=True):
+    def undo_lastfm_import(process_log, dryrun=False):
         """Given a newline separated list of scrobbles, delete them"""
         from scrobbles.models import Scrobble
 
@@ -155,6 +155,7 @@ class LastFM:
             logger.info(f"{artist},{scrobble.track.title},{timestamp}")
             scrobbles.append(
                 {
+                    "user": self.vrobbler_user,
                     "artist": artist,
                     "album": scrobble.album,
                     "title": scrobble.track.title,

@@ -13,7 +13,7 @@ from music.utils import (
 logger = logging.getLogger(__name__)
 
 
-def process_audioscrobbler_tsv_file(file_path, user_tz=None):
+def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
     """Takes a path to a file of TSV data and imports it as past scrobbles"""
     new_scrobbles = []
     if not user_tz:
@@ -55,6 +55,7 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
             )
 
             new_scrobble = Scrobble(
+                user_id=user_id,
                 timestamp=timestamp,
                 source=source,
                 source_id=source_id,
@@ -79,7 +80,7 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
         return created
 
 
-def undo_audioscrobbler_tsv_import(process_log, dryrun=True):
+def undo_audioscrobbler_tsv_import(process_log, dryrun=False):
     """Accepts the log from a TSV import and removes the scrobbles"""
     if not process_log:
         logger.warning("No lines in process log found to undo")
