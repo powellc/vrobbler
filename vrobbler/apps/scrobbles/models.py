@@ -37,12 +37,6 @@ class AudioScrobblerTSVImport(TimeStampedModel):
             return f"Audioscrobbler TSV upload: {self.tsv_file.path}"
         return f"Audioscrobbler TSV upload {self.id}"
 
-    def save(self, **kwargs):
-        """On save, attempt to import the TSV file"""
-        super().save(**kwargs)
-        self.process()
-        return
-
     def process(self, force=False):
         from scrobbles.tsv import process_audioscrobbler_tsv_file
 

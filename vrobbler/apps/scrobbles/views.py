@@ -48,7 +48,7 @@ from scrobbles.serializers import (
     AudioScrobblerTSVImportSerializer,
     ScrobbleSerializer,
 )
-from scrobbles.tasks import process_lastfm_import
+from scrobbles.tasks import process_lastfm_import, process_tsv_import
 from scrobbles.thesportsdb import lookup_event_from_thesportsdb
 
 logger = logging.getLogger(__name__)
@@ -173,6 +173,7 @@ class AudioScrobblerImportCreateView(
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.save()
+        process_tsv_import.delay(self.object.id)
         return HttpResponseRedirect(self.get_success_url())
 
 
