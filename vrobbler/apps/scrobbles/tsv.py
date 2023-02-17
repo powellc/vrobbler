@@ -49,7 +49,7 @@ def process_audioscrobbler_tsv_file(file_path, user_tz=None):
             )
 
             timestamp = (
-                datetime.fromtimestamp(int(row[6]))
+                datetime.utcfromtimestamp(int(row[6]))
                 .replace(tzinfo=user_tz)
                 .astimezone(pytz.utc)
             )
