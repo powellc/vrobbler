@@ -82,7 +82,8 @@ class AudioScrobblerTSVImport(TimeStampedModel):
 class LastFmImport(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
     uuid = models.UUIDField(editable=False, default=uuid4)
-    processed_on = models.DateTimeField(**BNULL)
+    processing_started = models.DateTimeField(**BNULL)
+    processed_finished = models.DateTimeField(**BNULL)
     process_log = models.TextField(**BNULL)
     process_count = models.IntegerField(**BNULL)
 
@@ -91,8 +92,10 @@ class LastFmImport(TimeStampedModel):
 
     def process(self, import_all=False):
         """Import scrobbles found on LastFM"""
-        if self.processed_on:
-            logger.info(f"{self} already processed on {self.processed_on}")
+        if self.processed_finished:
+            logger.info(
+                f"{self} already processed on {self.processed_finished}"
+            )
             return
 
         last_import = None
@@ -111,7 +114,10 @@ class LastFmImport(TimeStampedModel):
         lastfm = LastFM(self.user)
         last_processed = None
         if last_import:
-            last_processed = last_import.processed_on
+            last_processed = last_import.processed_finished
+
+        self.processing_started = timezone.now()
+        self.save(update_fields=['processing_started'])
 
         scrobbles = lastfm.import_from_lastfm(last_processed)
         self.process_log = ""
@@ -124,19 +130,22 @@ class LastFmImport(TimeStampedModel):
                 self.process_log += log_line
             self.process_count = len(scrobbles)
         else:
-            self.process_log = f"Created no new scrobbles"
             self.process_count = 0
 
-        self.processed_on = timezone.now()
+        self.processed_finished = timezone.now()
         self.save(
-            update_fields=['processed_on', 'process_count', 'process_log']
+            update_fields=[
+                'processed_finished',
+                'process_count',
+                'process_log',
+            ]
         )
 
     def undo(self, dryrun=False):
         """Undo import of scrobbles from LastFM"""
         LastFM.undo_lastfm_import(self.process_log, dryrun)
-        self.processed_on = None
-        self.save(update_fields=['processed_on'])
+        self.processed_finished = None
+        self.save(update_fields=['processed_finished'])
 
 
 class ChartRecord(TimeStampedModel):

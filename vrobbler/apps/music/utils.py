@@ -1,3 +1,4 @@
+import re
 import logging
 
 from scrobbles.musicbrainz import (
@@ -12,18 +13,27 @@ from music.models import Artist, Album, Track
 
 
 def get_or_create_artist(name: str, mbid: str = None) -> Artist:
-    if 'feat.' in name:
-        name = name.split('feat.')[0]
-    if mbid:
-        artist, created = Artist.objects.get_or_create(musicbrainz_id=mbid)
-    else:
-        artist, created = Artist.objects.get_or_create(name=name)
+    artist = None
+    logger.debug(f'Got artist {name} and mbid: {mbid}')
 
-    if created or not mbid:
-        artist_dict = lookup_artist_from_mb(name)
-        artist.musicbrainz_id = artist_dict["id"]
+    if 'feat.' in name.lower():
+        name = re.split("feat.", name, flags=re.IGNORECASE)[0].strip()
+    if 'featuring' in name.lower():
+        name = re.split("featuring", name, flags=re.IGNORECASE)[0].strip()
+    artist_dict = lookup_artist_from_mb(name)
+    mbid = mbid or artist_dict['id']
+
+    logger.debug(f'Looking up artist {name} and mbid: {mbid}')
+    artist, created = Artist.objects.get_or_create(
+        name=name, musicbrainz_id=mbid
+    )
+
+    logger.debug(f"Cleaning artist {name} with {artist_dict['name']}")
+    # Clean up bad names in our DB with MB names
+    if artist.name != artist_dict['name']:
         artist.name = artist_dict["name"]
-        artist.save(update_fields=["musicbrainz_id", "name"])
+        artist.save(update_fields=["name"])
+
     return artist
 
 

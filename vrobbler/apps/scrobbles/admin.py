@@ -24,7 +24,12 @@ class AudioScrobblerTSVImportAdmin(admin.ModelAdmin):
 @admin.register(LastFmImport)
 class LastFmImportAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("uuid", "created", "process_count", "processed_on")
+    list_display = (
+        "uuid",
+        "process_count",
+        "processed_finished",
+        "processing_started",
+    )
     ordering = ("-created",)
 
 

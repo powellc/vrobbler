@@ -124,20 +124,33 @@ class LastFM:
         lfm_params['limit'] = None
 
         found_scrobbles = self.user.get_recent_tracks(**lfm_params)
+        # TOOD spin this out into a celery task over certain threshold of found scrobbles?
 
         for scrobble in found_scrobbles:
+            run_time = None
+            run_time_ticks = None
+            mbid = None
+            artist = None
+
             try:
                 run_time_ticks = scrobble.track.get_duration()
                 run_time = int(run_time_ticks / 1000)
-            except pylast.MalformedResponseError:
-                run_time_ticks = None
-                run_time = None
-                logger.warn(f"Track {scrobble.track} has no duration")
+                mbid = scrobble.track.get_mbid()
+                artist = scrobble.track.get_artist().name
+            except pylast.MalformedResponseError as e:
+                logger.warn(e)
+            except pylast.WSError as e:
+                logger.warn(
+                    "LastFM barfed trying to get the track for {scrobble.track}"
+                )
+
+            if not mbid or not artist:
+                logger.warn(f"Silly LastFM, bad data, bailing on {scrobble}")
+                continue
 
             timestamp = datetime.utcfromtimestamp(
                 int(scrobble.timestamp)
             ).replace(tzinfo=pytz.utc)
-            artist = scrobble.track.get_artist().name
 
             logger.info(f"{artist},{scrobble.track.title},{timestamp}")
             scrobbles.append(
@@ -145,7 +158,7 @@ class LastFM:
                     "artist": artist,
                     "album": scrobble.album,
                     "title": scrobble.track.title,
-                    "mbid": scrobble.track.get_mbid(),
+                    "mbid": mbid,
                     "run_time": run_time,
                     "run_time_ticks": run_time_ticks,
                     "timestamp": timestamp,
