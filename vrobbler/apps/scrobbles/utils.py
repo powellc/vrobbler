@@ -1,10 +1,14 @@
 import logging
 from urllib.parse import unquote
 
+from django.contrib.auth import get_user_model
+
 from dateutil.parser import ParserError, parse
 from django.conf import settings
+from django.db import models
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 def convert_to_seconds(run_time: str) -> int:
@@ -103,3 +107,11 @@ def check_scrobble_for_finish(
         if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
             scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
             scrobble.save(update_fields=['scrobble_log'])
+
+
+def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
+    from scrobbles.models import Scrobble
+
+    if media_obj.__class__.__name__ == 'Book':
+        media_query = models.Q(book=media_obj)
+    return Scrobble.objects.filter(media_query, user=user)

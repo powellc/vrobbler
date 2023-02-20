@@ -49,10 +49,7 @@ from scrobbles.scrobblers import (
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
-from scrobbles.serializers import (
-    AudioScrobblerTSVImportSerializer,
-    ScrobbleSerializer,
-)
+from scrobbles.api import serializers
 from scrobbles.tasks import (
     process_koreader_import,
     process_lastfm_import,
@@ -216,15 +213,6 @@ def lastfm_import(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
-def scrobble_endpoint(request):
-    """List all Scrobbles, or create a new Scrobble"""
-    scrobble = Scrobble.objects.all()
-    serializer = ScrobbleSerializer(scrobble, many=True)
-    return Response(serializer.data)
-
-
-@csrf_exempt
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def jellyfin_websocket(request):
@@ -293,7 +281,9 @@ def import_audioscrobbler_file(request):
     scrobbles_created = []
     # tsv_file = request.FILES[0]
 
-    file_serializer = AudioScrobblerTSVImportSerializer(data=request.data)
+    file_serializer = serializers.AudioScrobblerTSVImportSerializer(
+        data=request.data
+    )
     if file_serializer.is_valid():
         import_file = file_serializer.save()
         return Response(

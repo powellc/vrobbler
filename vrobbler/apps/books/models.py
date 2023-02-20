@@ -8,7 +8,8 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
 
-from vrobbler.apps.books.utils import lookup_book_from_openlibrary
+from books.utils import lookup_book_from_openlibrary
+from scrobbles.utils import get_scrobbles_for_media
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -66,3 +67,7 @@ class Book(ScrobblableMixin):
             logger.warn(f"{self} has no pages, no completion percentage")
             return 0
         return int(self.pages * (self.COMPLETION_PERCENT / 100))
+
+    def progress_for_user(self, user: User) -> int:
+        last_scrobble = get_scrobbles_for_media(self, user).last()
+        return int((last_scrobble.book_pages_read / self.pages) * 100)
