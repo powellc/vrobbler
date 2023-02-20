@@ -24,6 +24,11 @@ urlpatterns = [
         scrobbles_views.AudioScrobblerImportCreateView.as_view(),
         name='audioscrobbler-file-upload',
     ),
+    path(
+        'manual/koreader/',
+        scrobbles_views.KoReaderImportCreateView.as_view(),
+        name='koreader-file-upload',
+    ),
     path("", include(music_urls, namespace="music")),
     path("", include(video_urls, namespace="videos")),
     path(

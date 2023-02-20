@@ -47,17 +47,17 @@ class LastFM:
         new_scrobbles = []
         source = "Last.fm"
         source_id = ""
-        latest_scrobbles = self.get_last_scrobbles(time_from=last_processed)
+        lastfm_scrobbles = self.get_last_scrobbles(time_from=last_processed)
 
-        for scrobble in latest_scrobbles:
-            timestamp = scrobble.pop('timestamp')
+        for lfm_scrobble in lastfm_scrobbles:
+            timestamp = lfm_scrobble.pop('timestamp')
 
-            artist = get_or_create_artist(scrobble.pop('artist'))
-            album = get_or_create_album(scrobble.pop('album'), artist)
+            artist = get_or_create_artist(lfm_scrobble.pop('artist'))
+            album = get_or_create_album(lfm_scrobble.pop('album'), artist)
 
-            scrobble['artist'] = artist
-            scrobble['album'] = album
-            track = get_or_create_track(**scrobble)
+            lfm_scrobble['artist'] = artist
+            lfm_scrobble['album'] = album
+            track = get_or_create_track(**lfm_scrobble)
 
             new_scrobble = Scrobble(
                 user=self.vrobbler_user,
@@ -134,7 +134,6 @@ class LastFM:
             logger.info(f"{artist},{scrobble.track.title},{timestamp}")
             scrobbles.append(
                 {
-                    "user": self.vrobbler_user,
                     "artist": artist,
                     "album": scrobble.album,
                     "title": scrobble.track.title,

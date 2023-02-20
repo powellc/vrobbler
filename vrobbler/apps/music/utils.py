@@ -20,6 +20,7 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
         name = re.split("feat.", name, flags=re.IGNORECASE)[0].strip()
     if 'featuring' in name.lower():
         name = re.split("featuring", name, flags=re.IGNORECASE)[0].strip()
+
     artist_dict = lookup_artist_from_mb(name)
     mbid = mbid or artist_dict['id']
 
@@ -30,9 +31,9 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
 
     logger.debug(f"Cleaning artist {name} with {artist_dict['name']}")
     # Clean up bad names in our DB with MB names
-    if artist.name != artist_dict['name']:
-        artist.name = artist_dict["name"]
-        artist.save(update_fields=["name"])
+    # if artist.name != artist_dict["name"]:
+    #    artist.name = artist_dict["name"]
+    #    artist.save(update_fields=["name"])
 
     return artist
 

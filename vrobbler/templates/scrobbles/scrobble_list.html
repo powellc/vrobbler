@@ -326,7 +326,18 @@
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Import</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+            <form action="{% url 'koreader-file-upload' %}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="tsv_file" class="col-form-label">KOReader sqlite file:</label>
+                        <input type="file" name="sqlite_file" class="form-control" id="id_sqlite_file">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Import</button>
                 </div>
             </form>
         </div>

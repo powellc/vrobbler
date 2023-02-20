@@ -35,7 +35,12 @@ from scrobbles.constants import (
 from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
 from scrobbles.imdb import lookup_video_from_imdb
-from scrobbles.models import AudioScrobblerTSVImport, LastFmImport, Scrobble
+from scrobbles.models import (
+    AudioScrobblerTSVImport,
+    KoReaderImport,
+    LastFmImport,
+    Scrobble,
+)
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
@@ -48,7 +53,11 @@ from scrobbles.serializers import (
     AudioScrobblerTSVImportSerializer,
     ScrobbleSerializer,
 )
-from scrobbles.tasks import process_lastfm_import, process_tsv_import
+from scrobbles.tasks import (
+    process_koreader_import,
+    process_lastfm_import,
+    process_tsv_import,
+)
 from scrobbles.thesportsdb import lookup_event_from_thesportsdb
 
 logger = logging.getLogger(__name__)
@@ -174,6 +183,22 @@ class AudioScrobblerImportCreateView(
         self.object.user = self.request.user
         self.object.save()
         process_tsv_import.delay(self.object.id)
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class KoReaderImportCreateView(
+    LoginRequiredMixin, JsonableResponseMixin, CreateView
+):
+    model = KoReaderImport
+    fields = ['sqlite_file']
+    template_name = 'scrobbles/upload_form.html'
+    success_url = reverse_lazy('vrobbler-home')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        process_koreader_import.delay(self.object.id)
         return HttpResponseRedirect(self.get_success_url())
 
 

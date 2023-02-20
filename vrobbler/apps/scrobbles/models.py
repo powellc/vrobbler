@@ -81,7 +81,7 @@ class BaseFileImportMixin(TimeStampedModel):
         self.process_log = ""
         if not scrobbles:
             self.process_count = 0
-            self.save(update_fields=["process_log" "process_count"])
+            self.save(update_fields=["process_log", "process_count"])
             return
 
         for count, scrobble in enumerate(scrobbles):
