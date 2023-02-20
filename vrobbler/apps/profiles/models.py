@@ -16,7 +16,7 @@ class UserProfile(TimeStampedModel):
         User, on_delete=models.CASCADE, related_name="profile"
     )
     timezone = models.CharField(
-        max_length=255, choices=PRETTY_TIMEZONE_CHOICES
+        max_length=255, choices=PRETTY_TIMEZONE_CHOICES, default=pytz.UTC
     )
     lastfm_username = models.CharField(max_length=255, **BNULL)
     lastfm_password = EncryptedField(**BNULL)

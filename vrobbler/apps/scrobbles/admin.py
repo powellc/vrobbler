@@ -2,6 +2,7 @@ from django.contrib import admin
 from scrobbles.models import (
     AudioScrobblerTSVImport,
     ChartRecord,
+    KoReaderImport,
     LastFmImport,
     Scrobble,
 )
@@ -14,15 +15,7 @@ class ScrobbleInline(admin.TabularInline):
     exclude = ('source_id', 'scrobble_log')
 
 
-@admin.register(AudioScrobblerTSVImport)
-class AudioScrobblerTSVImportAdmin(admin.ModelAdmin):
-    date_hierarchy = "created"
-    list_display = ("uuid", "created", "process_count", "tsv_file")
-    ordering = ("-created",)
-
-
-@admin.register(LastFmImport)
-class LastFmImportAdmin(admin.ModelAdmin):
+class ImportBaseAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (
         "uuid",
@@ -31,6 +24,21 @@ class LastFmImportAdmin(admin.ModelAdmin):
         "processing_started",
     )
     ordering = ("-created",)
+
+
+@admin.register(AudioScrobblerTSVImport)
+class AudioScrobblerTSVImportAdmin(ImportBaseAdmin):
+    """"""
+
+
+@admin.register(LastFmImport)
+class LastFmImportAdmin(ImportBaseAdmin):
+    """"""
+
+
+@admin.register(KoReaderImport)
+class KoReaderImportAdmin(ImportBaseAdmin):
+    """"""
 
 
 @admin.register(ChartRecord)
@@ -71,21 +79,21 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "is_paused",
         "played_to_completion",
     )
-    raw_id_fields = ('video', 'podcast_episode', 'track', 'sport_event')
+    raw_id_fields = (
+        'video',
+        'podcast_episode',
+        'track',
+        'sport_event',
+        'book',
+    )
     list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)
 
     def media_name(self, obj):
-        if obj.video:
-            return obj.video
-        if obj.track:
-            return obj.track
-        if obj.podcast_episode:
-            return obj.podcast_episode
-        if obj.sport_event:
-            return obj.sport_event
+        return obj.media_obj
 
     def media_type(self, obj):
+        return obj.media_obj.__class__.__name__
         if obj.video:
             return "Video"
         if obj.track:

@@ -1,5 +1,5 @@
-import re
 import logging
+import re
 
 from scrobbles.musicbrainz import (
     lookup_album_dict_from_mb,
@@ -9,7 +9,7 @@ from scrobbles.musicbrainz import (
 logger = logging.getLogger(__name__)
 
 
-from music.models import Artist, Album, Track
+from music.models import Album, Artist, Track
 
 
 def get_or_create_artist(name: str, mbid: str = None) -> Artist:

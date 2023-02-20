@@ -1,7 +1,11 @@
 import logging
 from celery import shared_task
 
-from scrobbles.models import AudioScrobblerTSVImport, LastFmImport
+from scrobbles.models import (
+    AudioScrobblerTSVImport,
+    KoReaderImport,
+    LastFmImport,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,3 +26,12 @@ def process_tsv_import(import_id):
         logger.warn(f"AudioScrobblerTSVImport not found with id {import_id}")
 
     tsv_import.process()
+
+
+@shared_task
+def process_koreader_import(import_id):
+    koreader_import = KoReaderImport.objects.filter(id=import_id).first()
+    if not koreader_import:
+        logger.warn(f"KOReaderImport not found with id {import_id}")
+
+    koreader_import.process()

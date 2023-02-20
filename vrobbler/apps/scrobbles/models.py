@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 from music.models import Artist, Track
+from books.models import Book
 from podcasts.models import Episode
 from profiles.utils import now_user_timezone
 from scrobbles.lastfm import LastFM
@@ -19,62 +20,7 @@ User = get_user_model()
 BNULL = {"blank": True, "null": True}
 
 
-class AudioScrobblerTSVImport(TimeStampedModel):
-    def get_path(instance, filename):
-        extension = filename.split('.')[-1]
-        uuid = instance.uuid
-        return f'audioscrobbler-uploads/{uuid}.{extension}'
-
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
-    uuid = models.UUIDField(editable=False, default=uuid4)
-    tsv_file = models.FileField(upload_to=get_path, **BNULL)
-    processed_on = models.DateTimeField(**BNULL)
-    process_log = models.TextField(**BNULL)
-    process_count = models.IntegerField(**BNULL)
-
-    def __str__(self):
-        if self.tsv_file:
-            return f"Audioscrobbler TSV upload: {self.tsv_file.path}"
-        return f"Audioscrobbler TSV upload {self.id}"
-
-    def process(self, force=False):
-        from scrobbles.tsv import process_audioscrobbler_tsv_file
-
-        if self.processed_on and not force:
-            logger.info(f"{self} already processed on {self.processed_on}")
-            return
-
-        tz = None
-        if self.user:
-            tz = self.user.profile.tzinfo
-        scrobbles = process_audioscrobbler_tsv_file(
-            self.tsv_file.path, self.user.id, user_tz=tz
-        )
-        self.process_log = ""
-        if scrobbles:
-            for count, scrobble in enumerate(scrobbles):
-                scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}"
-                log_line = f"{scrobble_str}"
-                if count > 0:
-                    log_line = "\n" + log_line
-                self.process_log += log_line
-            self.process_count = len(scrobbles)
-        else:
-            self.process_log = f"Created no new scrobbles"
-            self.process_count = 0
-
-        self.processed_on = timezone.now()
-        self.save(
-            update_fields=['processed_on', 'process_count', 'process_log']
-        )
-
-    def undo(self, dryrun=True):
-        from scrobbles.tsv import undo_audioscrobbler_tsv_import
-
-        undo_audioscrobbler_tsv_import(self.process_log, dryrun)
-
-
-class LastFmImport(TimeStampedModel):
+class BaseFileImportMixin(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
     uuid = models.UUIDField(editable=False, default=uuid4)
     processing_started = models.DateTimeField(**BNULL)
@@ -82,8 +28,135 @@ class LastFmImport(TimeStampedModel):
     process_log = models.TextField(**BNULL)
     process_count = models.IntegerField(**BNULL)
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
-        return f"LastFM Import: {self.uuid}"
+        return f"Scrobble import {self.id}"
+
+    def process(self, force=False):
+        logger.warning("Process not implemented")
+
+    def undo(self, dryrun=False):
+        """Accepts the log from a scrobble import and removes the scrobbles"""
+        from scrobbles.models import Scrobble
+
+        if not self.process_log:
+            logger.warning("No lines in process log found to undo")
+            return
+
+        for line in self.process_log.split('\n'):
+            scrobble_id = line.split("\t")[0]
+            scrobble = Scrobble.objects.filter(id=scrobble_id).first()
+            if not scrobble:
+                logger.warning(
+                    f"Could not find scrobble {scrobble_id} to undo"
+                )
+                continue
+            logger.info(f"Removing scrobble {scrobble_id}")
+            if not dryrun:
+                scrobble.delete()
+        self.processed_finished = None
+        self.processing_started = None
+        self.process_count = None
+        self.process_log = ""
+        self.save(
+            update_fields=[
+                "processed_finished",
+                "processing_started",
+                "process_log",
+                "process_count",
+            ]
+        )
+
+    def mark_started(self):
+        self.processing_started = timezone.now()
+        self.save(update_fields=["processing_started"])
+
+    def mark_finished(self):
+        self.processed_finished = timezone.now()
+        self.save(update_fields=['processed_finished'])
+
+    def record_log(self, scrobbles):
+        self.process_log = ""
+        if not scrobbles:
+            self.process_count = 0
+            self.save(update_fields=["process_log" "process_count"])
+            return
+
+        for count, scrobble in enumerate(scrobbles):
+            scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.media_obj.title}"
+            log_line = f"{scrobble_str}"
+            if count > 0:
+                log_line = "\n" + log_line
+            self.process_log += log_line
+        self.process_count = len(scrobbles)
+        self.save(update_fields=["process_log", "process_count"])
+
+
+class KoReaderImport(BaseFileImportMixin):
+    class Meta:
+        verbose_name = "KOReader Import"
+
+    def get_path(instance, filename):
+        extension = filename.split('.')[-1]
+        uuid = instance.uuid
+        return f'koreader-uploads/{uuid}.{extension}'
+
+    sqlite_file = models.FileField(upload_to=get_path, **BNULL)
+
+    def process(self, force=False):
+        from scrobbles.koreader import process_koreader_sqlite_file
+
+        if self.processed_finished and not force:
+            logger.info(
+                f"{self} already processed on {self.processed_finished}"
+            )
+            return
+
+        self.mark_started()
+        scrobbles = process_koreader_sqlite_file(
+            self.sqlite_file.path, self.user.id
+        )
+        self.record_log(scrobbles)
+        self.mark_finished()
+
+
+class AudioScrobblerTSVImport(BaseFileImportMixin):
+    class Meta:
+        verbose_name = "AudioScrobbler TSV Import"
+
+    def get_path(instance, filename):
+        extension = filename.split('.')[-1]
+        uuid = instance.uuid
+        return f'audioscrobbler-uploads/{uuid}.{extension}'
+
+    tsv_file = models.FileField(upload_to=get_path, **BNULL)
+
+    def process(self, force=False):
+        from scrobbles.tsv import process_audioscrobbler_tsv_file
+
+        if self.processed_finished and not force:
+            logger.info(
+                f"{self} already processed on {self.processed_finished}"
+            )
+            return
+
+        self.mark_started()
+
+        tz = None
+        if self.user:
+            tz = self.user.profile.tzinfo
+        scrobbles = process_audioscrobbler_tsv_file(
+            self.tsv_file.path, self.user.id, user_tz=tz
+        )
+        self.record_log(scrobbles)
+        self.mark_finished()
+
+
+class LastFmImport(BaseFileImportMixin):
+    class Meta:
+        verbose_name = "Last.FM Import"
 
     def process(self, import_all=False):
         """Import scrobbles found on LastFM"""
@@ -111,36 +184,12 @@ class LastFmImport(TimeStampedModel):
         if last_import:
             last_processed = last_import.processed_finished
 
-        self.processing_started = timezone.now()
-        self.save(update_fields=['processing_started'])
+        self.mark_started()
 
         scrobbles = lastfm.import_from_lastfm(last_processed)
-        self.process_log = ""
-        if scrobbles:
-            for count, scrobble in enumerate(scrobbles):
-                scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.track.title}"
-                log_line = f"{scrobble_str}"
-                if count > 0:
-                    log_line = "\n" + log_line
-                self.process_log += log_line
-            self.process_count = len(scrobbles)
-        else:
-            self.process_count = 0
 
-        self.processed_finished = timezone.now()
-        self.save(
-            update_fields=[
-                'processed_finished',
-                'process_count',
-                'process_log',
-            ]
-        )
-
-    def undo(self, dryrun=False):
-        """Undo import of scrobbles from LastFM"""
-        LastFM.undo_lastfm_import(self.process_log, dryrun)
-        self.processed_finished = None
-        self.save(update_fields=['processed_finished'])
+        self.record_log(scrobbles)
+        self.mark_finished()
 
 
 class ChartRecord(TimeStampedModel):
@@ -231,18 +280,28 @@ class Scrobble(TimeStampedModel):
     sport_event = models.ForeignKey(
         SportEvent, on_delete=models.DO_NOTHING, **BNULL
     )
+    book = models.ForeignKey(Book, on_delete=models.DO_NOTHING, **BNULL)
     user = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.DO_NOTHING
     )
+
+    # Time keeping
     timestamp = models.DateTimeField(**BNULL)
     playback_position_ticks = models.PositiveBigIntegerField(**BNULL)
     playback_position = models.CharField(max_length=8, **BNULL)
+
+    # Status indicators
     is_paused = models.BooleanField(default=False)
     played_to_completion = models.BooleanField(default=False)
+    in_progress = models.BooleanField(default=True)
+
+    # Metadata
     source = models.CharField(max_length=255, **BNULL)
     source_id = models.TextField(**BNULL)
-    in_progress = models.BooleanField(default=True)
     scrobble_log = models.TextField(**BNULL)
+
+    # Fields for keeping track of reads between scrobbles
+    book_pages_read = models.IntegerField(**BNULL)
 
     def save(self, *args, **kwargs):
         if not self.uuid:
@@ -272,7 +331,10 @@ class Scrobble(TimeStampedModel):
 
     @property
     def percent_played(self) -> int:
-        if not self.media_obj.run_time_ticks:
+        if not self.media_obj:
+            return 0
+
+        if self.media_obj and not self.media_obj.run_time_ticks:
             return 100
 
         if not self.playback_position_ticks and self.played_to_completion:
@@ -309,6 +371,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.podcast_episode
         if self.sport_event:
             media_obj = self.sport_event
+        if self.book:
+            media_obj = self.book
         return media_obj
 
     def __str__(self):
@@ -332,6 +396,9 @@ class Scrobble(TimeStampedModel):
         if media.__class__.__name__ == 'SportEvent':
             media_query = models.Q(sport_event=media)
             scrobble_data['sport_event_id'] = media.id
+        if media.__class__.__name__ == 'Book':
+            media_query = models.Q(book=media)
+            scrobble_data['book_id'] = media.id
 
         scrobble = (
             cls.objects.filter(
