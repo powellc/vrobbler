@@ -89,27 +89,6 @@ class LastFM:
         )
         return created
 
-    @staticmethod
-    def undo_lastfm_import(process_log, dryrun=False):
-        """Given a newline separated list of scrobbles, delete them"""
-        from scrobbles.models import Scrobble
-
-        if not process_log:
-            logger.warning("No lines in process log found to undo")
-            return
-
-        for line in process_log.split('\n'):
-            scrobble_id = line.split("\t")[0]
-            scrobble = Scrobble.objects.filter(id=scrobble_id).first()
-            if not scrobble:
-                logger.warning(
-                    f"Could not find scrobble {scrobble_id} to undo"
-                )
-                continue
-            logger.info(f"Removing scrobble {scrobble_id}")
-            if not dryrun:
-                scrobble.delete()
-
     def get_last_scrobbles(self, time_from=None, time_to=None):
         """Given a user, Last.fm api key, and secret key, grab a list of scrobbled
         tracks"""
@@ -144,8 +123,8 @@ class LastFM:
                     "LastFM barfed trying to get the track for {scrobble.track}"
                 )
 
-            if not mbid or not artist:
-                logger.warn(f"Silly LastFM, bad data, bailing on {scrobble}")
+            if not artist:
+                logger.warn(f"Silly LastFM, no artist found for {scrobble}")
                 continue
 
             timestamp = datetime.utcfromtimestamp(
