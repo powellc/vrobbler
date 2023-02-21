@@ -43,23 +43,9 @@ urlpatterns = [
     path('api/v1/auth', include("rest_framework.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
-    path(
-        'manual/imdb/',
-        scrobbles_views.ManualScrobbleView.as_view(),
-        name='imdb-manual-scrobble',
-    ),
-    path(
-        'manual/audioscrobbler/',
-        scrobbles_views.AudioScrobblerImportCreateView.as_view(),
-        name='audioscrobbler-file-upload',
-    ),
-    path(
-        'manual/koreader/',
-        scrobbles_views.KoReaderImportCreateView.as_view(),
-        name='koreader-file-upload',
-    ),
     path("", include(music_urls, namespace="music")),
     path("", include(video_urls, namespace="videos")),
+    path("", include(scrobble_urls, namespace="scrobbles")),
     path(
         "", scrobbles_views.RecentScrobbleList.as_view(), name="vrobbler-home"
     ),

@@ -316,7 +316,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{% url 'audioscrobbler-file-upload' %}" method="post" enctype="multipart/form-data">
+            <form action="{% url 'scrobbles:audioscrobbler-file-upload' %}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     {% csrf_token %}
                     <div class="form-group">
@@ -328,7 +328,7 @@
                     <button type="submit" class="btn btn-primary">Import</button>
                 </div>
             </form>
-            <form action="{% url 'koreader-file-upload' %}" method="post" enctype="multipart/form-data">
+            <form action="{% url 'scrobbles:koreader-file-upload' %}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     {% csrf_token %}
                     <div class="form-group">

@@ -4,6 +4,7 @@ from datetime import datetime
 
 import pytz
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models.fields import timezone
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
@@ -28,6 +29,7 @@ from rest_framework.decorators import (
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from scrobbles.api import serializers
 from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
@@ -49,7 +51,6 @@ from scrobbles.scrobblers import (
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
-from scrobbles.api import serializers
 from scrobbles.tasks import (
     process_koreader_import,
     process_lastfm_import,
@@ -295,39 +296,48 @@ def import_audioscrobbler_file(request):
         )
 
 
-@csrf_exempt
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def scrobble_finish(request, uuid):
     user = request.user
+    success_url = reverse_lazy('vrobbler-home')
+
     if not user.is_authenticated:
-        return Response({}, status=status.HTTP_403_FORBIDDEN)
+        return HttpResponseRedirect(success_url)
 
     scrobble = Scrobble.objects.filter(user=user, uuid=uuid).first()
-    if not scrobble:
-        return Response({}, status=status.HTTP_404_NOT_FOUND)
-    scrobble.stop(force_finish=True)
-    return Response(
-        {'id': scrobble.id, 'status': scrobble.status},
-        status=status.HTTP_200_OK,
-    )
+    if scrobble:
+        scrobble.stop(force_finish=True)
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            f"Scrobble of {scrobble.media_obj} finished.",
+        )
+    else:
+        messages.add_message(request, messages.ERROR, "Scrobble not found.")
+    return HttpResponseRedirect(success_url)
 
 
-@csrf_exempt
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def scrobble_cancel(request, uuid):
     user = request.user
+    success_url = reverse_lazy('vrobbler-home')
+
     if not user.is_authenticated:
-        return Response({}, status=status.HTTP_403_FORBIDDEN)
+        return HttpResponseRedirect(success_url)
 
     scrobble = Scrobble.objects.filter(user=user, uuid=uuid).first()
-    if not scrobble:
-        return Response({}, status=status.HTTP_404_NOT_FOUND)
-    scrobble.cancel()
-    return Response(
-        {'id': scrobble.id, 'status': 'cancelled'}, status=status.HTTP_200_OK
-    )
+    if scrobble:
+        scrobble.cancel()
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            f"Scrobble of {scrobble.media_obj} cancelled.",
+        )
+    else:
+        messages.add_message(request, messages.ERROR, "Scrobble not found.")
+    return HttpResponseRedirect(success_url)
 
 
 @permission_classes([IsAuthenticated])
