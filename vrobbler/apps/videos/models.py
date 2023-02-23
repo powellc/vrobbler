@@ -70,8 +70,22 @@ class Video(ScrobblableMixin):
         return reverse("videos:video_detail", kwargs={'slug': self.uuid})
 
     @property
+    def subtitle(self):
+        if self.tv_series:
+            return self.tv_series
+        return ""
+
+    @property
     def imdb_link(self):
         return f"https://www.imdb.com/title/{self.imdb_id}"
+
+    @property
+    def info_link(self):
+        return self.imdb_link
+
+    @property
+    def link(self):
+        return self.imdb_link
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Video":

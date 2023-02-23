@@ -89,6 +89,7 @@ class Round(TheSportsDbMixin):
 class SportEvent(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, 'SPORT_COMPLETION_PERCENT', 90)
 
+    thesportsdb_id = models.CharField(max_length=255, **BNULL)
     event_type = models.CharField(
         max_length=2,
         choices=SportEventType.choices,
@@ -126,6 +127,18 @@ class SportEvent(ScrobblableMixin):
 
     def get_absolute_url(self):
         return reverse("sports:event_detail", kwargs={'slug': self.uuid})
+
+    @property
+    def subtitle(self):
+        return self.round.season.league
+
+    @property
+    def sportsdb_link(self):
+        return f"https://thesportsdb.com/event/{self.thesportsdb_id}"
+
+    @property
+    def info_link(self):
+        return self.sportsdb_link
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Event":

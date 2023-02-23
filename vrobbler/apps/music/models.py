@@ -182,8 +182,16 @@ class Track(ScrobblableMixin):
         return reverse('music:track_detail', kwargs={'slug': self.uuid})
 
     @property
+    def subtitle(self):
+        return self.artist
+
+    @property
     def mb_link(self):
         return f"https://musicbrainz.org/recording/{self.musicbrainz_id}"
+
+    @property
+    def info_link(self):
+        return self.mb_link
 
     @classmethod
     def find_or_create(

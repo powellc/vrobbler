@@ -210,10 +210,7 @@
                             {% for scrobble in now_playing_list %}
                             <div>
                                 {{scrobble.media_obj.title}}<br/>
-                                {% if scrobble.track %}<em>{{scrobble.track.artist}}</em><br/>{% endif %}
-                                {% if scrobble.podcast_episode%}<em>{{scrobble.podcast_episode.podcast}}</em><br/>{% endif %}
-                                {% if scrobble.video.tv_series %}<em>{{scrobble.video.tv_series }}</em><br/>{% endif %}
-                                {% if scrobble.sport_event %}<em>{{scrobble.sport_event.round.season.league}}</em><br/>{% endif %}
+                                {% if scrobble.media_obj.subtitle %}<em>{{scrobble.media_obj.subtitle}}</em><br/>{% endif %}
                                 <small>{{scrobble.timestamp|naturaltime}}<br/>
                                     from {{scrobble.source}}</small>
                                 <div class="progress-bar" style="margin-right:5px;">

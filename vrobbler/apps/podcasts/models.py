@@ -45,6 +45,14 @@ class Episode(ScrobblableMixin):
     def __str__(self):
         return f"{self.title}"
 
+    @property
+    def subtitle(self):
+        return self.podcast
+
+    @property
+    def info_link(self):
+        return ""
+
     @classmethod
     def find_or_create(
         cls, podcast_dict: Dict, producer_dict: Dict, episode_dict: Dict
