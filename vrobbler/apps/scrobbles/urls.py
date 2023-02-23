@@ -26,8 +26,20 @@ urlpatterns = [
         views.AudioScrobblerImportCreateView.as_view(),
         name='audioscrobbler-file-upload',
     ),
-    path('lastfm-import/', views.lastfm_import, name='lastfm-import'),
-    path('jellyfin/', views.jellyfin_websocket, name='jellyfin-websocket'),
-    path('mopidy/', views.mopidy_websocket, name='mopidy-websocket'),
+    path(
+        'lastfm-import/',
+        views.lastfm_import,
+        name='lastfm-import',
+    ),
+    path(
+        'websocket/jellyfin/',
+        views.jellyfin_websocket,
+        name='jellyfin-websocket',
+    ),
+    path(
+        'websocket/mopidy/',
+        views.mopidy_websocket,
+        name='mopidy-websocket',
+    ),
     path('export/', views.export, name='export'),
 ]
