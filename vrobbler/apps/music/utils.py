@@ -4,6 +4,7 @@ import re
 from scrobbles.musicbrainz import (
     lookup_album_dict_from_mb,
     lookup_artist_from_mb,
+    lookup_track_from_mb,
 )
 
 logger = logging.getLogger(__name__)
@@ -93,7 +94,11 @@ def get_or_create_track(
             title=title, artist=artist, album=album
         ).first()
 
-    # TODO Can we look up mbid for tracks?
+    if not mbid:
+        mbid = lookup_track_from_mb(
+            title, artist.musicbrainz_id, album.musicbrainz_id
+        )['id']
+
     if not track:
         track = Track.objects.create(
             title=title,
