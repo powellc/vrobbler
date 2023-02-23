@@ -32,14 +32,14 @@ urlpatterns = [
         name='lastfm-import',
     ),
     path(
-        'websocket/jellyfin/',
-        views.jellyfin_websocket,
-        name='jellyfin-websocket',
+        'webhook/jellyfin/',
+        views.jellyfin_webhook,
+        name='jellyfin-webhook',
     ),
     path(
-        'websocket/mopidy/',
-        views.mopidy_websocket,
-        name='mopidy-websocket',
+        'webhook/mopidy/',
+        views.mopidy_webhook,
+        name='mopidy-webhook',
     ),
     path('export/', views.export, name='export'),
 ]

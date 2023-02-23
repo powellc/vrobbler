@@ -216,7 +216,7 @@ def lastfm_import(request):
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
-def jellyfin_websocket(request):
+def jellyfin_webhook(request):
     data_dict = request.data
 
     if (
@@ -248,7 +248,7 @@ def jellyfin_websocket(request):
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
-def mopidy_websocket(request):
+def mopidy_webhook(request):
     try:
         data_dict = json.loads(request.data)
     except TypeError:

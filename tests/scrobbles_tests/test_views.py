@@ -10,7 +10,7 @@ from podcasts.models import Episode
 
 @pytest.mark.django_db
 def test_get_not_allowed_from_mopidy(client, valid_auth_token):
-    url = reverse('scrobbles:mopidy-websocket')
+    url = reverse('scrobbles:mopidy-webhook')
     headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.get(url, headers=headers)
     assert response.status_code == 405
@@ -18,7 +18,7 @@ def test_get_not_allowed_from_mopidy(client, valid_auth_token):
 
 @pytest.mark.django_db
 def test_bad_mopidy_request_data(client, valid_auth_token):
-    url = reverse('scrobbles:mopidy-websocket')
+    url = reverse('scrobbles:mopidy-webhook')
     headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(url, headers)
     assert response.status_code == 400
@@ -32,7 +32,7 @@ def test_bad_mopidy_request_data(client, valid_auth_token):
 def test_scrobble_mopidy_track(
     client, mopidy_track_request_data, valid_auth_token
 ):
-    url = reverse('scrobbles:mopidy-websocket')
+    url = reverse('scrobbles:mopidy-webhook')
     headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(
         url,
@@ -55,7 +55,7 @@ def test_scrobble_mopidy_same_track_different_album(
     mopidy_track_diff_album_request_data,
     valid_auth_token,
 ):
-    url = reverse('scrobbles:mopidy-websocket')
+    url = reverse('scrobbles:mopidy-webhook')
     headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(
         url,
@@ -84,7 +84,7 @@ def test_scrobble_mopidy_same_track_different_album(
 def test_scrobble_mopidy_podcast(
     client, mopidy_podcast_request_data, valid_auth_token
 ):
-    url = reverse('scrobbles:mopidy-websocket')
+    url = reverse('scrobbles:mopidy-webhook')
     headers = {'Authorization': f'Token {valid_auth_token}'}
     response = client.post(
         url,
