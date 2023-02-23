@@ -24,6 +24,7 @@ def lookup_event_from_thesportsdb(event_id: str) -> dict:
     )
 
     data_dict = {
+        "EventId": event_id,
         "ItemType": sport.default_event_type,
         "Name": event.get('strEvent'),
         "AltName": event.get('strEventAlternate'),

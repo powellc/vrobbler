@@ -15,8 +15,9 @@ BNULL = {"blank": True, "null": True}
 
 
 class SportEventType(models.TextChoices):
-    UNKNOWN = 'UK', _('Unknown')
+    UNKNOWN = 'UK', _('Event')
     GAME = 'GA', _('Game')
+    RACE = 'RA', _('Race')
     MATCH = 'MA', _('Match')
 
 
@@ -221,6 +222,7 @@ class SportEvent(ScrobblableMixin):
             away_team, _created = Team.objects.get_or_create(**away_team_dict)
 
         event_dict = {
+            "thesportsdb_id": data_dict.get("EventId"),
             "title": data_dict.get("Name"),
             "event_type": sport.default_event_type,
             "home_team": home_team,
