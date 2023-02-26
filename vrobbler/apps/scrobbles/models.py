@@ -14,6 +14,7 @@ from scrobbles.lastfm import LastFM
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
+from vrobbler.apps.scrobbles.stats import build_charts
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -203,6 +204,7 @@ class ChartRecord(TimeStampedModel):
 
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
     rank = models.IntegerField()
+    count = models.IntegerField(default=0)
     year = models.IntegerField(default=timezone.now().year)
     month = models.IntegerField(**BNULL)
     week = models.IntegerField(**BNULL)
@@ -219,6 +221,8 @@ class ChartRecord(TimeStampedModel):
             media_obj = self.video
         if self.track:
             media_obj = self.track
+        if self.artist:
+            media_obj = self.artist
         return media_obj
 
     @property
@@ -266,6 +270,26 @@ class ChartRecord(TimeStampedModel):
 
     def __str__(self):
         return f"#{self.rank} in {self.period} - {self.media_obj}"
+
+    @classmethod
+    def build(cls, user, **kwargs):
+        build_charts(user=user, **kwargs)
+
+    @classmethod
+    def for_year(cls, user, year):
+        return cls.objects.filter(year=year, user=user)
+
+    @classmethod
+    def for_month(cls, user, year, month):
+        return cls.objects.filter(year=year, month=month, user=user)
+
+    @classmethod
+    def for_day(cls, user, year, day, month):
+        return cls.objects.filter(year=year, month=month, day=day, user=user)
+
+    @classmethod
+    def for_week(cls, user, year, week):
+        return cls.objects.filter(year=year, week=week, user=user)
 
 
 class Scrobble(TimeStampedModel):

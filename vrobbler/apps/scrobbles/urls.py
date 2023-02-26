@@ -42,4 +42,9 @@ urlpatterns = [
         name='mopidy-webhook',
     ),
     path('export/', views.export, name='export'),
+    path(
+        'charts/',
+        views.ChartRecordView.as_view(),
+        name='charts-home',
+    ),
 ]

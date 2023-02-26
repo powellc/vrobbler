@@ -1,3 +1,4 @@
+import calendar
 import json
 import logging
 from datetime import datetime
@@ -6,12 +7,13 @@ import pytz
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.db.models.fields import timezone
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from music.aggregators import (
@@ -39,6 +41,7 @@ from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
 from scrobbles.imdb import lookup_video_from_imdb
 from scrobbles.models import (
     AudioScrobblerTSVImport,
+    ChartRecord,
     KoReaderImport,
     LastFmImport,
     Scrobble,
@@ -358,3 +361,66 @@ def export(request):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
+
+
+class ChartRecordView(TemplateView):
+    template_name = 'scrobbles/chart_index.html'
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        date = self.request.GET.get('date')
+        media_type = self.request.GET.get('media')
+        params = {}
+
+        if not media_type:
+            media_type = 'Track'
+        context_data['media_type'] = media_type
+        media_filter = Q(track__isnull=False)
+        if media_type == 'Video':
+            media_filter = Q(video__isnull=False)
+        if media_type == 'Artist':
+            media_filter = Q(artist__isnull=False)
+
+        year = timezone.now().year
+        params = {'year': year}
+        name = f"Chart for {year}"
+
+        date_params = date.split('-')
+        year = int(date_params[0])
+        if len(date_params) == 2:
+            if 'W' in date_params[1]:
+                week = int(date_params[1].strip('W"'))
+                params['week'] = week
+                r = datetime.strptime(date + '-1', "%Y-W%W-%w").strftime(
+                    'Week of %B %d, %Y'
+                )
+                name = f"Chart for {r}"
+            else:
+                month = int(date_params[1])
+                params['month'] = month
+                month_str = calendar.month_name[month]
+                name = f"Chart for {month_str} {year}"
+        if len(date_params) == 3:
+            month = int(date_params[1])
+            day = int(date_params[2])
+            params['month'] = month
+            params['day'] = day
+            month_str = calendar.month_name[month]
+            name = f"Chart for {month_str} {day}, {year}"
+
+        charts = ChartRecord.objects.filter(
+            media_filter, user=self.request.user, **params
+        ).order_by("rank")
+
+        if charts.count() == 0:
+            ChartRecord.build(
+                user=self.request.user, model_str=media_type, **params
+            )
+            charts = ChartRecord.objects.filter(
+                media_filter, user=self.request.user, **params
+            ).order_by("rank")
+
+        context_data['object_list'] = charts
+        context_data['name'] = name
+        return context_data

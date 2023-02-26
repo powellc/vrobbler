@@ -1,22 +1,32 @@
-{% extends "base.html" %}
+{% extends "base_list.html" %}
 
-{% block content %}
-<main class="col-md-4 ms-sm-auto col-lg-10 px-md-4">
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Series</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-            </div>
+{% block lists %}
+<div class="row">
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Series</th>
+                        <th scope="col">Episode</th>
+                        <th scope="col">Scrobbles</th>
+                        <th scope="col">All time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in object_list %}
+                    {% for video in obj.video_set.all %}
+                    <tr>
+                        <td><a href="{{video.get_absolute_url}}">{{video}}</a></td>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj}}</a></td>
+                        <td>{{video.scrobble_set.count}}</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <div class="container">
-        <ul>
-            {% for movie in object_list %}
-            <li>{{movie}}</li>
-            {% endfor %}
-        </ul>
-    </div>
-</main>
+</div>
 {% endblock %}

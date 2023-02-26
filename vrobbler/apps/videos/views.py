@@ -6,6 +6,7 @@ from videos.models import Series, Video
 
 class MovieListView(generic.ListView):
     model = Video
+    template_name = "videos/movie_list.html"
 
     def get_queryset(self):
         return Video.objects.filter(video_type=Video.VideoType.MOVIE)

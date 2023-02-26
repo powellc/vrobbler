@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.views import generic
 from music.models import Track, Artist, Album
 from scrobbles.stats import get_scrobble_count_qs

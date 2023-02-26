@@ -55,7 +55,9 @@ def scrobble_counts(user=None):
     return data
 
 
-def week_of_scrobbles(user=None, media: str = 'tracks') -> dict[str, int]:
+def week_of_scrobbles(
+    user=None, start=None, media: str = 'tracks'
+) -> dict[str, int]:
 
     now = timezone.now()
     user_filter = Q()
@@ -63,9 +65,8 @@ def week_of_scrobbles(user=None, media: str = 'tracks') -> dict[str, int]:
         now = now_user_timezone(user.profile)
         user_filter = Q(user=user)
 
-    start_of_today = datetime.combine(
-        now.date(), datetime.min.time(), now.tzinfo
-    )
+    if not start:
+        start = datetime.combine(now.date(), datetime.min.time(), now.tzinfo)
 
     scrobble_day_dict = {}
     base_qs = Scrobble.objects.filter(user_filter, played_to_completion=True)
@@ -77,7 +78,7 @@ def week_of_scrobbles(user=None, media: str = 'tracks') -> dict[str, int]:
         media_filter = Q(video__video_type=Video.VideoType.TV_EPISODE)
 
     for day in range(6, -1, -1):
-        start = start_of_today - timedelta(days=day)
+        start = start - timedelta(days=day)
         end = datetime.combine(start, datetime.max.time(), now.tzinfo)
         day_of_week = start.strftime('%A')
 
