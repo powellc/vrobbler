@@ -386,6 +386,9 @@ class ChartRecordView(TemplateView):
         params = {'year': year}
         name = f"Chart for {year}"
 
+        if not date:
+            date = timezone.now().strftime("%Y-%m-%d")
+
         date_params = date.split('-')
         year = int(date_params[0])
         if len(date_params) == 2:
