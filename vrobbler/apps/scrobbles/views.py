@@ -468,11 +468,11 @@ class ChartRecordView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        date = self.request.GET.get('date')
-        media_type = self.request.GET.get('media')
+        date = self.request.GET.get("date")
+        media_type = self.request.GET.get("media", "Track")
         user = self.request.user
         params = {}
-        context_data['artist_charts'] = {}
+        context_data["artist_charts"] = {}
 
         if not date:
             context_data['artist_charts'] = {
@@ -543,6 +543,7 @@ class ChartRecordView(TemplateView):
             # TODO recalculate
             ...
 
+        context_data['charts'] = charts
         context_data['name'] = name
         context_data['in_progress'] = in_progress
         return context_data

@@ -1,9 +1,9 @@
-{% extends "base_detail.html" %}
+{% extends "base_list.html" %}
 {% load mathfilters %}
 
 {% block title %}{{object.name}}{% endblock %}
 
-{% block details %}
+{% block lists %}
 
 <div class="row">
     {% for album in artist.album_set.all %}
