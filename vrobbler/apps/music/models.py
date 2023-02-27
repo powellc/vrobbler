@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import musicbrainzngs
 from django.conf import settings
-from django.core.files.base import File
+from django.core.files.base import ContentFile, File
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _

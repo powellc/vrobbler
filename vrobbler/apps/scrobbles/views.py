@@ -87,17 +87,17 @@ class RecentScrobbleList(ListView):
             data['sport_scrobble_list'] = completed_for_user.filter(
                 sport_event__isnull=False
             ).order_by('-timestamp')[:15]
+            data['active_imports'] = AudioScrobblerTSVImport.objects.filter(
+                processing_started__isnull=False,
+                processed_finished__isnull=True,
+                user=self.request.user,
+            )
 
         data["weekly_data"] = week_of_scrobbles(user=user)
 
         data['counts'] = scrobble_counts(user)
         data['imdb_form'] = ScrobbleForm
         data['export_form'] = ExportScrobbleForm
-        data['active_imports'] = AudioScrobblerTSVImport.objects.filter(
-            processing_started__isnull=False,
-            processed_finished__isnull=True,
-            user=self.request.user,
-        )
         return data
 
     def get_queryset(self):
