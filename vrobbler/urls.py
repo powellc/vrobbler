@@ -20,6 +20,15 @@ from vrobbler.apps.scrobbles.api.views import (
     LastFmImportViewSet,
     ScrobbleViewSet,
 )
+from vrobbler.apps.sports.api.views import (
+    LeagueViewSet,
+    PlayerViewSet,
+    RoundViewSet,
+    SeasonViewSet,
+    SportEventViewSet,
+    SportViewSet,
+    TeamViewSet,
+)
 from vrobbler.apps.videos import urls as video_urls
 from vrobbler.apps.videos.api.views import SeriesViewSet, VideoViewSet
 
@@ -35,6 +44,12 @@ router.register(r'series', SeriesViewSet)
 router.register(r'videos', VideoViewSet)
 router.register(r'authors', AuthorViewSet)
 router.register(r'books', BookViewSet)
+router.register(r'leagues', LeagueViewSet)
+router.register(r'sports', SportViewSet)
+router.register(r'seasons', SeasonViewSet)
+router.register(r'players', PlayerViewSet)
+router.register(r'sport-events', SportEventViewSet)
+router.register(r'teams', TeamViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'user_profiles', UserProfileViewSet)
 
