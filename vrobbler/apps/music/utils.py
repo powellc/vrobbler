@@ -36,7 +36,7 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
         logger.debug(
             f"Created artist {artist.name} ({artist.musicbrainz_id}) "
         )
-        # TODO Enrich artist with MB data
+        artist.fix_metadata()
 
     return artist
 

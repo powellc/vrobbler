@@ -1,15 +1,18 @@
 import logging
+from tempfile import NamedTemporaryFile
 from typing import Dict, Optional
+from urllib.request import urlopen
 from uuid import uuid4
 
 import musicbrainzngs
 from django.conf import settings
-from django.core.files.base import ContentFile
+from django.core.files.base import File
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
+from scrobbles.theaudiodb import lookup_artist_from_tadb
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -18,7 +21,11 @@ BNULL = {"blank": True, "null": True}
 class Artist(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
+    biography = models.TextField(**BNULL)
+    theaudiodb_genre = models.CharField(max_length=255, **BNULL)
+    theaudiodb_mood = models.CharField(max_length=255, **BNULL)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
+    thumbnail = models.ImageField(upload_to="artist/", **BNULL)
 
     class Meta:
         unique_together = [['name', 'musicbrainz_id']]
@@ -52,6 +59,22 @@ class Artist(TimeStampedModel):
         from scrobbles.models import ChartRecord
 
         return ChartRecord.objects.filter(track__artist=self).order_by('-year')
+
+    def fix_metadata(self):
+        tadb_info = lookup_artist_from_tadb(self.name)
+        if not tadb_info:
+            logger.warn(f"No response from TADB for artist {self.name}")
+            return
+
+        self.biography = tadb_info['biography']
+        self.theaudiodb_genre = tadb_info['genre']
+        self.theaudiodb_mood = tadb_info['mood']
+
+        img_temp = NamedTemporaryFile(delete=True)
+        img_temp.write(urlopen(tadb_info['thumb_url']).read())
+        img_temp.flush()
+        img_filename = f"{self.name}_{self.uuid}.jpg"
+        self.thumbnail.save(img_filename, File(img_temp))
 
 
 class Album(TimeStampedModel):

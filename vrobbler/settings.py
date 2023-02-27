@@ -51,13 +51,9 @@ DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
 # Used to dump data coming from srobbling sources, helpful for building new inputs
 DUMP_REQUEST_DATA = os.getenv("VROBBLER_DUMP_REQUEST_DATA", False)
 
-
 THESPORTSDB_API_KEY = os.getenv("VROBBLER_THESPORTSDB_API_KEY", "2")
-THESPORTSDB_BASE_URL = os.getenv(
-    "VROBBLER_THESPORTSDB_BASE_URL", "https://www.thesportsdb.com/api/v1/json/"
-)
+THEAUDIODB_API_KEY = os.getenv("VROBBLER_THEAUDIODB_API_KEY", "2")
 TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
-
 LASTFM_API_KEY = os.getenv("VROBBLER_LASTFM_API_KEY")
 LASTFM_SECRET_KEY = os.getenv("VROBBLER_LASTFM_SECRET_KEY")
 
