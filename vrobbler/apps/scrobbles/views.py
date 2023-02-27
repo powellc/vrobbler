@@ -1,7 +1,8 @@
 import calendar
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.db.models.query import QuerySet
 
 import pytz
 from django.conf import settings
@@ -13,7 +14,7 @@ from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import FormView, TemplateView
+from django.views.generic import DetailView, FormView, TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from music.aggregators import (
@@ -70,17 +71,7 @@ class RecentScrobbleList(ListView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         user = self.request.user
-        now = timezone.now()
         if user.is_authenticated:
-            if user.profile:
-                timezone.activate(pytz.timezone(user.profile.timezone))
-                now = timezone.localtime(timezone.now())
-            data['now_playing_list'] = Scrobble.objects.filter(
-                in_progress=True,
-                is_paused=False,
-                timestamp__lte=now,
-                user=user,
-            )
 
             completed_for_user = Scrobble.objects.filter(
                 played_to_completion=True, user=user
@@ -97,25 +88,73 @@ class RecentScrobbleList(ListView):
                 sport_event__isnull=False
             ).order_by('-timestamp')[:15]
 
-            # data['top_daily_tracks'] = top_tracks()
-            data['top_weekly_tracks'] = top_tracks(user, filter='week')
-            data['top_monthly_tracks'] = top_tracks(user, filter='month')
-
-            # data['top_daily_artists'] = top_artists()
-            data['top_weekly_artists'] = top_artists(user, filter='week')
-            data['top_monthly_artists'] = top_artists(user, filter='month')
-
         data["weekly_data"] = week_of_scrobbles(user=user)
 
         data['counts'] = scrobble_counts(user)
         data['imdb_form'] = ScrobbleForm
         data['export_form'] = ExportScrobbleForm
+        data['active_imports'] = AudioScrobblerTSVImport.objects.filter(
+            processing_started__isnull=False,
+            processed_finished__isnull=True,
+            user=self.request.user,
+        )
         return data
 
     def get_queryset(self):
         return Scrobble.objects.filter(
             track__isnull=False, in_progress=False
         ).order_by('-timestamp')[:15]
+
+
+class ScrobbleImportListView(TemplateView):
+    template_name = "scrobbles/import_list.html"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['object_list'] = []
+
+        context_data["tsv_imports"] = AudioScrobblerTSVImport.objects.filter(
+            user=self.request.user,
+        ).order_by('-processing_started')
+        context_data["koreader_imports"] = KoReaderImport.objects.filter(
+            user=self.request.user,
+        ).order_by('-processing_started')
+        context_data["lastfm_imports"] = LastFmImport.objects.filter(
+            user=self.request.user,
+        ).order_by('-processing_started')
+        return context_data
+
+
+class BaseScrobbleImportDetailView(DetailView):
+    slug_field = 'uuid'
+    template_name = "scrobbles/import_detail.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        title = "Generic Scrobble Import"
+        if self.model == KoReaderImport:
+            title = "KoReader Import"
+        if self.model == AudioScrobblerTSVImport:
+            title = "Audioscrobbler TSV Import"
+        if self.model == LastFmImport:
+            title = "LastFM Import"
+        context_data['title'] = title
+        return context_data
+
+
+class ScrobbleKoReaderImportDetailView(BaseScrobbleImportDetailView):
+    model = KoReaderImport
+
+
+class ScrobbleTSVImportDetailView(BaseScrobbleImportDetailView):
+    model = AudioScrobblerTSVImport
+
+
+class ScrobbleLastFMImportDetailView(BaseScrobbleImportDetailView):
+    model = LastFmImport
 
 
 class ManualScrobbleView(FormView):
@@ -366,44 +405,116 @@ def export(request):
 class ChartRecordView(TemplateView):
     template_name = 'scrobbles/chart_index.html'
 
-    def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
-
-        date = self.request.GET.get('date')
-        media_type = self.request.GET.get('media')
-        params = {}
-
-        if not media_type:
-            media_type = 'Track'
-        context_data['media_type'] = media_type
-        media_filter = Q(track__isnull=False)
-        if media_type == 'Video':
-            media_filter = Q(video__isnull=False)
+    @staticmethod
+    def get_media_filter(media_type: str = "Track"):
+        media_filter = Q()
+        if media_type == 'Track':
+            media_filter = Q(track__isnull=False)
         if media_type == 'Artist':
             media_filter = Q(artist__isnull=False)
+        if media_type == 'Series':
+            media_filter = Q(series__isnull=False)
+        if media_type == 'Video':
+            media_filter = Q(video__isnull=False)
+        return media_filter
 
-        year = timezone.now().year
+    def get_chart_records(self, media_type: str = "Track", **kwargs):
+        media_filter = self.get_media_filter(media_type)
+        charts = ChartRecord.objects.filter(
+            media_filter, user=self.request.user, **kwargs
+        ).order_by("rank")
+
+        if charts.count() == 0:
+            ChartRecord.build(
+                user=self.request.user, model_str=media_type, **kwargs
+            )
+            charts = ChartRecord.objects.filter(
+                media_filter, user=self.request.user, **kwargs
+            ).order_by("rank")
+        return charts
+
+    def get_chart(
+        self, period: str = "all_time", limit=15, media: str = "Track"
+    ) -> QuerySet:
+        chart = QuerySet()
+        now = timezone.now()
+        if period == "all_time":
+            chart = self.get_chart_records(media_type=media)
+        if period == "today":
+            chart = self.get_chart_records(
+                media_type=media,
+                day=now.day,
+                month=now.month,
+                year=now.year,
+            )
+        if period == "week":
+            chart = self.get_chart_records(
+                media_type=media,
+                year=now.year,
+                week=now.isocalendar()[1],
+            )
+        if period == "month":
+            chart = self.get_chart_records(
+                media_type=media,
+                year=now.year,
+                month=now.month,
+            )
+        if period == "year":
+            chart = self.get_chart_records(
+                media_type=media,
+                year=now.year,
+            )
+        return chart[:limit]
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        date = self.request.GET.get('date')
+        media_type = self.request.GET.get('media')
+        user = self.request.user
+        params = {}
+        context_data['artist_charts'] = {}
+
+        if not date:
+            context_data['artist_charts'] = {
+                "today": top_artists(user, filter="today")[:30],
+                "week": top_artists(user, filter="week")[:30],
+                "month": top_artists(user, filter="month")[:30],
+                "all": top_artists(user),
+            }
+
+            context_data['track_charts'] = {
+                "today": top_tracks(user, filter="today")[:30],
+                "week": top_tracks(user, filter="week")[:30],
+                "month": top_tracks(user, filter="month")[:30],
+                "all": top_tracks(user),
+            }
+            return context_data
+
+        now = timezone.now()
+        year = now.year
         params = {'year': year}
         name = f"Chart for {year}"
 
-        if not date:
-            date = timezone.now().strftime("%Y-%m-%d")
-
         date_params = date.split('-')
         year = int(date_params[0])
+        in_progress = False
         if len(date_params) == 2:
             if 'W' in date_params[1]:
                 week = int(date_params[1].strip('W"'))
                 params['week'] = week
-                r = datetime.strptime(date + '-1', "%Y-W%W-%w").strftime(
-                    'Week of %B %d, %Y'
+                start = datetime.strptime(date + "-1", "%Y-W%W-%w").replace(
+                    tzinfo=pytz.utc
                 )
-                name = f"Chart for {r}"
+                end = start + timedelta(days=6)
+                in_progress = start <= now <= end
+                as_str = start.strftime('Week of %B %d, %Y')
+                name = f"Chart for {as_str}"
             else:
                 month = int(date_params[1])
                 params['month'] = month
                 month_str = calendar.month_name[month]
                 name = f"Chart for {month_str} {year}"
+                in_progress = now.month == month and now.year == year
         if len(date_params) == 3:
             month = int(date_params[1])
             day = int(date_params[2])
@@ -411,7 +522,11 @@ class ChartRecordView(TemplateView):
             params['day'] = day
             month_str = calendar.month_name[month]
             name = f"Chart for {month_str} {day}, {year}"
+            in_progress = (
+                now.month == month and now.year == year and now.day == day
+            )
 
+        media_filter = self.get_media_filter(media_type)
         charts = ChartRecord.objects.filter(
             media_filter, user=self.request.user, **params
         ).order_by("rank")
@@ -424,6 +539,10 @@ class ChartRecordView(TemplateView):
                 media_filter, user=self.request.user, **params
             ).order_by("rank")
 
-        context_data['object_list'] = charts
+        if in_progress:
+            # TODO recalculate
+            ...
+
         context_data['name'] = name
+        context_data['in_progress'] = in_progress
         return context_data

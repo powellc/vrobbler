@@ -137,4 +137,6 @@ def build_charts(
         if model_str == 'Artist':
             chart_record['artist'] = result
         chart_records.append(ChartRecord(**chart_record))
-    ChartRecord.objects.bulk_create(chart_records, ignore_conflicts=True)
+    ChartRecord.objects.bulk_create(
+        chart_records, ignore_conflicts=True, batch_size=500
+    )

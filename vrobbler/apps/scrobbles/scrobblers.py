@@ -89,10 +89,6 @@ def mopidy_scrobble_track(
         "mopidy_status": data_dict.get("status"),
     }
 
-    # Jellyfin MB ids suck, so always overwrite with Mopidy if they're offering
-    track.musicbrainz_id = data_dict.get("musicbrainz_track_id")
-    track.save()
-
     scrobble = Scrobble.create_or_update(track, user_id, mopidy_data)
 
     return scrobble
@@ -130,7 +126,7 @@ def jellyfin_scrobble_track(
     )
 
     # Jellyfin has some race conditions with it's webhooks, these hacks fix some of them
-    if not data_dict.get("PlaybackPositionTicks") or null_position_on_progress:
+    if null_position_on_progress:
         logger.error("No playback position tick from Jellyfin, aborting")
         return
 
@@ -152,7 +148,6 @@ def jellyfin_scrobble_track(
     )
     track = get_or_create_track(
         title=data_dict.get("Name"),
-        mbid=data_dict.get(JELLYFIN_POST_KEYS["TRACK_MB_ID"]),
         artist=artist,
         album=album,
         run_time_ticks=run_time_ticks,

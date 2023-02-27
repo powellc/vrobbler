@@ -1,6 +1,8 @@
 import logging
 import re
 
+from musicbrainzngs.caa import musicbrainz
+
 from scrobbles.musicbrainz import (
     lookup_album_dict_from_mb,
     lookup_artist_from_mb,
@@ -21,20 +23,20 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
         name = re.split("feat.", name, flags=re.IGNORECASE)[0].strip()
     if 'featuring' in name.lower():
         name = re.split("featuring", name, flags=re.IGNORECASE)[0].strip()
+    if '&' in name.lower():
+        name = re.split("&", name, flags=re.IGNORECASE)[0].strip()
 
     artist_dict = lookup_artist_from_mb(name)
     mbid = mbid or artist_dict['id']
 
     logger.debug(f'Looking up artist {name} and mbid: {mbid}')
-    artist, created = Artist.objects.get_or_create(
-        name=name, musicbrainz_id=mbid
-    )
-
-    logger.debug(f"Cleaning artist {name} with {artist_dict['name']}")
-    # Clean up bad names in our DB with MB names
-    # if artist.name != artist_dict["name"]:
-    #    artist.name = artist_dict["name"]
-    #    artist.save(update_fields=["name"])
+    artist = Artist.objects.filter(musicbrainz_id=mbid).first()
+    if not artist:
+        artist = Artist.objects.create(name=name, musicbrainz_id=mbid)
+        logger.debug(
+            f"Created artist {artist.name} ({artist.musicbrainz_id}) "
+        )
+        # TODO Enrich artist with MB data
 
     return artist
 
@@ -78,26 +80,21 @@ def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
 
 def get_or_create_track(
     title: str,
-    mbid: str,
     artist: Artist,
     album: Album,
+    mbid: str = None,
     run_time=None,
     run_time_ticks=None,
 ) -> Track:
     track = None
-    if mbid:
-        track = Track.objects.filter(
-            musicbrainz_id=mbid,
-        ).first()
-    if not track:
-        track = Track.objects.filter(
-            title=title, artist=artist, album=album
-        ).first()
-
     if not mbid:
         mbid = lookup_track_from_mb(
-            title, artist.musicbrainz_id, album.musicbrainz_id
+            title,
+            artist.musicbrainz_id,
+            album.musicbrainz_id,
         )['id']
+
+    track = Track.objects.filter(musicbrainz_id=mbid).first()
 
     if not track:
         track = Track.objects.create(

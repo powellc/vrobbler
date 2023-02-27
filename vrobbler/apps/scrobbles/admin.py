@@ -47,6 +47,7 @@ class ChartRecordAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "rank",
+        "count",
         "year",
         "week",
         "month",

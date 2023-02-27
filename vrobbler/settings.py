@@ -2,6 +2,7 @@ import os
 import sys
 from pathlib import Path
 
+
 import dj_database_url
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
@@ -71,6 +72,10 @@ CSRF_TRUSTED_ORIGINS = [
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 REDIS_URL = os.getenv("VROBBLER_REDIS_URL", None)
+if REDIS_URL:
+    print(f"Sending tasks to redis@{REDIS_URL.split('@')[-1]}")
+else:
+    print("Eagerly running all tasks")
 
 CELERY_TASK_ALWAYS_EAGER = os.getenv("VROBBLER_SKIP_CELERY", False)
 CELERY_BROKER_URL = REDIS_URL if REDIS_URL else "memory://localhost/"
@@ -135,6 +140,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "videos.context_processors.video_lists",
                 "music.context_processors.music_lists",
+                "scrobbles.context_processors.now_playing",
             ],
         },
     },
@@ -150,10 +156,18 @@ DATABASES = {
         conn_max_age=600,
     ),
 }
+
 if TESTING:
     DATABASES = {
         "default": dj_database_url.config(default="sqlite:///testdb.sqlite3")
     }
+db_str = ""
+if 'sqlite' in DATABASES['default']['ENGINE']:
+    db_str = f"Connected to sqlite@{DATABASES['default']['NAME']}"
+if 'postgresql' in DATABASES['default']['ENGINE']:
+    db_str = f"Connected to postgres@{DATABASES['default']['HOST']}/{DATABASES['default']['NAME']}"
+if db_str:
+    print(db_str)
 
 
 CACHES = {

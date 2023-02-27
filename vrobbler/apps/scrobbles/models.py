@@ -2,18 +2,19 @@ import calendar
 import logging
 from uuid import uuid4
 
+from books.models import Book
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 from music.models import Artist, Track
-from books.models import Book
 from podcasts.models import Episode
-from profiles.utils import now_user_timezone
 from scrobbles.lastfm import LastFM
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
+
 from vrobbler.apps.scrobbles.stats import build_charts
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,24 @@ class BaseFileImportMixin(TimeStampedModel):
 
     def __str__(self):
         return f"Scrobble import {self.id}"
+
+    @property
+    def human_start(self):
+        start = "Unknown"
+        if self.processing_started:
+            start = self.processing_started.strftime('%B %d, %Y at %H:%M')
+        return start
+
+    @property
+    def import_type(self) -> str:
+        class_name = self.__class__.__name__
+        if class_name == 'AudioscrobblerTSVImport':
+            return "Audioscrobbler"
+        if class_name == 'KoReaderImport':
+            return "KoReader"
+        if self.__class__.__name__ == 'LastFMImport':
+            return "LastFM"
+        return "Generic"
 
     def process(self, force=False):
         logger.warning("Process not implemented")
@@ -99,6 +118,14 @@ class KoReaderImport(BaseFileImportMixin):
     class Meta:
         verbose_name = "KOReader Import"
 
+    def __str__(self):
+        return f"KoReader import on {self.human_start}"
+
+    def get_absolute_url(self):
+        return reverse(
+            'scrobbles:koreader-import-detail', kwargs={'slug': self.uuid}
+        )
+
     def get_path(instance, filename):
         extension = filename.split('.')[-1]
         uuid = instance.uuid
@@ -126,6 +153,14 @@ class KoReaderImport(BaseFileImportMixin):
 class AudioScrobblerTSVImport(BaseFileImportMixin):
     class Meta:
         verbose_name = "AudioScrobbler TSV Import"
+
+    def __str__(self):
+        return f"Audioscrobbler import on {self.human_start}"
+
+    def get_absolute_url(self):
+        return reverse(
+            'scrobbles:tsv-import-detail', kwargs={'slug': self.uuid}
+        )
 
     def get_path(instance, filename):
         extension = filename.split('.')[-1]
@@ -158,6 +193,14 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
 class LastFmImport(BaseFileImportMixin):
     class Meta:
         verbose_name = "Last.FM Import"
+
+    def __str__(self):
+        return f"LastFM import on {self.human_start}"
+
+    def get_absolute_url(self):
+        return reverse(
+            'scrobbles:lastfm-import-detail', kwargs={'slug': self.uuid}
+        )
 
     def process(self, import_all=False):
         """Import scrobbles found on LastFM"""

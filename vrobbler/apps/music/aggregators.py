@@ -78,13 +78,13 @@ def week_of_scrobbles(
         media_filter = Q(video__video_type=Video.VideoType.TV_EPISODE)
 
     for day in range(6, -1, -1):
-        start = start - timedelta(days=day)
-        end = datetime.combine(start, datetime.max.time(), now.tzinfo)
-        day_of_week = start.strftime('%A')
+        start_day = start - timedelta(days=day)
+        end = datetime.combine(start_day, datetime.max.time(), now.tzinfo)
+        day_of_week = start_day.strftime('%A')
 
         scrobble_day_dict[day_of_week] = base_qs.filter(
             media_filter,
-            timestamp__gte=start,
+            timestamp__gte=start_day,
             timestamp__lte=end,
             played_to_completion=True,
         ).count()
@@ -93,7 +93,7 @@ def week_of_scrobbles(
 
 
 def top_tracks(
-    user: "User", filter: str = "today", limit: int = 15
+    user: "User", filter: str = "today", limit: int = 30
 ) -> List["Track"]:
 
     now = timezone.now()
@@ -109,7 +109,9 @@ def top_tracks(
     starting_day_of_current_month = now.date().replace(day=1)
     starting_day_of_current_year = now.date().replace(month=1, day=1)
 
-    time_filter = Q(scrobble__timestamp__gte=start_of_today)
+    time_filter = Q()
+    if filter == "today":
+        time_filter = Q(scrobble__timestamp__gte=start_of_today)
     if filter == "week":
         time_filter = Q(scrobble__timestamp__gte=starting_day_of_current_week)
     if filter == "month":
@@ -119,7 +121,13 @@ def top_tracks(
 
     return (
         Track.objects.filter(time_filter)
-        .annotate(num_scrobbles=Count("scrobble", distinct=True))
+        .annotate(
+            num_scrobbles=Count(
+                "scrobble",
+                filter=Q(scrobble__played_to_completion=True),
+                distinct=True,
+            )
+        )
         .order_by("-num_scrobbles")[:limit]
     )
 
@@ -143,8 +151,14 @@ def top_artists(
 
     return (
         Artist.objects.filter(time_filter)
-        .annotate(num_scrobbles=Count("track__scrobble", distinct=True))
-        .order_by("-num_scrobbles")[:limit]
+        .annotate(
+            num_scrobbles=Count(
+                "track__scrobble",
+                filter=Q(track__scrobble__played_to_completion=True),
+                distinct=True,
+            )
+        )
+        .order_by("-num_scrobbles")
     )
 
 

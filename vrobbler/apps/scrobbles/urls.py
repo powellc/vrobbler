@@ -43,6 +43,26 @@ urlpatterns = [
     ),
     path('export/', views.export, name='export'),
     path(
+        'imports/',
+        views.ScrobbleImportListView.as_view(),
+        name='import-detail',
+    ),
+    path(
+        'imports/tsv/<slug:slug>/',
+        views.ScrobbleTSVImportDetailView.as_view(),
+        name='tsv-import-detail',
+    ),
+    path(
+        'imports/lastfm/<slug:slug>/',
+        views.ScrobbleLastFMImportDetailView.as_view(),
+        name='lastfm-import-detail',
+    ),
+    path(
+        'imports/koreader/<slug:slug>/',
+        views.ScrobbleKoReaderImportDetailView.as_view(),
+        name='koreader-import-detail',
+    ),
+    path(
         'charts/',
         views.ChartRecordView.as_view(),
         name='charts-home',

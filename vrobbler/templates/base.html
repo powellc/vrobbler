@@ -204,25 +204,6 @@
                         {% endfor %}
                         </ul>
                         {% endif %}
-                        {% if now_playing_list and user.is_authenticated %}
-                        <ul style="padding-right:10px;">
-                            <b>Now playing</b>
-                            {% for scrobble in now_playing_list %}
-                            <div>
-                                {{scrobble.media_obj.title}}<br/>
-                                {% if scrobble.media_obj.subtitle %}<em>{{scrobble.media_obj.subtitle}}</em><br/>{% endif %}
-                                <small>{{scrobble.timestamp|naturaltime}}<br/>
-                                    from {{scrobble.source}}</small>
-                                <div class="progress-bar" style="margin-right:5px;">
-                                    <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
-                                </div>
-                                <a href="{% url "scrobbles:cancel" scrobble.uuid %}">Cancel</a>
-                                <a href="{% url "scrobbles:finish" scrobble.uuid %}">Finish</a>
-                            </div>
-                            <hr/>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
                         <ul class="nav flex-column">
                             <li class="nav-item">
                                 <a class="nav-link active" aria-current="page" href="/">
@@ -271,6 +252,40 @@
                         </ul>
                         {% block extra_nav %}
                         {% endblock %}
+                        <hr/>
+
+                        {% if now_playing_list and user.is_authenticated %}
+                        <ul style="padding-right:10px;">
+                            <b>Now playing</b>
+                            {% for scrobble in now_playing_list %}
+                            <div>
+                                {% if scrobble.media_obj.album.cover_image %}
+                                <td><img src="{{scrobble.track.album.cover_image.url}}" width=120 height=120
+                                        style="border:1px solid black; " /></td><br/>
+                                {% endif %}
+                                {{scrobble.media_obj.title}}<br/>
+                                {% if scrobble.media_obj.subtitle %}<em>{{scrobble.media_obj.subtitle}}</em><br/>{% endif %}
+                                <small>{{scrobble.timestamp|naturaltime}}<br/>
+                                    from {{scrobble.source}}</small>
+                                <div class="progress-bar" style="margin-right:5px;">
+                                    <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
+                                </div>
+                                <a href="{% url "scrobbles:cancel" scrobble.uuid %}">Cancel</a>
+                                <a href="{% url "scrobbles:finish" scrobble.uuid %}">Finish</a>
+                                <hr />
+                            </div>
+                            {% endfor %}
+                        </ul>
+                        <hr/>
+                        {% endif %}
+
+                        {% if active_imports %}
+                        {% for import in active_imports %}
+                        <ul style="padding-right:10px;">
+                            <li>Import in progress ({{import.processing_started|naturaltime}})</li>
+                        </ul>
+                        {% endfor %}
+                        {% endif %}
 
                     </div>
                 </nav>

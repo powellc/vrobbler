@@ -1,0 +1,47 @@
+{% extends "base_list.html" %}
+
+{% block title %}Scrobble Imports{% endblock %}
+{% block lists %}
+<div class="row">
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Scrobbles Imported</th>
+                        <th scope="col">Finished</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in tsv_imports %}
+                    <tr>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.import_type}}</a></td>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.human_start}}</a></td>
+                        <td>{{obj.process_count}}</td>
+                        <td>{{obj.processed_finished}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for obj in lastfm_imports %}
+                    <tr>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.import_type}}</a></td>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.human_start}}</a></td>
+                        <td>{{obj.process_count}}</td>
+                        <td>{{obj.processed_finished}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% for obj in koreader_imports %}
+                    <tr>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.import_type}}</a></td>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.human_start}}</a></td>
+                        <td>{{obj.process_count}}</td>
+                        <td>{{obj.processed_finished}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

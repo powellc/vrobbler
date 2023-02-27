@@ -1,0 +1,13 @@
+{% extends "base_detail.html" %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block details %}
+<div class="row">
+    <div class="col-md">
+        <p>Import started: {{object.processing_started}}</p>
+        <p>Import finished: {{object.processed_finished}}</p>
+        <p>Imported {{object.process_count}} scrobbles</p>
+    </div>
+</div>
+{% endblock %}
