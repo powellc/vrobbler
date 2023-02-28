@@ -5,12 +5,7 @@ import time_machine
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
-from music.aggregators import (
-    scrobble_counts,
-    top_artists,
-    top_tracks,
-    week_of_scrobbles,
-)
+from music.aggregators import live_charts, scrobble_counts, week_of_scrobbles
 from profiles.models import UserProfile
 from scrobbles.models import Scrobble
 
@@ -55,7 +50,7 @@ def test_week_of_scrobbles_data(client, mopidy_track_request_data):
 def test_top_tracks_by_day(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_tracks(user)
+    tops = live_charts(user)
     assert tops[0].title == "Same in the End"
 
 
@@ -63,7 +58,7 @@ def test_top_tracks_by_day(client, mopidy_track_request_data):
 def test_top_tracks_by_week(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_tracks(user, filter='week')
+    tops = live_charts(user, chart_period='week')
     assert tops[0].title == "Same in the End"
 
 
@@ -71,7 +66,7 @@ def test_top_tracks_by_week(client, mopidy_track_request_data):
 def test_top_tracks_by_month(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_tracks(user, filter='month')
+    tops = live_charts(user, chart_period='month')
     assert tops[0].title == "Same in the End"
 
 
@@ -79,7 +74,7 @@ def test_top_tracks_by_month(client, mopidy_track_request_data):
 def test_top_tracks_by_year(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_tracks(user, filter='year')
+    tops = live_charts(user, chart_period='year')
     assert tops[0].title == "Same in the End"
 
 
@@ -87,7 +82,7 @@ def test_top_tracks_by_year(client, mopidy_track_request_data):
 def test_top__artists_by_week(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_artists(user, filter='week')
+    tops = live_charts(user, chart_period='week', media_type="Artist")
     assert tops[0].name == "Sublime"
 
 
@@ -95,7 +90,7 @@ def test_top__artists_by_week(client, mopidy_track_request_data):
 def test_top__artists_by_month(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_artists(user, filter='month')
+    tops = live_charts(user, chart_period='month', media_type="Artist")
     assert tops[0].name == "Sublime"
 
 
@@ -103,5 +98,5 @@ def test_top__artists_by_month(client, mopidy_track_request_data):
 def test_top__artists_by_year(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
-    tops = top_artists(user, filter='year')
+    tops = live_charts(user, chart_period='year', media_type="Artist")
     assert tops[0].name == "Sublime"
