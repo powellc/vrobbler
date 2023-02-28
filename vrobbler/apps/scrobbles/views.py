@@ -2,7 +2,6 @@ import calendar
 import json
 import logging
 from datetime import datetime, timedelta
-from django.db.models.query import QuerySet
 
 import pytz
 from django.conf import settings
@@ -10,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.db.models.fields import timezone
+from django.db.models.query import QuerySet
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -17,12 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
-from music.aggregators import (
-    scrobble_counts,
-    top_artists,
-    top_tracks,
-    week_of_scrobbles,
-)
+from music.aggregators import scrobble_counts, week_of_scrobbles
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -61,6 +56,8 @@ from scrobbles.tasks import (
     process_tsv_import,
 )
 from scrobbles.thesportsdb import lookup_event_from_thesportsdb
+
+from vrobbler.apps.music.aggregators import live_charts
 
 logger = logging.getLogger(__name__)
 
@@ -406,19 +403,17 @@ class ChartRecordView(TemplateView):
     template_name = 'scrobbles/chart_index.html'
 
     @staticmethod
-    def get_media_filter(media_type: str = "Track"):
-        media_filter = Q()
-        if media_type == 'Track':
-            media_filter = Q(track__isnull=False)
-        if media_type == 'Artist':
-            media_filter = Q(artist__isnull=False)
-        if media_type == 'Series':
-            media_filter = Q(series__isnull=False)
-        if media_type == 'Video':
-            media_filter = Q(video__isnull=False)
-        return media_filter
+    def get_media_filter(media_type: str = "") -> Q:
+        filters = {
+            "Track": Q(track__isnull=False),
+            "Artist": Q(artist__isnull=False),
+            "Series": Q(series__isnull=False),
+            "Video": Q(video__isnull=False),
+            "": Q(),
+        }
+        return filters[media_type]
 
-    def get_chart_records(self, media_type: str = "Track", **kwargs):
+    def get_chart_records(self, media_type: str = "", **kwargs):
         media_filter = self.get_media_filter(media_type)
         charts = ChartRecord.objects.filter(
             media_filter, user=self.request.user, **kwargs
@@ -434,37 +429,24 @@ class ChartRecordView(TemplateView):
         return charts
 
     def get_chart(
-        self, period: str = "all_time", limit=15, media: str = "Track"
+        self, period: str = "all_time", limit=15, media: str = ""
     ) -> QuerySet:
-        chart = QuerySet()
         now = timezone.now()
-        if period == "all_time":
-            chart = self.get_chart_records(media_type=media)
+        params = {}
+        params['media_type'] = media
         if period == "today":
-            chart = self.get_chart_records(
-                media_type=media,
-                day=now.day,
-                month=now.month,
-                year=now.year,
-            )
+            params['day'] = now.day
+            params['month'] = now.month
+            params['year'] = now.year
         if period == "week":
-            chart = self.get_chart_records(
-                media_type=media,
-                year=now.year,
-                week=now.isocalendar()[1],
-            )
+            params['week'] = now.ioscalendar()[1]
+            params['year'] = now.year
         if period == "month":
-            chart = self.get_chart_records(
-                media_type=media,
-                year=now.year,
-                month=now.month,
-            )
+            params['month'] = now.month
+            params['year'] = now.year
         if period == "year":
-            chart = self.get_chart_records(
-                media_type=media,
-                year=now.year,
-            )
-        return chart[:limit]
+            params['year'] = now.year
+        return self.get_chart_records(**params)[:limit]
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
@@ -475,21 +457,24 @@ class ChartRecordView(TemplateView):
         context_data["artist_charts"] = {}
 
         if not date:
+            artist_params = {'user': user, 'media_type': 'Artist'}
             context_data['artist_charts'] = {
-                "today": top_artists(user, filter="today")[:30],
-                "week": top_artists(user, filter="week")[:30],
-                "month": top_artists(user, filter="month")[:30],
-                "all": top_artists(user),
+                "today": live_charts(**artist_params, chart_period="today"),
+                "week": live_charts(**artist_params, chart_period="week"),
+                "month": live_charts(**artist_params, chart_period="month"),
+                "all": live_charts(**artist_params),
             }
 
+            track_params = {'user': user, 'media_type': 'Track'}
             context_data['track_charts'] = {
-                "today": top_tracks(user, filter="today")[:30],
-                "week": top_tracks(user, filter="week")[:30],
-                "month": top_tracks(user, filter="month")[:30],
-                "all": top_tracks(user),
+                "today": live_charts(**track_params, chart_period="today"),
+                "week": live_charts(**track_params, chart_period="week"),
+                "month": live_charts(**track_params, chart_period="month"),
+                "all": live_charts(**track_params),
             }
             return context_data
 
+        # Date provided, lookup past charts, returning nothing if it's now or in the future.
         now = timezone.now()
         year = now.year
         params = {'year': year}
@@ -531,7 +516,7 @@ class ChartRecordView(TemplateView):
             media_filter, user=self.request.user, **params
         ).order_by("rank")
 
-        if charts.count() == 0:
+        if charts.count() == 0 and not in_progress:
             ChartRecord.build(
                 user=self.request.user, model_str=media_type, **params
             )
@@ -539,11 +524,8 @@ class ChartRecordView(TemplateView):
                 media_filter, user=self.request.user, **params
             ).order_by("rank")
 
-        if in_progress:
-            # TODO recalculate
-            ...
-
+        context_data['media_type'] = media_type
         context_data['charts'] = charts
-        context_data['name'] = name
+        context_data['name'] = " ".join(["Top", media_type, "for", name])
         context_data['in_progress'] = in_progress
         return context_data

@@ -1,6 +1,8 @@
-from django.db.models import Count
+from datetime import timedelta
+from django.utils import timezone
 from django.views import generic
-from music.models import Track, Artist, Album
+from music.models import Album, Artist, Track
+from scrobbles.models import ChartRecord
 from scrobbles.stats import get_scrobble_count_qs
 
 
@@ -17,6 +19,14 @@ class TrackDetailView(generic.DetailView):
     model = Track
     slug_field = 'uuid'
 
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        context_data['charts'] = ChartRecord.objects.filter(
+            track=self.object, rank__in=[1, 2, 3]
+        )
+        return context_data
+
 
 class ArtistListView(generic.ListView):
     model = Artist
@@ -28,6 +38,13 @@ class ArtistListView(generic.ListView):
 class ArtistDetailView(generic.DetailView):
     model = Artist
     slug_field = 'uuid'
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['charts'] = ChartRecord.objects.filter(
+            artist=self.object, rank__in=[1, 2, 3]
+        )
+        return context_data
 
 
 class AlbumListView(generic.ListView):

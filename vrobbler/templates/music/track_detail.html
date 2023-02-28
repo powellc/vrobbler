@@ -1,13 +1,41 @@
-{% extends "base_detail.html" %}
+{% extends "base_list.html" %}
 
 {% block title %}{{object.title}}{% endblock %}
 
-{% block details %}
-<h2>Last scrobbles</h2>
-{% for scrobble in object.scrobble_set.all  %}
-<ul>
-    <li>{{scrobble.timestamp|date:"d M Y h:m"}} - <img src="{{object.album.cover_image.url}}" width=25 height=25 /> - {{object}}</li>
-</ul>
-{% endfor %}
+{% block lists %}
+<div class="row">
+    {% if track.album.cover_image %}
+    <p style="width:150px; float:left;"><img src="{{track.album.cover_image.url}}" width=150 height=150 /></p>
+    {% endif %}
+</div>
+<div class="row">
+    <p>{{object.scrobble_set.count}} scrobbles</p>
+    {% if charts %}
+    <p>{% for chart in charts %}<em><a href="{{chart.link}}">{{chart}}</a></em>{% if forloop.last %}{% else %} | {% endif %}{% endfor %}</p>
+    {% endif %}
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Track</th>
+                        <th scope="col">Album</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scrobble in object.scrobble_set.all %}
+                    <tr>
+                        <td>{{scrobble.timestamp}}</td>
+                        <td>{{scrobble.track.title}}</td>
+                        <td>{{scrobble.track.album.name}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

@@ -312,7 +312,22 @@ class ChartRecord(TimeStampedModel):
         return period
 
     def __str__(self):
-        return f"#{self.rank} in {self.period} - {self.media_obj}"
+        title = f"#{self.rank} in {self.period}"
+        if self.day or self.week:
+            title = f"#{self.rank} on {self.period}"
+        return title
+
+    def link(self):
+        get_params = f"?date={self.year}"
+        if self.week:
+            get_params = get_params = get_params + f"-W{self.week}"
+        if self.month:
+            get_params = get_params = get_params + f"-{self.month}"
+        if self.day:
+            get_params = get_params = get_params + f"-{self.day}"
+        if self.artist:
+            get_params = get_params + "&media=Artist"
+        return reverse('scrobbles:charts-home') + get_params
 
     @classmethod
     def build(cls, user, **kwargs):
