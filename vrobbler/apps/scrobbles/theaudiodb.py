@@ -23,11 +23,12 @@ def lookup_artist_from_tadb(name: str) -> dict:
         return {}
 
     results = json.loads(response.content)
-    artist = results['artists'][0]
+    if results['artists']:
+        artist = results['artists'][0]
 
-    artist_info['biography'] = artist['strBiographyEN']
-    artist_info['genre'] = artist['strGenre']
-    artist_info['mood'] = artist['strMood']
-    artist_info['thumb_url'] = artist['strArtistThumb']
+        artist_info['biography'] = artist['strBiographyEN']
+        artist_info['genre'] = artist['strGenre']
+        artist_info['mood'] = artist['strMood']
+        artist_info['thumb_url'] = artist['strArtistThumb']
 
     return artist_info

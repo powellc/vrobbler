@@ -6,6 +6,11 @@ app_name = 'music'
 
 urlpatterns = [
     path('albums/', views.AlbumListView.as_view(), name='albums_list'),
+    path(
+        'album/<slug:slug>/',
+        views.AlbumDetailView.as_view(),
+        name='album_detail',
+    ),
     path("tracks/", views.TrackListView.as_view(), name='tracks_list'),
     path(
         'tracks/<slug:slug>/',

@@ -49,3 +49,15 @@ class ArtistDetailView(generic.DetailView):
 
 class AlbumListView(generic.ListView):
     model = Album
+
+
+class AlbumDetailView(generic.DetailView):
+    model = Album
+    slug_field = 'uuid'
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        # context_data['charts'] = ChartRecord.objects.filter(
+        #    track__album=self.object, rank__in=[1, 2, 3]
+        # )
+        return context_data

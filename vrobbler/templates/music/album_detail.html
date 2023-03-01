@@ -7,20 +7,14 @@
 
 <div class="row">
 
-    {% if object.thumbnail %}
+    {% if object.cover_image %}
     <p style="float:left; width:302px; padding:0; border: 1px solid #ccc">
-        <img src="{{artist.thumbnail.url}}" width=300 height=300 />
+        <img src="{{object.cover_image.url}}" width=300 height=300 />
     </p>
-    {% else %}
-    {% if object.album_set.first.cover_image %}
-    <p style="float:left; width:302px; padding:0; border: 1px solid #ccc">
-        <img src="{{object.album_set.first.cover_image.url}}" width=300 height=300 />
-    </p>
-    {% endif %}
     {% endif %}
 </div>
 <div class="row">
-    <p>{{artist.scrobbles.count}} scrobbles</p>
+    <p>{{object.scrobbles.count}} scrobbles</p>
     {% if charts %}
     <p>{% for chart in charts %}<em><a href="{{chart.link}}">{{chart}}</a></em>{% if forloop.last %}{% else %} | {% endif %}{% endfor %}</p>
     {% endif %}
@@ -32,7 +26,7 @@
                 <tr>
                     <th scope="col">Rank</th>
                     <th scope="col">Track</th>
-                    <th scope="col">Album</th>
+                    <th scope="col">Artist</th>
                     <th scope="col">Count</th>
                     <th scope="col"></th>
                 </tr>
@@ -42,7 +36,7 @@
                 <tr>
                     <td>{{rank}}#1</td>
                     <td><a href="{{track.get_absolute_url}}">{{track.title}}</a></td>
-                    <td><a href="{{track.album.get_absolute_url}}">{{track.album}}</a></td>
+                    <td><a href="{{track.artist.get_absolute_url}}">{{track.artist}}</a></td>
                     <td>{{track.scrobble_count}}</td>
                     <td>
                         <div class="progress-bar" style="margin-right:5px;">
@@ -65,7 +59,7 @@
                 <tr>
                     <th scope="col">Date</th>
                     <th scope="col">Track</th>
-                    <th scope="col">Album</th>
+                    <th scope="col">Artist</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,7 +67,7 @@
                 <tr>
                     <td>{{scrobble.timestamp}}</td>
                     <td><a href="{{scrobble.track.get_absolute_url}}">{{scrobble.track.title}}</a></td>
-                    <td><a href="{{scrobble.track.album.get_absolute_url}}">{{scrobble.track.album.name}}</a></td>
+                    <td><a href="{{scrobble.track.artist.get_absolute_url}}">{{scrobble.track.artist.name}}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -22,14 +22,16 @@
                         <th scope="col">Date</th>
                         <th scope="col">Track</th>
                         <th scope="col">Album</th>
+                        <th scope="col">Artist</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for scrobble in object.scrobble_set.all %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        <td>{{scrobble.track.title}}</td>
-                        <td>{{scrobble.track.album.name}}</td>
+                        <td><a href="{{scrobble.track.get_absolute_url}}">{{scrobble.track.title}}</a></td>
+                        <td><a href="{{scrobble.track.album.get_absolute_url}}">{{scrobble.track.album}}</a></td>
+                        <td><a href="{{scrobble.track.artist.get_absolute_url}}">{{scrobble.track.artist}}</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

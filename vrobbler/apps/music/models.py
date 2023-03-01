@@ -90,6 +90,24 @@ class Album(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("music:album_detail", kwargs={'slug': self.uuid})
+
+    def scrobbles(self):
+        from scrobbles.models import Scrobble
+
+        return Scrobble.objects.filter(
+            track__in=self.track_set.all()
+        ).order_by('-timestamp')
+
+    @property
+    def tracks(self):
+        return (
+            self.track_set.all()
+            .annotate(scrobble_count=models.Count('scrobble'))
+            .order_by('-scrobble_count')
+        )
+
     @property
     def primary_artist(self):
         return self.artists.first()
