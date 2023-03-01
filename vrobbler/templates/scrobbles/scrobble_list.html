@@ -84,13 +84,12 @@
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
                                     {% if scrobble.track.album.cover_image %}
-                                    <td><img src="{{scrobble.track.album.cover_image.url}}" width=25 height=25
-                                            style="border:1px solid black;" /></td>
+                                    <td><a href="{{scrobble.track.album.get_absolute_url}}"><img src="{{scrobble.track.album.cover_image.url}}" width=25 height=25 style="border:1px solid black;" /></aa></td>
                                     {% else %}
-                                    <td>{{scrobble.track.album.name}}</td>
+                                    <td><a href="{{scrobble.track.album.get_absolute_url}}">{{scrobble.track.album.name}}</a></td>
                                     {% endif %}
-                                    <td>{{scrobble.track.title}}</td>
-                                    <td>{{scrobble.track.artist.name}}</td>
+                                    <td><a href="{{scrobble.track.get_absolute_url }}">{{scrobble.track.title}}</a></td>
+                                    <td><a href="{{scrobble.track.artist.get_absolute_url }}">{{scrobble.track.artist.name}}</aa></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

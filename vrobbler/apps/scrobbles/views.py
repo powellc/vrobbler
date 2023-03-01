@@ -458,7 +458,7 @@ class ChartRecordView(TemplateView):
 
         if not date:
             artist_params = {'user': user, 'media_type': 'Artist'}
-            context_data['artist_charts'] = {
+            context_data['current_artist_charts'] = {
                 "today": live_charts(**artist_params, chart_period="today"),
                 "week": live_charts(**artist_params, chart_period="week"),
                 "month": live_charts(**artist_params, chart_period="month"),
@@ -466,7 +466,7 @@ class ChartRecordView(TemplateView):
             }
 
             track_params = {'user': user, 'media_type': 'Track'}
-            context_data['track_charts'] = {
+            context_data['current_track_charts'] = {
                 "today": live_charts(**track_params, chart_period="today"),
                 "week": live_charts(**track_params, chart_period="week"),
                 "month": live_charts(**track_params, chart_period="month"),
@@ -511,21 +511,35 @@ class ChartRecordView(TemplateView):
                 now.month == month and now.year == year and now.day == day
             )
 
-        media_filter = self.get_media_filter(media_type)
-        charts = ChartRecord.objects.filter(
+        media_filter = self.get_media_filter("Track")
+        track_charts = ChartRecord.objects.filter(
+            media_filter, user=self.request.user, **params
+        ).order_by("rank")
+        media_filter = self.get_media_filter("Artist")
+        artist_charts = ChartRecord.objects.filter(
             media_filter, user=self.request.user, **params
         ).order_by("rank")
 
-        if charts.count() == 0 and not in_progress:
+        if track_charts.count() == 0 and not in_progress:
             ChartRecord.build(
-                user=self.request.user, model_str=media_type, **params
+                user=self.request.user, model_str="Track", **params
             )
-            charts = ChartRecord.objects.filter(
+            media_filter = self.get_media_filter("Track")
+            track_charts = ChartRecord.objects.filter(
+                media_filter, user=self.request.user, **params
+            ).order_by("rank")
+        if artist_charts.count() == 0 and not in_progress:
+            ChartRecord.build(
+                user=self.request.user, model_str="Artist", **params
+            )
+            media_filter = self.get_media_filter("Artist")
+            artist_charts = ChartRecord.objects.filter(
                 media_filter, user=self.request.user, **params
             ).order_by("rank")
 
         context_data['media_type'] = media_type
-        context_data['charts'] = charts
+        context_data['track_charts'] = track_charts
+        context_data['artist_charts'] = artist_charts
         context_data['name'] = " ".join(["Top", media_type, "for", name])
         context_data['in_progress'] = in_progress
         return context_data

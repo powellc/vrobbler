@@ -4,66 +4,66 @@
 
 {% block lists %}
 <div class="row">
-    {% if charts %}
-    {% if "Artist" in name %}
-    <div class="tab-content" id="artistTabContent">
-        <div class="table-responsive">
-            <table class="table table-striped table-sm">
-                <thead>
-                    <tr>
-                        <th scope="col">Rank</th>
-                        <th scope="col">Artist</th>
-                        <th scope="col">Scrobbles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for chart in charts %}
-                    <tr>
-                        <td>{{chart.rank}}</td>
-                        <td><a href="{{chart.media_obj.get_absolute_url}}">{{chart.media_obj}}</a></td>
-                        <td>{{chart.count}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    {% if artist_charts %}
+    <div class="col-md">
+        <div class="tab-content" id="artistTabContent">
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Artist</th>
+                            <th scope="col">Scrobbles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chart in artist_charts %}
+                        <tr>
+                            <td>{{chart.rank}}</td>
+                            <td><a href="{{chart.media_obj.get_absolute_url}}">{{chart.media_obj}}</a></td>
+                            <td>{{chart.count}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    {% elif media_type == "Track" %}
-    <div class="tab-content" id="artistTabContent">
-        <div class="table-responsive">
-            <table class="table table-striped table-sm">
-                <thead>
-                    <tr>
-                        <th scope="col">Rank</th>
-                        <th scope="col">Artist</th>
-                        <th scope="col">Track</th>
-                        <th scope="col">Scrobbles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for chart in charts %}
-                    <tr>
-                        <td>{{chart.rank}}</td>
-                        <td><a href="{{chart.media_obj.artist.get_absolute_url}}">{{chart.media_obj.artist}}</a></td>
-                        <td><a href="{{chart.media_obj.get_absolute_url}}">{{chart.media_obj.title}}</a></td>
-                        <td>{{chart.count}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {% elif "Video" in name %}
-    {% elif "Series" in name %}
-    {% endif %}
     {% endif %}
 
-    {% if artist_charts %}
+    {% if track_charts %}
+    <div class="col-md">
+        <div class="tab-content" id="artistTabContent">
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Track</th>
+                            <th scope="col">Scrobbles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chart in track_charts %}
+                        <tr>
+                            <td>{{chart.rank}}</td>
+                            <td><a href="{{chart.media_obj.get_absolute_url}}">{{chart.media_obj.title}}</a></td>
+                            <td>{{chart.count}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_artist_charts %}
     <div class="col-md">
         <h2>Top Artists</h2>
 
         <ul class="nav nav-tabs" id="artistTab" role="tablist">
-            {% for chart_name in artist_charts.keys %}
+            {% for chart_name in current_artist_charts.keys %}
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if forloop.first %}active{% endif %}" id="artist-{{chart_name}}-tab" data-bs-toggle="tab" data-bs-target="#artist-{{chart_name}}"
                         type="button" role="tab" aria-controls="home" aria-selected="true">
@@ -74,7 +74,7 @@
         </ul>
 
         <div class="tab-content" id="artistTabContent">
-            {% for chart_name, artists in artist_charts.items %}
+            {% for chart_name, artists in current_artist_charts.items %}
             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="artist-{{chart_name}}" role="tabpanel"
                 aria-labelledby="artist-{[chart}}-tab">
                 <div class="table-responsive">
@@ -101,12 +101,12 @@
         {% endif %}
     </div>
 
-    {% if track_charts %}
+    {% if current_track_charts %}
     <div class="col-md">
         <h2>Top Tracks</h2>
 
         <ul class="nav nav-tabs" id="artistTab" role="tablist">
-            {% for chart_name in track_charts.keys %}
+            {% for chart_name in current_track_charts.keys %}
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if forloop.first %}active{% endif %}" id="track-{{chart_name}}-tab" data-bs-toggle="tab" data-bs-target="#track-{{chart_name}}"
                         type="button" role="tab" aria-controls="home" aria-selected="true">
@@ -117,7 +117,7 @@
         </ul>
 
         <div class="tab-content" id="trackTabContent">
-            {% for chart_name, tracks in track_charts.items %}
+            {% for chart_name, tracks in current_track_charts.items %}
             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="track-{{chart_name}}" role="tabpanel"
                 aria-labelledby="track-{[chart_name}}-tab">
                 <div class="table-responsive">
