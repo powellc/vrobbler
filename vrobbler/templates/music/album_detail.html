@@ -17,7 +17,7 @@
         <p>{{object.theaudiodb_description|safe|linebreaks|truncatewords:160}}</p>
         <hr/>
         {% endif %}
-        <p><a href="{{album.mb_link}}">Musicbrainz</a> | <a href="{{album.tadb_link}}">TheAudioDB</a> {% if album.allmusic_link %}| <a href="{{album.allmusic_link}}">AllMusic</a>{% endif %}</p>
+        <p><a href="{{album.mb_link}}">Musicbrainz</a> {% if album.tadb_link %}| <a href="{{album.tadb_link}}">TheAudioDB</a>{% endif %} {% if album.allmusic_link %}| <a href="{{album.allmusic_link}}">AllMusic</a>{% endif %}</p>
     </div>
 </div>
 <div class="row">
