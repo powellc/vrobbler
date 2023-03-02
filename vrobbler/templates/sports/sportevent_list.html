@@ -1,0 +1,36 @@
+{% extends "base_list.html" %}
+
+{% block title %}Sport events{% endblock %}
+
+{% block lists %}
+<div class="row">
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Round</th>
+                        <th scope="col">League</th>
+                        <th scope="col">Scrobbles</th>
+                        <th scope="col">All time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in object_list %}
+                    <tr>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj.title}}</a></td>
+                        <td>{{obj.start}}</td>
+                        <td>{{obj.round.name}}</td>
+                        <td>{{obj.round.league}}</td>
+                        <td>{{obj.scrobble_set.count}}</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base_detail.html" %}
+
+{% block title %}{{object.title}} - {{object.round.season.league}}{% endblock %}
+
+{% block details %}
+
+<div class="row">
+    <h2>{{object.tv_series}}</h2>
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Season</th>
+                        <th scope="col">League</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scrobble in object.scrobble_set.all %}
+                    <tr>
+                        <td>{{scrobble.timestamp}}</td>
+                        <td>{{scrobble.media_obj.round.season.name}}</td>
+                        <td>{{scrobble.media_obj.round.season.league}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

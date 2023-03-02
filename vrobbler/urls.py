@@ -5,6 +5,7 @@ from rest_framework import routers
 import vrobbler.apps.scrobbles.views as scrobbles_views
 from vrobbler.apps.books.api.views import AuthorViewSet, BookViewSet
 from vrobbler.apps.music import urls as music_urls
+from vrobbler.apps.sports import urls as sports_urls
 from vrobbler.apps.music.api.views import (
     AlbumViewSet,
     ArtistViewSet,
@@ -57,6 +58,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("", include(music_urls, namespace="music")),
     path("", include(video_urls, namespace="videos")),
+    path("", include(sports_urls, namespace="sports")),
     path("", include(scrobble_urls, namespace="scrobbles")),
     path(
         "", scrobbles_views.RecentScrobbleList.as_view(), name="vrobbler-home"
