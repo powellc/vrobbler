@@ -1,10 +1,8 @@
-import scrobbles.views as scrobbles_views
-from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
+import vrobbler.apps.scrobbles.views as scrobbles_views
 from vrobbler.apps.books.api.views import AuthorViewSet, BookViewSet
 from vrobbler.apps.music import urls as music_urls
 from vrobbler.apps.music.api.views import (
@@ -23,7 +21,6 @@ from vrobbler.apps.scrobbles.api.views import (
 from vrobbler.apps.sports.api.views import (
     LeagueViewSet,
     PlayerViewSet,
-    RoundViewSet,
     SeasonViewSet,
     SportEventViewSet,
     SportViewSet,
@@ -65,11 +62,3 @@ urlpatterns = [
         "", scrobbles_views.RecentScrobbleList.as_view(), name="vrobbler-home"
     ),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-    )
-    urlpatterns += static(
-        settings.STATIC_URL, document_root=settings.STATIC_ROOT
-    )
