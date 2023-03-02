@@ -12,6 +12,13 @@
         <img src="{{object.cover_image.url}}" width=300 height=300 />
     </p>
     {% endif %}
+    <div style="float:left; width:600px; margin-left:10px; ">
+        {% if object.theaudiodb_description %}
+        <p>{{object.theaudiodb_description|safe|linebreaks|truncatewords:160}}</p>
+        <hr/>
+        {% endif %}
+        <p><a href="{{album.mb_link}}">Musicbrainz</a> | <a href="{{album.tadb_link}}">TheAudioDB</a> {% if album.allmusic_link %}| <a href="{{album.allmusic_link}}">AllMusic</a>{% endif %}</p>
+    </div>
 </div>
 <div class="row">
     <p>{{object.scrobbles.count}} scrobbles</p>

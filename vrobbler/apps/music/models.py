@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
 from scrobbles.theaudiodb import lookup_artist_from_tadb
+from vrobbler.apps.scrobbles.theaudiodb import lookup_album_from_tadb
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -86,6 +87,21 @@ class Album(TimeStampedModel):
     musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
     musicbrainz_albumartist_id = models.CharField(max_length=255, **BNULL)
     cover_image = models.ImageField(upload_to="albums/", **BNULL)
+    theaudiodb_id = models.CharField(max_length=255, unique=True, **BNULL)
+    theaudiodb_description = models.TextField(**BNULL)
+    theaudiodb_year_released = models.IntegerField(**BNULL)
+    theaudiodb_score = models.FloatField(**BNULL)
+    theaudiodb_score_votes = models.IntegerField(**BNULL)
+    theaudiodb_genre = models.CharField(max_length=255, **BNULL)
+    theaudiodb_style = models.CharField(max_length=255, **BNULL)
+    theaudiodb_mood = models.CharField(max_length=255, **BNULL)
+    theaudiodb_speed = models.CharField(max_length=255, **BNULL)
+    theaudiodb_theme = models.CharField(max_length=255, **BNULL)
+    allmusic_id = models.CharField(max_length=255, **BNULL)
+    rateyourmusic_id = models.CharField(max_length=255, **BNULL)
+    wikipedia_slug = models.CharField(max_length=255, **BNULL)
+    discogs_id = models.CharField(max_length=255, **BNULL)
+    wikidata_id = models.CharField(max_length=255, **BNULL)
 
     def __str__(self):
         return self.name
@@ -111,6 +127,15 @@ class Album(TimeStampedModel):
     @property
     def primary_artist(self):
         return self.artists.first()
+
+    def scrape_theaudiodb(self) -> None:
+        artist = self.primary_artist.name
+        album_data = lookup_album_from_tadb(self.name, artist)
+        if not album_data.get('theaudiodb_id'):
+            logger.info(f"No data for {self} found in TheAudioDB")
+            return
+
+        Album.objects.filter(pk=self.pk).update(**album_data)
 
     def fix_metadata(self):
         if (
@@ -159,6 +184,7 @@ class Album(TimeStampedModel):
                 or self.cover_image == 'default-image-replace-me'
             ):
                 self.fetch_artwork()
+        self.scrape_theaudiodb()
 
     def fetch_artwork(self, force=False):
         if not self.cover_image and not force:
@@ -197,8 +223,26 @@ class Album(TimeStampedModel):
             self.save()
 
     @property
-    def mb_link(self):
+    def mb_link(self) -> str:
         return f"https://musicbrainz.org/release/{self.musicbrainz_id}"
+
+    @property
+    def allmusic_link(self) -> str:
+        if self.allmusic_id:
+            return f"https://www.allmusic.com/artist/{self.allmusic_id}"
+        return ""
+
+    @property
+    def wikipedia_link(self):
+        if self.wikipedia_slug:
+            return f"https://www.wikipedia.org/en/{self.wikipedia_slug}"
+        return ""
+
+    @property
+    def tadb_link(self):
+        if self.theaudiodb_id:
+            return f"https://www.theaudiodb.com/album/{self.theaudiodb_id}"
+        return ""
 
 
 class Track(ScrobblableMixin):
