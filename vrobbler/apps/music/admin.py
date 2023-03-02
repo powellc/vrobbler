@@ -8,8 +8,18 @@ from scrobbles.admin import ScrobbleInline
 @admin.register(Album)
 class AlbumAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("name", "year", "musicbrainz_id")
-    list_filter = ("year",)
+    list_display = (
+        "name",
+        "year",
+        "primary_artist",
+        "theaudiodb_genre",
+        "theaudiodb_mood",
+        "musicbrainz_id",
+    )
+    list_filter = (
+        "theaudiodb_score",
+        "theaudiodb_genre",
+    )
     ordering = ("name",)
     filter_horizontal = [
         'artists',
