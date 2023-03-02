@@ -58,13 +58,16 @@ def lookup_album_from_tadb(name: str, artist: str) -> dict:
         album_info['theaudiodb_mood'] = album.get('strMood')
         album_info['theaudiodb_speed'] = album.get('strSpeed')
         album_info['theaudiodb_theme'] = album.get('strTheme')
-        album_info['theaudiodb_year_released'] = album.get('intYearReleased')
         album_info['allmusic_id'] = album.get('strAllMusicID')
         album_info['wikipedia_slug'] = album.get('strWikipediaID')
         album_info['discogs_id'] = album.get('strDiscogsID')
         album_info['wikidata_id'] = album.get('strWikidataID')
         album_info['rateyourmusic_id'] = album.get('strRateYourMusicID')
 
+        if album.get('intYearReleased'):
+            album_info['theaudiodb_year_released'] = float(
+                album.get('intYearReleased')
+            )
         if album.get('intScore'):
             album_info['theaudiodb_score'] = float(album.get('intScore'))
         if album.get('intScoreVotes'):

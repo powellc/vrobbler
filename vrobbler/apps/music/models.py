@@ -129,7 +129,9 @@ class Album(TimeStampedModel):
         return self.artists.first()
 
     def scrape_theaudiodb(self) -> None:
-        artist = self.primary_artist.name
+        artist = "Various Artists"
+        if self.primary_artist:
+            artist = self.primary_artist.name
         album_data = lookup_album_from_tadb(self.name, artist)
         if not album_data.get('theaudiodb_id'):
             logger.info(f"No data for {self} found in TheAudioDB")
