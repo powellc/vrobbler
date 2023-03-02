@@ -3,10 +3,57 @@
 {% block title %}Tracks{% endblock %}
 
 {% block lists %}
-<h2>All time</h2>
-{% for track in object_list %}
-<ul>
-    <li><a href="{{track.get_absolute_url}}">{{track}}</a></li>
-</ul>
-{% endfor %}
+<div class="row">
+    <p class="pagination">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </p>
+    <hr />
+
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Track</th>
+                    <th scope="col">Artist</th>
+                    <th scope="col">Scrobbles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for track in object_list %}
+                <tr>
+                    <td><a href="{{track.get_absolute_url}}">{{track}}</a></td>
+                    <td><a href="{{track.artist.get_absolute_url}}">{{track.artist}}</a></td>
+                    <td>{{track.scrobble_set.count}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="pagination" style="margin-bottom:50px;">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
 {% endblock %}

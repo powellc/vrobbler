@@ -1,11 +1,82 @@
 {% extends "base_list.html" %}
+{% load urlreplace %}
 
 {% block title %}Albums{% endblock %}
 
 {% block lists %}
-{% for album in object_list %}
-<dl style="width: 130px; float: left; margin-right:10px;">
-    <dd><img src="{{album.cover_image.url}}" width=120 height=120 /></dd>
-</dl>
-{% endfor %}
+
+<div class="row">
+    <p class="view">
+        <span class="view-links">
+            {% if view == 'grid' %}
+                View as <a href="?{% urlreplace view='list' %}">List</a>
+            {% else %}
+                View as <a href="?{% urlreplace view='grid' %}">Grid</a>
+            {% endif %}
+        </span>
+    </p>
+    <p class="pagination">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?{% urlreplace page=page_obj.previous_page_number %}">prev</a>
+            {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% if page_obj.has_next %}
+                <a href="?{% urlreplace page=page_obj.next_page_number %}">next</a>
+            {% endif %}
+        </span>
+    </p>
+    <hr />
+
+    {% if view == 'grid' %}
+    <div>
+        {% for album in object_list %}
+        {% if album.cover_image %}
+        <dl style="width: 130px; float: left; margin-right:10px;">
+            <dd><img src="{{album.cover_image.url}}" width=120 height=120 /></dd>
+        </dl>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Album</th>
+                    <th scope="col">Artist</th>
+                    <th scope="col">Scrobbles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for album in object_list %}
+                <tr>
+                    <td><a href="{{album.get_absolute_url}}">{{album}}</a></td>
+                    <td><a href="{{album.artist.get_absolute_url}}">{{album.artist}}</a></td>
+                    <td>{{album.scrobbles.count}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="pagination" style="margin-bottom:50px;">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?{% urlreplace page=page_obj.previous_page_number %}">prev</a>
+            {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% if page_obj.has_next %}
+                <a href="?{% urlreplace page=page_obj.next_page_number %}">next</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
 {% endblock %}

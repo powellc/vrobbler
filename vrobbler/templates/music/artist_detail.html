@@ -4,12 +4,11 @@
 {% block title %}{{object.name}}{% endblock %}
 
 {% block lists %}
-
 <div class="row">
 
     {% if object.thumbnail %}
-    <p style="float:left; width:302px; padding:0; border: 1px solid #ccc">
-        <img src="{{artist.thumbnail.url}}" width=300 height=300 />
+    <p style="float:left; width:300px; margin-right:10px;">
+        <img style="border:1px solid #ccc;" src="{{artist.thumbnail.url}}" width=300 height=300 />
     </p>
     {% else %}
     {% if object.album_set.first.cover_image %}
@@ -18,6 +17,11 @@
     </p>
     {% endif %}
     {% endif %}
+    <div style="float:left; width:600px; margin-left:10px; ">
+        <p>{{artist.biography|safe|linebreaks|truncatewords:160}}</p>
+        <hr/>
+        <p><a href="{{artist.mb_link}}">Musicbrainz</a></p>
+    </div>
 </div>
 <div class="row">
     <p>{{artist.scrobbles.count}} scrobbles</p>
