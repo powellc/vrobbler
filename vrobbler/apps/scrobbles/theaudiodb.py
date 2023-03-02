@@ -5,7 +5,7 @@ import requests
 from django.conf import settings
 
 THEAUDIODB_API_KEY = getattr(settings, "THEAUDIODB_API_KEY")
-ARIST_SEARCH_URL = f"https://www.theaudiodb.com/api/v1/json/{THEAUDIODB_API_KEY}/search.php?s="
+ARTIST_SEARCH_URL = f"https://www.theaudiodb.com/api/v1/json/{THEAUDIODB_API_KEY}/search.php?s="
 ALBUM_SEARCH_URL = f"https://www.theaudiodb.com/api/v1/json/{THEAUDIODB_API_KEY}/searchalbum.php?s="
 
 logger = logging.getLogger(__name__)
