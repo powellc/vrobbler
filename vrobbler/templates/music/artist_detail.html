@@ -18,8 +18,10 @@
     {% endif %}
     {% endif %}
     <div style="float:left; width:600px; margin-left:10px; ">
+        {% if artist.biography %}
         <p>{{artist.biography|safe|linebreaks|truncatewords:160}}</p>
         <hr/>
+        {% endif %}
         <p><a href="{{artist.mb_link}}">Musicbrainz</a></p>
     </div>
 </div>
