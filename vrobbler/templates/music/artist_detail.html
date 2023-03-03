@@ -44,15 +44,15 @@
                 </tr>
             </thead>
             <tbody>
-                {% for track in object.tracks %}
+                {% for track in tracks_ranked %}
                 <tr>
-                    <td>{{rank}}#1</td>
-                    <td><a href="{{track.get_absolute_url}}">{{track.title}}</a></td>
-                    <td><a href="{{track.album.get_absolute_url}}">{{track.album}}</a></td>
-                    <td>{{track.scrobble_count}}</td>
+                    <td>#{{track.0}}</td>
+                    <td><a href="{{track.1.get_absolute_url}}">{{track.1.title}}</a></td>
+                    <td><a href="{{track.1.album.get_absolute_url}}">{{track.1.album}}</a></td>
+                    <td>{{track.1.scrobble_count}}</td>
                     <td>
                         <div class="progress-bar" style="margin-right:5px;">
-                            <span class="progress-bar-fill" style="width: {{track.scrobble_count|mul:10}}%;"></span>
+                            <span class="progress-bar-fill" style="width: {{track.1.scrobble_count|mul:10}}%;"></span>
                         </div>
                     </td>
                 </tr>

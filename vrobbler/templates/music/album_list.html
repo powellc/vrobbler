@@ -46,17 +46,17 @@
             <table class="table table-striped table-sm">
             <thead>
                 <tr>
+                    <th scope="col">Scrobbles</th>
                     <th scope="col">Album</th>
                     <th scope="col">Artist</th>
-                    <th scope="col">Scrobbles</th>
                 </tr>
             </thead>
             <tbody>
                 {% for album in object_list %}
                 <tr>
-                    <td><a href="{{album.get_absolute_url}}">{{album}}</a></td>
-                    <td><a href="{{album.artist.get_absolute_url}}">{{album.artist}}</a></td>
                     <td>{{album.scrobbles.count}}</td>
+                    <td><a href="{{album.get_absolute_url}}">{{album}}</a></td>
+                    <td><a href="{{album.primary_artist.get_absolute_url}}">{{album.primary_artist}}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

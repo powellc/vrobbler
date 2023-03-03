@@ -1,4 +1,5 @@
 import calendar
+import datetime
 import logging
 from uuid import uuid4
 
@@ -15,6 +16,14 @@ from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
 
+from vrobbler.apps.profiles.utils import (
+    end_of_day,
+    end_of_month,
+    end_of_week,
+    start_of_day,
+    start_of_month,
+    start_of_week,
+)
 from vrobbler.apps.scrobbles.stats import build_charts
 
 logger = logging.getLogger(__name__)
@@ -62,6 +71,7 @@ class BaseFileImportMixin(TimeStampedModel):
         from scrobbles.models import Scrobble
 
         if not self.process_log:
+
             logger.warning("No lines in process log found to undo")
             return
 
@@ -256,6 +266,26 @@ class ChartRecord(TimeStampedModel):
     series = models.ForeignKey(Series, on_delete=models.DO_NOTHING, **BNULL)
     artist = models.ForeignKey(Artist, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
+    period_start = models.DateTimeField(**BNULL)
+    period_end = models.DateTimeField(**BNULL)
+
+    def save(self, *args, **kwargs):
+        profile = self.user.profile
+
+        if self.week:
+            # set start and end to start and end of week
+            period = datetime.date.fromisocalendar(self.year, self.week, 1)
+            self.period_start = start_of_week(period, profile)
+            self.period_start = end_of_week(period, profile)
+        if self.day:
+            period = datetime.datetime(self.year, self.month, self.day)
+            self.period_start = start_of_day(period, profile)
+            self.period_end = end_of_day(period, profile)
+        if self.month and not self.day:
+            period = datetime.datetime(self.year, self.month, 1)
+            self.period_start = start_of_month(period, profile)
+            self.period_end = end_of_month(period, profile)
+        super(ChartRecord, self).save(*args, **kwargs)
 
     @property
     def media_obj(self):

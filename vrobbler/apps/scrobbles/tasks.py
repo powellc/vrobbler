@@ -1,13 +1,17 @@
 import logging
-from celery import shared_task
 
+from celery import shared_task
+from django.contrib.auth import get_user_model
 from scrobbles.models import (
     AudioScrobblerTSVImport,
     KoReaderImport,
     LastFmImport,
 )
 
+from vrobbler.apps.scrobbles.stats import build_yesterdays_charts_for_user
+
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 @shared_task
@@ -35,3 +39,9 @@ def process_koreader_import(import_id):
         logger.warn(f"KOReaderImport not found with id {import_id}")
 
     koreader_import.process()
+
+
+@shared_task
+def create_yesterdays_charts():
+    for user in User.objects.all():
+        build_yesterdays_charts_for_user(user)

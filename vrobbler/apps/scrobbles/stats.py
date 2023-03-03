@@ -6,8 +6,11 @@ from typing import Optional
 import pytz
 from django.apps import apps
 from django.conf import settings
-from django.db.models import Count, Q, ExpressionWrapper, OuterRef, Subquery
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Q
+from django.utils import timezone
 
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -102,11 +105,11 @@ def get_scrobble_count_qs(
 
 
 def build_charts(
+    user: "User",
     year: Optional[int] = None,
     month: Optional[int] = None,
     week: Optional[int] = None,
     day: Optional[int] = None,
-    user=None,
     model_str="Track",
 ):
     ChartRecord = apps.get_model(
@@ -140,3 +143,94 @@ def build_charts(
     ChartRecord.objects.bulk_create(
         chart_records, ignore_conflicts=True, batch_size=500
     )
+
+
+def build_yesterdays_charts_for_user(user: "User", model_str="Track") -> None:
+    """Given a user calculate needed charts."""
+    ChartRecord = apps.get_model(
+        app_label='scrobbles', model_name='ChartRecord'
+    )
+    tz = pytz.timezone(settings.TIME_ZONE)
+    if user and user.is_authenticated:
+        tz = pytz.timezone(user.profile.timezone)
+    now = timezone.now().astimezone(tz)
+    yesterday = now - timedelta(days=1)
+    logger.info(
+        f"Generating charts for yesterday ({yesterday.date()}) for {user}"
+    )
+
+    # Always build yesterday's chart
+    ChartRecord.build(
+        user,
+        year=yesterday.year,
+        month=yesterday.month,
+        day=yesterday.day,
+        model_str=model_str,
+    )
+    now_week = now.isocalendar()[1]
+    yesterday_week = now.isocalendar()[1]
+    if now_week != yesterday_week:
+        logger.info(
+            f"New weekly charts for {yesterday.year}-{yesterday_week} for {user}"
+        )
+        ChartRecord.build(
+            user,
+            year=yesterday.year,
+            month=yesterday_week,
+            model_str=model_str,
+        )
+    # If the month has changed, build charts
+    if now.month != yesterday.month:
+        logger.info(
+            f"New monthly charts for {yesterday.year}-{yesterday.month} for {user}"
+        )
+        ChartRecord.build(
+            user,
+            year=yesterday.year,
+            month=yesterday.month,
+            model_str=model_str,
+        )
+    # If the year has changed, build charts
+    if now.year != yesterday.year:
+        logger.info(f"New annual charts for {yesterday.year} for {user}")
+        ChartRecord.build(user, year=yesterday.year, model_str=model_str)
+
+
+def build_missing_charts_for_user(user: "User", model_str="Track") -> None:
+    """"""
+    ChartRecord = apps.get_model(
+        app_label='scrobbles', model_name='ChartRecord'
+    )
+    Scrobble = apps.get_model(app_label='scrobbles', model_name='Scrobble')
+
+    logger.info(f"Generating historical charts for {user}")
+    tz = pytz.timezone(settings.TIME_ZONE)
+    if user and user.is_authenticated:
+        tz = pytz.timezone(user.profile.timezone)
+    now = timezone.now().astimezone(tz)
+
+    first_scrobble = (
+        Scrobble.objects.filter(user=user, played_to_completion=True)
+        .order_by('created')
+        .first()
+    )
+
+    start_date = first_scrobble.timestamp
+    days_since = (now - start_date).days
+
+    for day_num in range(0, days_since):
+        build_date = start_date + timedelta(days=day_num)
+        logger.info(f"Generating chart batch for {build_date}")
+        ChartRecord.build(user=user, year=build_date.year)
+        ChartRecord.build(
+            user=user, year=build_date.year, week=build_date.isocalendar()[1]
+        )
+        ChartRecord.build(
+            user=user, year=build_date.year, month=build_date.month
+        )
+        ChartRecord.build(
+            user=user,
+            year=build_date.year,
+            month=build_date.month,
+            day=build_date.day,
+        )
