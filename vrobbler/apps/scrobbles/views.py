@@ -67,63 +67,48 @@ class RecentScrobbleList(ListView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        view = self.request.GET.get('view', 'vrobbler')
         user = self.request.user
         if user.is_authenticated:
-            if view == 'vrobbler':
-                completed_for_user = Scrobble.objects.filter(
-                    played_to_completion=True, user=user
-                )
-                data['video_scrobble_list'] = completed_for_user.filter(
-                    video__isnull=False
-                ).order_by('-timestamp')[:15]
+            completed_for_user = Scrobble.objects.filter(
+                played_to_completion=True, user=user
+            )
+            data['video_scrobble_list'] = completed_for_user.filter(
+                video__isnull=False
+            ).order_by('-timestamp')[:15]
 
-                data['podcast_scrobble_list'] = completed_for_user.filter(
-                    podcast_episode__isnull=False
-                ).order_by('-timestamp')[:15]
+            data['podcast_scrobble_list'] = completed_for_user.filter(
+                podcast_episode__isnull=False
+            ).order_by('-timestamp')[:15]
 
-                data['sport_scrobble_list'] = completed_for_user.filter(
-                    sport_event__isnull=False
-                ).order_by('-timestamp')[:15]
+            data['sport_scrobble_list'] = completed_for_user.filter(
+                sport_event__isnull=False
+            ).order_by('-timestamp')[:15]
 
-                data[
-                    'active_imports'
-                ] = AudioScrobblerTSVImport.objects.filter(
-                    processing_started__isnull=False,
-                    processed_finished__isnull=True,
-                    user=self.request.user,
-                )
+            data['active_imports'] = AudioScrobblerTSVImport.objects.filter(
+                processing_started__isnull=False,
+                processed_finished__isnull=True,
+                user=self.request.user,
+            )
 
-            if view == "maloja":
-                artist_params = {'user': user, 'media_type': 'Artist'}
-                data['current_artist_charts'] = {
-                    "today": live_charts(
-                        **artist_params, chart_period="today", limit=14
-                    ),
-                    "week": live_charts(
-                        **artist_params, chart_period="week", limit=14
-                    ),
-                    "month": live_charts(
-                        **artist_params, chart_period="month", limit=14
-                    ),
-                    "all": live_charts(**artist_params, limit=14),
-                }
+            l = 14
+            artist = {'user': user, 'media_type': 'Artist'}
+            data['current_artist_charts'] = {
+                "today": live_charts(**artist, chart_period="today", limit=l),
+                "week": live_charts(**artist, chart_period="week", limit=l),
+                "month": live_charts(**artist, chart_period="month", limit=l),
+                "year": live_charts(**artist, chart_period="year", limit=l),
+                "all": live_charts(**artist, limit=l),
+            }
 
-                track_params = {'user': user, 'media_type': 'Track'}
-                data['current_track_charts'] = {
-                    "today": live_charts(
-                        **track_params, chart_period="today", limit=14
-                    ),
-                    "week": live_charts(
-                        **track_params, chart_period="week", limit=14
-                    ),
-                    "month": live_charts(
-                        **track_params, chart_period="month", limit=14
-                    ),
-                    "all": live_charts(**track_params, limit=14),
-                }
+            track = {'user': user, 'media_type': 'Track'}
+            data['current_track_charts'] = {
+                "today": live_charts(**track, chart_period="today", limit=l),
+                "week": live_charts(**track, chart_period="week", limit=l),
+                "month": live_charts(**track, chart_period="month", limit=l),
+                "year": live_charts(**track, chart_period="year", limit=l),
+                "all": live_charts(**track, limit=l),
+            }
 
-        data["view"] = view
         data["weekly_data"] = week_of_scrobbles(user=user)
         data['counts'] = scrobble_counts(user)
         data['imdb_form'] = ScrobbleForm
