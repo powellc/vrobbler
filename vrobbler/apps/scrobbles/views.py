@@ -475,20 +475,39 @@ class ChartRecordView(TemplateView):
         context_data["artist_charts"] = {}
 
         if not date:
+            limit = 20
             artist_params = {'user': user, 'media_type': 'Artist'}
             context_data['current_artist_charts'] = {
-                "today": live_charts(**artist_params, chart_period="today"),
-                "week": live_charts(**artist_params, chart_period="week"),
-                "month": live_charts(**artist_params, chart_period="month"),
-                "all": live_charts(**artist_params),
+                "today": live_charts(
+                    **artist_params, chart_period="today", limit=limit
+                ),
+                "week": live_charts(
+                    **artist_params, chart_period="week", limit=limit
+                ),
+                "month": live_charts(
+                    **artist_params, chart_period="month", limit=limit
+                ),
+                "year": live_charts(
+                    **artist_params, chart_period="year", limit=limit
+                ),
+                "all": live_charts(**artist_params, limit=limit),
             }
 
             track_params = {'user': user, 'media_type': 'Track'}
             context_data['current_track_charts'] = {
-                "today": live_charts(**track_params, chart_period="today"),
-                "week": live_charts(**track_params, chart_period="week"),
-                "month": live_charts(**track_params, chart_period="month"),
-                "all": live_charts(**track_params),
+                "today": live_charts(
+                    **track_params, chart_period="today", limit=limit
+                ),
+                "week": live_charts(
+                    **track_params, chart_period="week", limit=limit
+                ),
+                "month": live_charts(
+                    **track_params, chart_period="month", limit=limit
+                ),
+                "year": live_charts(
+                    **track_params, chart_period="year", limit=limit
+                ),
+                "all": live_charts(**track_params, limit=limit),
             }
             return context_data
 

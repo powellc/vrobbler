@@ -67,7 +67,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if forloop.first %}active{% endif %}" id="artist-{{chart_name}}-tab" data-bs-toggle="tab" data-bs-target="#artist-{{chart_name}}"
                         type="button" role="tab" aria-controls="home" aria-selected="true">
-                    {{chart_name}}
+                    {% if chart_name == "all" %}All Time{% else %}{% if chart_name != "today" %}This {% endif %}{{chart_name|capfirst}}{% endif %}
                 </button>
             </li>
             {% endfor %}
@@ -110,7 +110,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if forloop.first %}active{% endif %}" id="track-{{chart_name}}-tab" data-bs-toggle="tab" data-bs-target="#track-{{chart_name}}"
                         type="button" role="tab" aria-controls="home" aria-selected="true">
-                    {{chart_name}}
+                    {% if chart_name == "all" %}All Time{% else %}{% if chart_name != "today" %}This {% endif %}{{chart_name|capfirst}}{% endif %}
                 </button>
             </li>
             {% endfor %}
