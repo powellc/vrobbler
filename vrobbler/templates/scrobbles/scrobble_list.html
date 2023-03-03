@@ -105,7 +105,7 @@
                             <div class="image-wrapper" style="display:flex; flex-wrap: wrap; margin:0">
                                 <div class="caption">{{artists.0.name}}</div>
                                 {% if artists.0.thumbnail %}
-                                <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{artists.0.thumbnail}}" width="300px"></a>
+                                <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{artists.0.thumbnail.url}}" width="300px"></a>
                                 {% endif %}
                             </div>
                         </div>
@@ -142,55 +142,55 @@
                                 <div class="image-wrapper" class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.5.name}}</div>
                                     {% if artists.5.thumbnail %}
-                                    <a href="{{artists.5.get_absolute_url}}"><img lt="{{artists.5.name}}" src="{{artists.5.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.5.get_absolute_url}}"><img lt="{{artists.5.name}}" src="{{artists.5.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.6.name}}</div>
                                     {% if artists.6.thumbnail %}
-                                    <a href="{{artists.6.get_absolute_url}}"><img lt="{{artists.6.name}}" src="{{artists.6.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.6.get_absolute_url}}"><img lt="{{artists.6.name}}" src="{{artists.6.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.7.name}}</div>
                                     {% if artists.7.thumbnail %}
-                                    <a href="{{artists.7.get_absolute_url}}"><img lt="{{artists.7.name}}" src="{{artists.7.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.7.get_absolute_url}}"><img lt="{{artists.7.name}}" src="{{artists.7.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.8.name}}</div>
                                     {% if artists.8.thumbnail %}
-                                    <a href="{{artists.8.get_absolute_url}}"><img lt="{{artists.8.name}}" src="{{artists.8.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.8.get_absolute_url}}"><img lt="{{artists.8.name}}" src="{{artists.8.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.9.name}}</div>
                                     {% if artists.9.thumbnail %}
-                                    <a href="{{artists.9.get_absolute_url}}"><img lt="{{artists.9.name}}" src="{{artists.9.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.9.get_absolute_url}}"><img lt="{{artists.9.name}}" src="{{artists.9.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.10.name}}</div>
                                     {% if artists.10.thumbnail %}
-                                    <a href="{{artists.10.get_absolute_url}}"><img lt="{{artists.10.name}}" src="{{artists.10.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.10.get_absolute_url}}"><img lt="{{artists.10.name}}" src="{{artists.10.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.11.name}}</div>
                                     {% if artists.11.thumbnail %}
-                                    <a href="{{artists.11.get_absolute_url}}"><img lt="{{artists.11.name}}" src="{{artists.11.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.11.get_absolute_url}}"><img lt="{{artists.11.name}}" src="{{artists.11.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.12.name}}</div>
                                     {% if artists.12thumbnail %}
-                                    <a href="{{artists.12.get_absolute_url}}"><img lt="{{artists.13.name}}" src="{{artists.12.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.12.get_absolute_url}}"><img lt="{{artists.13.name}}" src="{{artists.12.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{artists.13.name}}</div>
                                     {% if artists.13.thumbnail %}
-                                    <a href="{{artists.13.get_absolute_url}}"><img lt="{{artists.13.name}}" src="{{artists.13.thumbnail}}" width="100px"></a>
+                                    <a href="{{artists.13.get_absolute_url}}"><img lt="{{artists.13.name}}" src="{{artists.13.thumbnail.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -259,55 +259,55 @@
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.5.title}}</div>
                                     {% if tracks.5.album.cover_image %}
-                                    <a href="{{tracks.5.get_absolute_url}}"><img lt="{{tracks.5.title}}" src="{{tracks.5.cover_image.url}}" width="100px"></a>
+                                    <a href="{{tracks.5.get_absolute_url}}"><img lt="{{tracks.5.title}}" src="{{tracks.5.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.6.title}}</div>
                                     {% if tracks.6.album.cover_image %}
-                                    <a href="{{tracks.6.get_absolute_url}}"><img lt="{{tracks.6.title}}" src="{{tracks.6.cover_image.url}}" width="100px"></a>
+                                    <a href="{{tracks.6.get_absolute_url}}"><img lt="{{tracks.6.title}}" src="{{tracks.6.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.7.title}}</div>
                                     {% if tracks.7.album.cover_image %}
-                                    <a href="{{track.7.get_absolute_url}}"><img lt="{{tracks.7.title}}" src="{{tracks.7.cover_image.url}}" width="100px"></a>
+                                    <a href="{{track.7.get_absolute_url}}"><img lt="{{tracks.7.title}}" src="{{tracks.7.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.8.title}}</div>
                                     {% if tracks.8.album.cover_image %}
-                                    <a href="{{track.8.get_absolute_url}}"><img lt="{{tracks.8.title}}" src="{{tracks.8.cover_image.url}}" width="100px"></a>
+                                    <a href="{{track.8.get_absolute_url}}"><img lt="{{tracks.8.title}}" src="{{tracks.8.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.9.title}}</div>
                                     {% if tracks.9.album.cover_image %}
-                                    <a href="{{track.9.get_absolute_url}}"><img lt="{{tracks.9.title}}" src="{{tracks.9.cover_image.url}}" width="100px"></a>
+                                    <a href="{{track.9.get_absolute_url}}"><img lt="{{tracks.9.title}}" src="{{tracks.9.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.10.title}}</div>
                                     {% if tracks.10.album.cover_image %}
-                                    <a href="{{tracks.10.get_absolute_url}}"><img lt="{{tracks.10.title}}" src="{{tracks.10.cover_image.url}}" width="100px"></a>
+                                    <a href="{{tracks.10.get_absolute_url}}"><img lt="{{tracks.10.title}}" src="{{tracks.10.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.11.title}}</div>
                                     {% if tracks.11.album.cover_image %}
-                                    <a href="{{track.11.get_absolute_url}}"><img lt="{{tracks.11.title}}" src="{{tracks.11.cover_image.url}}" width="100px"></a>
+                                    <a href="{{track.11.get_absolute_url}}"><img lt="{{tracks.11.title}}" src="{{tracks.11.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.12.title}}</div>
                                     {% if tracks.12.album.cover_image %}
-                                    <a href="{{track.12.get_absolute_url}}"><img lt="{{tracks.12.title}}" src="{{tracks.12.cover_image.url}}" width="100px"></a>
+                                    <a href="{{track.12.get_absolute_url}}"><img lt="{{tracks.12.title}}" src="{{tracks.12.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">{{tracks.13.title}}</div>
                                     {% if tracks.13.album.cover_image %}
-                                    <a href="{{track.13.get_absolute_url}}"><img lt="{{tracks.13.title}}" src="{{tracks.13.cover_image.url}}" width="100px"></a>
+                                    <a href="{{track.13.get_absolute_url}}"><img lt="{{tracks.13.title}}" src="{{tracks.13.album.cover_image.url}}" width="100px"></a>
                                     {% endif %}
                                 </div>
                             </div>
