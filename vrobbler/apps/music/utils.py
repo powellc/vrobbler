@@ -43,24 +43,14 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
 
 def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
     album = None
-    album_created = False
-    albums = Album.objects.filter(name__iexact=name)
-    if albums.count() == 1:
-        album = albums.first()
-    else:
-        for potential_album in albums:
-            if artist in album.artist_set.all():
-                album = potential_album
-    if not album:
-        album_created = True
-        album = Album.objects.create(name=name, musicbrainz_id=mbid)
-        album.save()
-        album.artists.add(artist)
+    album_dict = lookup_album_dict_from_mb(name, artist_name=artist.name)
+    mbid = mbid or album_dict['mb_id']
 
-    if album_created or not mbid:
-        album_dict = lookup_album_dict_from_mb(
-            album.name, artist_name=artist.name
-        )
+    logger.debug(f'Looking up album {name} and mbid: {mbid}')
+
+    album = Album.objects.filter(musicbrainz_id=mbid).first()
+    if not album:
+        album = Album.objects.create(name=name, musicbrainz_id=mbid)
         album.year = album_dict["year"]
         album.musicbrainz_id = album_dict["mb_id"]
         album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
@@ -75,6 +65,7 @@ def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
         )
         album.artists.add(artist)
         album.fetch_artwork()
+
     return album
 
 
