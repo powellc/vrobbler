@@ -77,6 +77,16 @@ class Artist(TimeStampedModel):
         img_filename = f"{self.name}_{self.uuid}.jpg"
         self.thumbnail.save(img_filename, File(img_temp))
 
+    @property
+    def rym_link(self):
+        artist_slug = self.name.lower().replace(' ', '-')
+        return f"https://rateyourmusic.com/artist/{artist_slug}/"
+
+    @property
+    def bandcamp_search_link(self):
+        artist = self.name.lower()
+        return f"https://bandcamp.com/search?q={artist}&item_type=b"
+
 
 class Album(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
@@ -245,6 +255,18 @@ class Album(TimeStampedModel):
         if self.theaudiodb_id:
             return f"https://www.theaudiodb.com/album/{self.theaudiodb_id}"
         return ""
+
+    @property
+    def rym_link(self):
+        artist_slug = self.primary_artist.name.lower().replace(' ', '-')
+        album_slug = self.name.lower().replace(' ', '-')
+        return f"https://rateyourmusic.com/release/album/{artist_slug}/{album_slug}/"
+
+    @property
+    def bandcamp_search_link(self):
+        artist = self.primary_artist.name.lower()
+        album = self.name.lower()
+        return f"https://bandcamp.com/search?q={album} {artist}&item_type=a"
 
 
 class Track(ScrobblableMixin):

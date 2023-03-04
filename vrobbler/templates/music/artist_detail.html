@@ -1,5 +1,6 @@
 {% extends "base_list.html" %}
 {% load mathfilters %}
+{% load static %}
 
 {% block title %}{{object.name}}{% endblock %}
 
@@ -22,7 +23,11 @@
         <p>{{artist.biography|safe|linebreaks|truncatewords:160}}</p>
         <hr/>
         {% endif %}
-        <p><a href="{{artist.mb_link}}">Musicbrainz</a></p>
+        <p style="float:right;">
+            <a href="{{artist.mb_link}}"><img src="{% static "images/musicbrainz-logo.png" %}" width=35></a>
+            <a href="{{artist.rym_link}}"><img src="{% static "images/rateyourmusic-logo.jpg" %}" width=35></a>
+            <a href="{{artist.bandcamp_search_link}}"><img src="{% static "images/bandcamp-logo.png" %}" width=35></a>
+        </p>
     </div>
 </div>
 <div class="row">
