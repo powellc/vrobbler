@@ -104,10 +104,12 @@
                         <div style="float:left;">
                             <div class="image-wrapper" style="display:flex; flex-wrap: wrap; margin:0">
                                 <div class="caption">#1 {{artists.0.name}}</div>
+                                {% if artists.0 %}
                                 {% if artists.0.thumbnail %}
                                 <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{artists.0.thumbnail.url}}" width="300px"></a>
                                 {% else %}
                                 <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{% static "images/not-found.jpg" %}" width="300px"></a>
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -115,34 +117,42 @@
                             <div style="display:flex; flex-wrap: wrap;">
                                 <div class="image-wrapper" class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#2 {{artists.1.name}}</div>
+                                    {% if artists.1 %}
                                     {% if artists.1.thumbnail %}
                                     <a href="{{artists.1.get_absolute_url}}"><img lt="{{artists.1.name}}" src="{{artists.1.thumbnail.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.1.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#3 {{artists.2.name}}</div>
+                                    {% if artists.2 %}
                                     {% if artists.2.thumbnail %}
                                     <a href="{{artists.2.get_absolute_url}}"><img src="{{artists.2.thumbnail.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.2.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#4 {{artists.3.name}}</div>
+                                    {% if artists.3 %}
                                     {% if artists.3.thumbnail %}
                                     <a href="{{artists.3.get_absolute_url}}"><img src="{{artists.3.thumbnail.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.3.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#5 {{artists.4.name}}</div>
+                                    {% if artists.4 %}
                                     {% if artists.4.thumbnail %}
                                     <a href="{{artists.4.get_absolute_url}}"><img src="{{artists.4.thumbnail.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.4.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -151,74 +161,92 @@
                             <div style="display:flex; flex-wrap: wrap;">
                                 <div class="image-wrapper" class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#6 {{artists.5.name}}</div>
+                                    {% if artists.5 %}
                                     {% if artists.5.thumbnail %}
                                     <a href="{{artists.5.get_absolute_url}}"><img src="{{artists.5.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.5.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#7 {{artists.6.name}}</div>
+                                    {% if artists.6 %}
                                     {% if artists.6.thumbnail %}
                                     <a href="{{artists.6.get_absolute_url}}"><img src="{{artists.6.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.6.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#8 {{artists.7.name}}</div>
+                                    {% if artists.7 %}
                                     {% if artists.7.thumbnail %}
                                     <a href="{{artists.7.get_absolute_url}}"><img src="{{artists.7.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.7.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#9 {{artists.8.name}}</div>
+                                    {% if artists.8 %}
                                     {% if artists.8.thumbnail %}
                                     <a href="{{artists.8.get_absolute_url}}"><img src="{{artists.8.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.8.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#10 {{artists.9.name}}</div>
+                                    {% if artists.9 %}
                                     {% if artists.9.thumbnail %}
                                     <a href="{{artists.9.get_absolute_url}}"><img src="{{artists.9.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.9.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#11 {{artists.10.name}}</div>
+                                    {% if artists.10 %}
                                     {% if artists.10.thumbnail %}
                                     <a href="{{artists.10.get_absolute_url}}"><img src="{{artists.10.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.10.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#12 {{artists.11.name}}</div>
+                                    {% if artists.11 %}
                                     {% if artists.11.thumbnail %}
                                     <a href="{{artists.11.get_absolute_url}}"><img src="{{artists.11.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.11.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#13 {{artists.12.name}}</div>
+                                    {% if artists.12 %}
                                     {% if artists.12.thumbnail %}
                                     <a href="{{artists.12.get_absolute_url}}"><img src="{{artists.12.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.12.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#14 {{artists.13.name}}</div>
+                                    {% if artists.13 %}
                                     {% if artists.13.thumbnail %}
                                     <a href="{{artists.13.get_absolute_url}}"><img src="{{artists.13.thumbnail.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.13.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -249,10 +277,12 @@
                         <div style="float:left;">
                             <div class="image-wrapper" style="display:flex; flex-wrap: wrap; margin:0">
                                 <div class="caption">#1 {{tracks.0.title}}</div>
+                                {% if tracks.0 %}
                                 {% if tracks.0.album.cover_image %}
                                 <a href="{{tracks.0.get_absolute_url}}"><img src="{{tracks.0.album.cover_image.url}}" width="300px"></a>
                                 {% else %}
                                 <a href="{{tracks.0.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="300px"></a>
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -260,34 +290,42 @@
                             <div style="display:flex; flex-wrap: wrap;">
                                 <div class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#2 {{tracks.1.title}}</div>
+                                    {% if tracks.1 %}
                                     {% if tracks.1.album.cover_image %}
                                     <a href="{{tracks.1.get_absolute_url}}"><img src="{{tracks.1.album.cover_image.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{tracks.1.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#3 {{tracks.2.title}}</div>
+                                    {% if tracks.2 %}
                                     {% if tracks.2.album.cover_image %}
                                     <a href="{{tracks.2.get_absolute_url}}"><img src="{{tracks.2.album.cover_image.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{tracks.2.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#4 {{tracks.3.title}}</div>
+                                    {% if tracks.3 %}
                                     {% if tracks.3.album.cover_image %}
                                     <a href="{{tracks.3.get_absolute_url}}"><img src="{{tracks.3.album.cover_image.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{tracks.3.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" style="width:50%">
                                     <div class="caption-medium">#5 {{tracks.4.title}}</div>
+                                    {% if tracks.4 %}
                                     {% if tracks.4.album.cover_image %}
                                     <a href="{{tracks.4.get_absolute_url}}"><img src="{{tracks.4.album.cover_image.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{tracks.4.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
@@ -296,74 +334,92 @@
                             <div style="display:flex; flex-wrap: wrap;">
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#6 {{tracks.5.title}}</div>
+                                    {% if tracks.5 %}
                                     {% if tracks.5.album.cover_image %}
                                     <a href="{{tracks.5.get_absolute_url}}"><img src="{{tracks.5.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.5.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#7 {{tracks.6.title}}</div>
+                                    {% if tracks.6 %}
                                     {% if tracks.6.album.cover_image %}
                                     <a href="{{tracks.6.get_absolute_url}}"><img src="{{tracks.6.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.6.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#8 {{tracks.7.title}}</div>
+                                    {% if tracks.7 %}
                                     {% if tracks.7.album.cover_image %}
                                     <a href="{{tracks.7.get_absolute_url}}"><img src="{{tracks.7.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.7.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#9 {{tracks.8.title}}</div>
+                                    {% if tracks.8 %}
                                     {% if tracks.8.album.cover_image %}
                                     <a href="{{tracks.8.get_absolute_url}}"><img src="{{tracks.8.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.8.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#10 {{tracks.9.title}}</div>
+                                    {% if tracks.9 %}
                                     {% if tracks.9.album.cover_image %}
                                     <a href="{{tracks.9.get_absolute_url}}"><img src="{{tracks.9.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.9.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#11 {{tracks.10.title}}</div>
+                                    {% if tracks.10 %}
                                     {% if tracks.10.album.cover_image %}
                                     <a href="{{tracks.10.get_absolute_url}}"><img src="{{tracks.10.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.10.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#12 {{tracks.11.title}}</div>
+                                    {% if tracks.11 %}
                                     {% if tracks.11.album.cover_image %}
                                     <a href="{{tracks.11.get_absolute_url}}"><img src="{{tracks.11.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.11.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#13 {{tracks.12.title}}</div>
+                                    {% if tracks.12 %}
                                     {% if tracks.12.album.cover_image %}
                                     <a href="{{tracks.12.get_absolute_url}}"><img src="{{tracks.12.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.12.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                                     {% endif %}
+                                    {% endif %}
                                 </div>
                                 <div class="image-wrapper" class="image-wrapper" style="width:33;">
                                     <div class="caption-small">#14 {{tracks.13.title}}</div>
+                                    {% if tracks.13 %}
                                     {% if tracks.13.album.cover_image %}
                                     <a href="{{tracks.13.get_absolute_url}}"><img src="{{tracks.13.album.cover_image.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{tracks.13.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
