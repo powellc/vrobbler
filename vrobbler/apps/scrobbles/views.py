@@ -90,23 +90,24 @@ class RecentScrobbleList(ListView):
                 user=self.request.user,
             )
 
-            l = 14
-            artist = {'user': user, 'media_type': 'Artist'}
+            limit = 14
+            artist = {'user': user, 'media_type': 'Artist', 'limit': limit}
+            # This is weird. They don't display properly as QuerySets, so we cast to lists
             data['current_artist_charts'] = {
-                "today": live_charts(**artist, chart_period="today", limit=l),
-                "week": live_charts(**artist, chart_period="week", limit=l),
-                "month": live_charts(**artist, chart_period="month", limit=l),
-                "year": live_charts(**artist, chart_period="year", limit=l),
-                "all": live_charts(**artist, limit=l),
+                "today": list(live_charts(**artist, chart_period="today")),
+                "week": list(live_charts(**artist, chart_period="week")),
+                "month": list(live_charts(**artist, chart_period="month")),
+                "year": list(live_charts(**artist, chart_period="year")),
+                "all": list(live_charts(**artist)),
             }
 
-            track = {'user': user, 'media_type': 'Track'}
+            track = {'user': user, 'media_type': 'Track', 'limit': limit}
             data['current_track_charts'] = {
-                "today": live_charts(**track, chart_period="today", limit=l),
-                "week": live_charts(**track, chart_period="week", limit=l),
-                "month": live_charts(**track, chart_period="month", limit=l),
-                "year": live_charts(**track, chart_period="year", limit=l),
-                "all": live_charts(**track, limit=l),
+                "today": list(live_charts(**track, chart_period="today")),
+                "week": list(live_charts(**track, chart_period="week")),
+                "month": list(live_charts(**track, chart_period="month")),
+                "year": list(live_charts(**track, chart_period="year")),
+                "all": list(live_charts(**track)),
             }
 
         data["weekly_data"] = week_of_scrobbles(user=user)
