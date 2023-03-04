@@ -17,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, TemplateView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
-from music.aggregators import scrobble_counts, week_of_scrobbles
+from music.aggregators import live_charts, scrobble_counts, week_of_scrobbles
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -56,8 +56,6 @@ from scrobbles.tasks import (
 )
 from sports.thesportsdb import lookup_event_from_thesportsdb
 from videos.imdb import lookup_video_from_imdb
-
-from vrobbler.apps.music.aggregators import live_charts
 
 logger = logging.getLogger(__name__)
 

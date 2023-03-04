@@ -157,6 +157,7 @@ if TESTING:
     DATABASES = {
         "default": dj_database_url.config(default="sqlite:///testdb.sqlite3")
     }
+
 db_str = ""
 if 'sqlite' in DATABASES['default']['ENGINE']:
     db_str = f"Connected to sqlite@{DATABASES['default']['NAME']}"

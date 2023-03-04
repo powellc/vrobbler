@@ -5,16 +5,16 @@ from dateutil.parser import parse
 from django.utils import timezone
 from music.constants import JELLYFIN_POST_KEYS
 from music.models import Track
-from podcasts.models import Episode
-from scrobbles.models import Scrobble
-from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
-from videos.models import Video
-from sports.models import SportEvent
-from vrobbler.apps.music.utils import (
+from music.utils import (
     get_or_create_album,
     get_or_create_artist,
     get_or_create_track,
 )
+from podcasts.models import Episode
+from scrobbles.models import Scrobble
+from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
+from sports.models import SportEvent
+from videos.models import Video
 
 logger = logging.getLogger(__name__)
 

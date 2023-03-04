@@ -1,11 +1,10 @@
 import json
+
 import pytest
-
 from django.urls import reverse
-
-from vrobbler.apps.scrobbles.models import Scrobble
-from vrobbler.apps.music.models import Track
-from vrobbler.apps.podcasts.models import Episode
+from music.models import Track
+from podcasts.models import Episode
+from scrobbles.models import Scrobble
 
 
 @pytest.mark.django_db

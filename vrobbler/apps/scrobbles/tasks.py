@@ -7,8 +7,7 @@ from scrobbles.models import (
     KoReaderImport,
     LastFmImport,
 )
-
-from vrobbler.apps.scrobbles.stats import build_yesterdays_charts_for_user
+from scrobbles.stats import build_yesterdays_charts_for_user
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

@@ -1,13 +1,11 @@
 from datetime import datetime, timedelta
-from typing import List
 
 from django.apps import apps
 from django.db.models import Count, Q, QuerySet
 from django.utils import timezone
-from music.models import Artist, Track
+from profiles.utils import now_user_timezone
 from scrobbles.models import Scrobble
 from videos.models import Video
-from vrobbler.apps.profiles.utils import now_user_timezone
 
 
 def scrobble_counts(user=None):

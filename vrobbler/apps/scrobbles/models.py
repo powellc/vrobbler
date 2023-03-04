@@ -16,7 +16,7 @@ from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
 
-from vrobbler.apps.profiles.utils import (
+from profiles.utils import (
     end_of_day,
     end_of_month,
     end_of_week,
@@ -24,7 +24,7 @@ from vrobbler.apps.profiles.utils import (
     start_of_month,
     start_of_week,
 )
-from vrobbler.apps.scrobbles.stats import build_charts
+from scrobbles.stats import build_charts
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
