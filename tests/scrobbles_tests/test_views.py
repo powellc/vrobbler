@@ -3,9 +3,9 @@ import pytest
 
 from django.urls import reverse
 
-from scrobbles.models import Scrobble
-from music.models import Track
-from podcasts.models import Episode
+from vrobbler.apps.scrobbles.models import Scrobble
+from vrobbler.apps.music.models import Track
+from vrobbler.apps.podcasts.models import Episode
 
 
 @pytest.mark.django_db

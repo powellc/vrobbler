@@ -9,9 +9,9 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
+from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import Episode
-from scrobbles.lastfm import LastFM
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
 from videos.models import Series, Video
@@ -144,7 +144,7 @@ class KoReaderImport(BaseFileImportMixin):
     sqlite_file = models.FileField(upload_to=get_path, **BNULL)
 
     def process(self, force=False):
-        from scrobbles.koreader import process_koreader_sqlite_file
+        from books.koreader import process_koreader_sqlite_file
 
         if self.processed_finished and not force:
             logger.info(

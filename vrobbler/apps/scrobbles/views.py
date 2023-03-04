@@ -34,7 +34,6 @@ from scrobbles.constants import (
 )
 from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
-from scrobbles.imdb import lookup_video_from_imdb
 from scrobbles.models import (
     AudioScrobblerTSVImport,
     ChartRecord,
@@ -55,7 +54,8 @@ from scrobbles.tasks import (
     process_lastfm_import,
     process_tsv_import,
 )
-from scrobbles.thesportsdb import lookup_event_from_thesportsdb
+from sports.thesportsdb import lookup_event_from_thesportsdb
+from videos.imdb import lookup_video_from_imdb
 
 from vrobbler.apps.music.aggregators import live_charts
 

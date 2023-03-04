@@ -1,6 +1,6 @@
 import pytest
 
-from vrobbler.apps.scrobbles.imdb import lookup_video_from_imdb
+from vrobbler.apps.videos.imdb import lookup_video_from_imdb
 
 
 @pytest.mark.skip(reason="Need to sort out third party API testing")

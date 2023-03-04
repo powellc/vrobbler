@@ -12,8 +12,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
-from scrobbles.theaudiodb import lookup_artist_from_tadb
-from vrobbler.apps.scrobbles.theaudiodb import lookup_album_from_tadb
+from music.theaudiodb import lookup_artist_from_tadb, lookup_album_from_tadb
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}

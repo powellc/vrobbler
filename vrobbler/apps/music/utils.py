@@ -3,7 +3,7 @@ import re
 
 from musicbrainzngs.caa import musicbrainz
 
-from scrobbles.musicbrainz import (
+from music.musicbrainz import (
     lookup_album_dict_from_mb,
     lookup_artist_from_mb,
     lookup_track_from_mb,
