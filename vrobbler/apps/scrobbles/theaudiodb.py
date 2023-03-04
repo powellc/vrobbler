@@ -1,3 +1,4 @@
+import urllib
 import json
 import logging
 
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 def lookup_artist_from_tadb(name: str) -> dict:
     artist_info = {}
+    name = urllib.parse.quote(name)
     response = requests.get(ARTIST_SEARCH_URL + name)
 
     if response.status_code != 200:
@@ -37,6 +39,8 @@ def lookup_artist_from_tadb(name: str) -> dict:
 
 def lookup_album_from_tadb(name: str, artist: str) -> dict:
     album_info = {}
+    artist = urllib.parse.quote(artist)
+    name = urllib.parse.quote(name)
     response = requests.get(''.join([ALBUM_SEARCH_URL, artist, "&a=", name]))
 
     if response.status_code != 200:
