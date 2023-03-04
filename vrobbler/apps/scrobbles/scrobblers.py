@@ -98,7 +98,7 @@ def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     jellyfin_status = "resumed"
     if data_dict.get("IsPaused"):
         jellyfin_status = "paused"
-    elif data_dict.get("NotificationType") == 'PlaybackStop':
+    elif data_dict.get("NotificationType") == "PlaybackStop":
         jellyfin_status = "stopped"
 
     playback_ticks = data_dict.get("PlaybackPositionTicks", "")
@@ -111,7 +111,7 @@ def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
         "playback_position_ticks": playback_ticks,
         "playback_position": data_dict.get("PlaybackPosition", ""),
         "source": data_dict.get("ClientName", "Vrobbler"),
-        "source_id": data_dict.get('MediaSourceId'),
+        "source_id": data_dict.get("MediaSourceId"),
         "jellyfin_status": jellyfin_status,
     }
 
@@ -137,7 +137,7 @@ def jellyfin_scrobble_track(
     album = get_or_create_album(
         data_dict.get(JELLYFIN_POST_KEYS["ALBUM_NAME"]),
         artist=artist,
-        mbid=data_dict.get(JELLYFIN_POST_KEYS['ALBUM_MB_ID']),
+        mbid=data_dict.get(JELLYFIN_POST_KEYS["ALBUM_MB_ID"]),
     )
 
     run_time_ticks = (

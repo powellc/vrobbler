@@ -1,18 +1,18 @@
 from django.urls import path
 from sports import views
 
-app_name = 'sports'
+app_name = "sports"
 
 
 urlpatterns = [
     path(
-        'sport-events/',
+        "sport-events/",
         views.SportEventListView.as_view(),
-        name='event_list',
+        name="event_list",
     ),
     path(
-        'sport-events/<slug:slug>/',
+        "sport-events/<slug:slug>/",
         views.SportEventDetailView.as_view(),
-        name='event_detail',
+        name="event_detail",
     ),
 ]

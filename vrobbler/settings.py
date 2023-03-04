@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, os.path.join(PROJECT_ROOT, 'apps'))
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "apps"))
 
 # Tap vrobbler.conf if it's available
 if os.path.exists("vrobbler.conf"):
@@ -57,7 +57,7 @@ TMDB_API_KEY = os.getenv("VROBBLER_TMDB_API_KEY", "")
 LASTFM_API_KEY = os.getenv("VROBBLER_LASTFM_API_KEY")
 LASTFM_SECRET_KEY = os.getenv("VROBBLER_LASTFM_SECRET_KEY")
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 TIME_ZONE = os.getenv("VROBBLER_TIME_ZONE", "US/Eastern")
 
@@ -159,9 +159,9 @@ if TESTING:
     }
 
 db_str = ""
-if 'sqlite' in DATABASES['default']['ENGINE']:
+if "sqlite" in DATABASES["default"]["ENGINE"]:
     db_str = f"Connected to sqlite@{DATABASES['default']['NAME']}"
-if 'postgresql' in DATABASES['default']['ENGINE']:
+if "postgresql" in DATABASES["default"]["ENGINE"]:
     db_str = f"Connected to postgres@{DATABASES['default']['HOST']}/{DATABASES['default']['NAME']}"
 if db_str:
     print(db_str)
@@ -187,11 +187,11 @@ AUTHENTICATION_BACKENDS = [
 # We have to ignore content negotiation because Jellyfin is a bad actor
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'vrobbler.negotiation.IgnoreClientContentNegotiation',
+    "DEFAULT_CONTENT_NEGOTIATION_CLASS": "vrobbler.negotiation.IgnoreClientContentNegotiation",
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend"
     ],
@@ -289,17 +289,17 @@ LOGGING = {
             "class": "logging.NullHandler",
             "level": LOG_LEVEL,
         },
-        'sql': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': ''.join([LOG_FILE_PATH, 'vrobbler_sql.', LOG_TYPE]),
-            'formatter': LOG_TYPE,
-            'level': LOG_LEVEL,
+        "sql": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "".join([LOG_FILE_PATH, "vrobbler_sql.", LOG_TYPE]),
+            "formatter": LOG_TYPE,
+            "level": LOG_LEVEL,
         },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': ''.join([LOG_FILE_PATH, 'vrobbler.', LOG_TYPE]),
-            'formatter': LOG_TYPE,
-            'level': LOG_LEVEL,
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "".join([LOG_FILE_PATH, "vrobbler.", LOG_TYPE]),
+            "formatter": LOG_TYPE,
+            "level": LOG_LEVEL,
         },
     },
     "loggers": {
@@ -322,5 +322,5 @@ LOGGING = {
 
 LOG_TO_CONSOLE = os.getenv("VROBBLER_LOG_TO_CONSOLE", False)
 if LOG_TO_CONSOLE:
-    LOGGING['loggers']['django']['handlers'] = ["console"]
-    LOGGING['loggers']['vrobbler']['handlers'] = ["console"]
+    LOGGING["loggers"]["django"]["handlers"] = ["console"]
+    LOGGING["loggers"]["vrobbler"]["handlers"] = ["console"]

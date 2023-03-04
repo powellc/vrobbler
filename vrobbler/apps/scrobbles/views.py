@@ -70,28 +70,28 @@ class RecentScrobbleList(ListView):
             completed_for_user = Scrobble.objects.filter(
                 played_to_completion=True, user=user
             )
-            data['video_scrobble_list'] = completed_for_user.filter(
+            data["video_scrobble_list"] = completed_for_user.filter(
                 video__isnull=False
-            ).order_by('-timestamp')[:15]
+            ).order_by("-timestamp")[:15]
 
-            data['podcast_scrobble_list'] = completed_for_user.filter(
+            data["podcast_scrobble_list"] = completed_for_user.filter(
                 podcast_episode__isnull=False
-            ).order_by('-timestamp')[:15]
+            ).order_by("-timestamp")[:15]
 
-            data['sport_scrobble_list'] = completed_for_user.filter(
+            data["sport_scrobble_list"] = completed_for_user.filter(
                 sport_event__isnull=False
-            ).order_by('-timestamp')[:15]
+            ).order_by("-timestamp")[:15]
 
-            data['active_imports'] = AudioScrobblerTSVImport.objects.filter(
+            data["active_imports"] = AudioScrobblerTSVImport.objects.filter(
                 processing_started__isnull=False,
                 processed_finished__isnull=True,
                 user=self.request.user,
             )
 
             limit = 14
-            artist = {'user': user, 'media_type': 'Artist', 'limit': limit}
+            artist = {"user": user, "media_type": "Artist", "limit": limit}
             # This is weird. They don't display properly as QuerySets, so we cast to lists
-            data['current_artist_charts'] = {
+            data["current_artist_charts"] = {
                 "today": list(live_charts(**artist, chart_period="today")),
                 "week": list(live_charts(**artist, chart_period="week")),
                 "month": list(live_charts(**artist, chart_period="month")),
@@ -99,8 +99,8 @@ class RecentScrobbleList(ListView):
                 "all": list(live_charts(**artist)),
             }
 
-            track = {'user': user, 'media_type': 'Track', 'limit': limit}
-            data['current_track_charts'] = {
+            track = {"user": user, "media_type": "Track", "limit": limit}
+            data["current_track_charts"] = {
                 "today": list(live_charts(**track, chart_period="today")),
                 "week": list(live_charts(**track, chart_period="week")),
                 "month": list(live_charts(**track, chart_period="month")),
@@ -109,15 +109,15 @@ class RecentScrobbleList(ListView):
             }
 
         data["weekly_data"] = week_of_scrobbles(user=user)
-        data['counts'] = scrobble_counts(user)
-        data['imdb_form'] = ScrobbleForm
-        data['export_form'] = ExportScrobbleForm
+        data["counts"] = scrobble_counts(user)
+        data["imdb_form"] = ScrobbleForm
+        data["export_form"] = ExportScrobbleForm
         return data
 
     def get_queryset(self):
         return Scrobble.objects.filter(
             track__isnull=False, in_progress=False
-        ).order_by('-timestamp')[:15]
+        ).order_by("-timestamp")[:15]
 
 
 class ScrobbleImportListView(TemplateView):
@@ -125,22 +125,22 @@ class ScrobbleImportListView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        context_data['object_list'] = []
+        context_data["object_list"] = []
 
         context_data["tsv_imports"] = AudioScrobblerTSVImport.objects.filter(
             user=self.request.user,
-        ).order_by('-processing_started')
+        ).order_by("-processing_started")
         context_data["koreader_imports"] = KoReaderImport.objects.filter(
             user=self.request.user,
-        ).order_by('-processing_started')
+        ).order_by("-processing_started")
         context_data["lastfm_imports"] = LastFmImport.objects.filter(
             user=self.request.user,
-        ).order_by('-processing_started')
+        ).order_by("-processing_started")
         return context_data
 
 
 class BaseScrobbleImportDetailView(DetailView):
-    slug_field = 'uuid'
+    slug_field = "uuid"
     template_name = "scrobbles/import_detail.html"
 
     def get_queryset(self):
@@ -155,7 +155,7 @@ class BaseScrobbleImportDetailView(DetailView):
             title = "Audioscrobbler TSV Import"
         if self.model == LastFmImport:
             title = "LastFM Import"
-        context_data['title'] = title
+        context_data["title"] = title
         return context_data
 
 
@@ -173,15 +173,15 @@ class ScrobbleLastFMImportDetailView(BaseScrobbleImportDetailView):
 
 class ManualScrobbleView(FormView):
     form_class = ScrobbleForm
-    template_name = 'scrobbles/manual_form.html'
+    template_name = "scrobbles/manual_form.html"
 
     def form_valid(self, form):
 
-        item_id = form.cleaned_data.get('item_id')
+        item_id = form.cleaned_data.get("item_id")
         data_dict = None
-        if 'tt' in item_id:
+        if "tt" in item_id:
             data_dict = lookup_video_from_imdb(
-                form.cleaned_data.get('item_id')
+                form.cleaned_data.get("item_id")
             )
             if data_dict:
                 manual_scrobble_video(data_dict, self.request.user.id)
@@ -189,7 +189,7 @@ class ManualScrobbleView(FormView):
         if not data_dict:
             logger.debug(f"Looking for sport event with ID {item_id}")
             data_dict = lookup_event_from_thesportsdb(
-                form.cleaned_data.get('item_id')
+                form.cleaned_data.get("item_id")
             )
             if data_dict:
                 manual_scrobble_event(data_dict, self.request.user.id)
@@ -205,7 +205,7 @@ class JsonableResponseMixin:
 
     def form_invalid(self, form):
         response = super().form_invalid(form)
-        if self.request.accepts('text/html'):
+        if self.request.accepts("text/html"):
             return response
         else:
             return JsonResponse(form.errors, status=400)
@@ -215,11 +215,11 @@ class JsonableResponseMixin:
         # it might do some processing (in the case of CreateView, it will
         # call form.save() for example).
         response = super().form_valid(form)
-        if self.request.accepts('text/html'):
+        if self.request.accepts("text/html"):
             return response
         else:
             data = {
-                'pk': self.object.pk,
+                "pk": self.object.pk,
             }
             return JsonResponse(data)
 
@@ -228,9 +228,9 @@ class AudioScrobblerImportCreateView(
     LoginRequiredMixin, JsonableResponseMixin, CreateView
 ):
     model = AudioScrobblerTSVImport
-    fields = ['tsv_file']
-    template_name = 'scrobbles/upload_form.html'
-    success_url = reverse_lazy('vrobbler-home')
+    fields = ["tsv_file"]
+    template_name = "scrobbles/upload_form.html"
+    success_url = reverse_lazy("vrobbler-home")
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -244,9 +244,9 @@ class KoReaderImportCreateView(
     LoginRequiredMixin, JsonableResponseMixin, CreateView
 ):
     model = KoReaderImport
-    fields = ['sqlite_file']
-    template_name = 'scrobbles/upload_form.html'
-    success_url = reverse_lazy('vrobbler-home')
+    fields = ["sqlite_file"]
+    template_name = "scrobbles/upload_form.html"
+    success_url = reverse_lazy("vrobbler-home")
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -257,7 +257,7 @@ class KoReaderImportCreateView(
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['GET'])
+@api_view(["GET"])
 def lastfm_import(request):
     lfm_import, created = LastFmImport.objects.get_or_create(
         user=request.user, processed_finished__isnull=True
@@ -265,19 +265,19 @@ def lastfm_import(request):
 
     process_lastfm_import.delay(lfm_import.id)
 
-    success_url = reverse_lazy('vrobbler-home')
+    success_url = reverse_lazy("vrobbler-home")
     return HttpResponseRedirect(success_url)
 
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
+@api_view(["POST"])
 def jellyfin_webhook(request):
     data_dict = request.data
 
     if (
-        data_dict['NotificationType'] == 'PlaybackProgress'
-        and data_dict['ItemType'] == 'Audio'
+        data_dict["NotificationType"] == "PlaybackProgress"
+        and data_dict["ItemType"] == "Audio"
     ):
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
@@ -298,17 +298,17 @@ def jellyfin_webhook(request):
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({'scrobble_id': scrobble.id}, status=status.HTTP_200_OK)
+    return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)
 
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
+@api_view(["POST"])
 def mopidy_webhook(request):
     try:
         data_dict = json.loads(request.data)
     except TypeError:
-        logger.warning('Received Mopidy data as dict, rather than a string')
+        logger.warning("Received Mopidy data as dict, rather than a string")
         data_dict = request.data
 
     # For making things easier to build new input processors
@@ -316,7 +316,7 @@ def mopidy_webhook(request):
         json_data = json.dumps(data_dict, indent=4)
         logger.debug(f"{json_data}")
 
-    if 'podcast' in data_dict.get('mopidy_uri'):
+    if "podcast" in data_dict.get("mopidy_uri"):
         scrobble = mopidy_scrobble_podcast(data_dict, request.user.id)
     else:
         scrobble = mopidy_scrobble_track(data_dict, request.user.id)
@@ -324,12 +324,12 @@ def mopidy_webhook(request):
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({'scrobble_id': scrobble.id}, status=status.HTTP_200_OK)
+    return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)
 
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
+@api_view(["POST"])
 @parser_classes([MultiPartParser])
 def import_audioscrobbler_file(request):
     """Takes a TSV file in the Audioscrobbler format, saves it and processes the
@@ -344,7 +344,7 @@ def import_audioscrobbler_file(request):
     if file_serializer.is_valid():
         import_file = file_serializer.save()
         return Response(
-            {'scrobble_ids': scrobbles_created}, status=status.HTTP_200_OK
+            {"scrobble_ids": scrobbles_created}, status=status.HTTP_200_OK
         )
     else:
         return Response(
@@ -353,10 +353,10 @@ def import_audioscrobbler_file(request):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['GET'])
+@api_view(["GET"])
 def scrobble_finish(request, uuid):
     user = request.user
-    success_url = reverse_lazy('vrobbler-home')
+    success_url = reverse_lazy("vrobbler-home")
 
     if not user.is_authenticated:
         return HttpResponseRedirect(success_url)
@@ -375,10 +375,10 @@ def scrobble_finish(request, uuid):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['GET'])
+@api_view(["GET"])
 def scrobble_cancel(request, uuid):
     user = request.user
-    success_url = reverse_lazy('vrobbler-home')
+    success_url = reverse_lazy("vrobbler-home")
 
     if not user.is_authenticated:
         return HttpResponseRedirect(success_url)
@@ -397,11 +397,11 @@ def scrobble_cancel(request, uuid):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['GET'])
+@api_view(["GET"])
 def export(request):
-    format = request.GET.get('export_type', 'csv')
-    start = request.GET.get('start')
-    end = request.GET.get('end')
+    format = request.GET.get("export_type", "csv")
+    start = request.GET.get("start")
+    end = request.GET.get("end")
     logger.debug(f"Exporting all scrobbles in format {format}")
 
     temp_file, extension = export_scrobbles(
@@ -410,14 +410,14 @@ def export(request):
 
     now = datetime.now()
     filename = f"vrobbler-export-{str(now)}.{extension}"
-    response = FileResponse(open(temp_file, 'rb'))
+    response = FileResponse(open(temp_file, "rb"))
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
 
 
 class ChartRecordView(TemplateView):
-    template_name = 'scrobbles/chart_index.html'
+    template_name = "scrobbles/chart_index.html"
 
     @staticmethod
     def get_media_filter(media_type: str = "") -> Q:
@@ -450,19 +450,19 @@ class ChartRecordView(TemplateView):
     ) -> QuerySet:
         now = timezone.now()
         params = {}
-        params['media_type'] = media
+        params["media_type"] = media
         if period == "today":
-            params['day'] = now.day
-            params['month'] = now.month
-            params['year'] = now.year
+            params["day"] = now.day
+            params["month"] = now.month
+            params["year"] = now.year
         if period == "week":
-            params['week'] = now.ioscalendar()[1]
-            params['year'] = now.year
+            params["week"] = now.ioscalendar()[1]
+            params["year"] = now.year
         if period == "month":
-            params['month'] = now.month
-            params['year'] = now.year
+            params["month"] = now.month
+            params["year"] = now.year
         if period == "year":
-            params['year'] = now.year
+            params["year"] = now.year
         return self.get_chart_records(**params)[:limit]
 
     def get_context_data(self, **kwargs):
@@ -475,8 +475,8 @@ class ChartRecordView(TemplateView):
 
         if not date:
             limit = 20
-            artist_params = {'user': user, 'media_type': 'Artist'}
-            context_data['current_artist_charts'] = {
+            artist_params = {"user": user, "media_type": "Artist"}
+            context_data["current_artist_charts"] = {
                 "today": live_charts(
                     **artist_params, chart_period="today", limit=limit
                 ),
@@ -492,8 +492,8 @@ class ChartRecordView(TemplateView):
                 "all": live_charts(**artist_params, limit=limit),
             }
 
-            track_params = {'user': user, 'media_type': 'Track'}
-            context_data['current_track_charts'] = {
+            track_params = {"user": user, "media_type": "Track"}
+            context_data["current_track_charts"] = {
                 "today": live_charts(
                     **track_params, chart_period="today", limit=limit
                 ),
@@ -513,34 +513,34 @@ class ChartRecordView(TemplateView):
         # Date provided, lookup past charts, returning nothing if it's now or in the future.
         now = timezone.now()
         year = now.year
-        params = {'year': year}
+        params = {"year": year}
         name = f"Chart for {year}"
 
-        date_params = date.split('-')
+        date_params = date.split("-")
         year = int(date_params[0])
         in_progress = False
         if len(date_params) == 2:
-            if 'W' in date_params[1]:
+            if "W" in date_params[1]:
                 week = int(date_params[1].strip('W"'))
-                params['week'] = week
+                params["week"] = week
                 start = datetime.strptime(date + "-1", "%Y-W%W-%w").replace(
                     tzinfo=pytz.utc
                 )
                 end = start + timedelta(days=6)
                 in_progress = start <= now <= end
-                as_str = start.strftime('Week of %B %d, %Y')
+                as_str = start.strftime("Week of %B %d, %Y")
                 name = f"Chart for {as_str}"
             else:
                 month = int(date_params[1])
-                params['month'] = month
+                params["month"] = month
                 month_str = calendar.month_name[month]
                 name = f"Chart for {month_str} {year}"
                 in_progress = now.month == month and now.year == year
         if len(date_params) == 3:
             month = int(date_params[1])
             day = int(date_params[2])
-            params['month'] = month
-            params['day'] = day
+            params["month"] = month
+            params["day"] = day
             month_str = calendar.month_name[month]
             name = f"Chart for {month_str} {day}, {year}"
             in_progress = (
@@ -573,9 +573,9 @@ class ChartRecordView(TemplateView):
                 media_filter, user=self.request.user, **params
             ).order_by("rank")
 
-        context_data['media_type'] = media_type
-        context_data['track_charts'] = track_charts
-        context_data['artist_charts'] = artist_charts
-        context_data['name'] = " ".join(["Top", media_type, "for", name])
-        context_data['in_progress'] = in_progress
+        context_data["media_type"] = media_type
+        context_data["track_charts"] = track_charts
+        context_data["artist_charts"] = artist_charts
+        context_data["name"] = " ".join(["Top", media_type, "for", name])
+        context_data["in_progress"] = in_progress
         return context_data

@@ -20,7 +20,7 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
         user_tz = pytz.utc
 
     with open(file_path) as infile:
-        source = 'Audioscrobbler File'
+        source = "Audioscrobbler File"
         rows = csv.reader(infile, delimiter="\t")
 
         source_id = ""
@@ -32,8 +32,8 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
                 continue
             if len(row) > 8:
                 logger.warning(
-                    'Improper row length during Audioscrobbler import',
-                    extra={'row': row},
+                    "Improper row length during Audioscrobbler import",
+                    extra={"row": row},
                 )
                 continue
             artist = get_or_create_artist(row[0])
@@ -75,6 +75,6 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
         created = Scrobble.objects.bulk_create(new_scrobbles)
         logger.info(
             f"Created {len(created)} scrobbles",
-            extra={'created_scrobbles': created},
+            extra={"created_scrobbles": created},
         )
         return created

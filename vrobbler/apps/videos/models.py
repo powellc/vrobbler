@@ -33,13 +33,13 @@ class Series(TimeStampedModel):
 
 
 class Video(ScrobblableMixin):
-    COMPLETION_PERCENT = getattr(settings, 'VIDEO_COMPLETION_PERCENT', 90)
-    SECONDS_TO_STALE = getattr(settings, 'VIDEO_SECONDS_TO_STALE', 14400)
+    COMPLETION_PERCENT = getattr(settings, "VIDEO_COMPLETION_PERCENT", 90)
+    SECONDS_TO_STALE = getattr(settings, "VIDEO_SECONDS_TO_STALE", 14400)
 
     class VideoType(models.TextChoices):
-        UNKNOWN = 'U', _('Unknown')
-        TV_EPISODE = 'E', _('TV Episode')
-        MOVIE = 'M', _('Movie')
+        UNKNOWN = "U", _("Unknown")
+        TV_EPISODE = "E", _("TV Episode")
+        MOVIE = "M", _("Movie")
 
     video_type = models.CharField(
         max_length=1,
@@ -59,7 +59,7 @@ class Video(ScrobblableMixin):
     tvrage_id = models.CharField(max_length=20, **BNULL)
 
     class Meta:
-        unique_together = [['title', 'imdb_id']]
+        unique_together = [["title", "imdb_id"]]
 
     def __str__(self):
         if self.video_type == self.VideoType.TV_EPISODE:
@@ -67,7 +67,7 @@ class Video(ScrobblableMixin):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("videos:video_detail", kwargs={'slug': self.uuid})
+        return reverse("videos:video_detail", kwargs={"slug": self.uuid})
 
     @property
     def subtitle(self):
@@ -106,7 +106,7 @@ class Video(ScrobblableMixin):
             series, series_created = Series.objects.get_or_create(
                 name=series_name
             )
-            video_dict['video_type'] = Video.VideoType.TV_EPISODE
+            video_dict["video_type"] = Video.VideoType.TV_EPISODE
 
         video, created = cls.objects.get_or_create(**video_dict)
 

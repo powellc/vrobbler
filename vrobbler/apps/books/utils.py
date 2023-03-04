@@ -26,12 +26,12 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
 
     results = json.loads(response.content)
 
-    if len(results.get('docs')) == 0:
+    if len(results.get("docs")) == 0:
         logger.warn(f"No results found from OL for {title}")
         return {}
 
-    top = results.get('docs')[0]
-    if author and author not in top['author_name']:
+    top = results.get("docs")[0]
+    if author and author not in top["author_name"]:
         logger.warn(
             f"Lookup for {title} found top result with mismatched author"
         )

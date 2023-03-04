@@ -50,13 +50,13 @@ class LastFM:
         lastfm_scrobbles = self.get_last_scrobbles(time_from=last_processed)
 
         for lfm_scrobble in lastfm_scrobbles:
-            timestamp = lfm_scrobble.pop('timestamp')
+            timestamp = lfm_scrobble.pop("timestamp")
 
-            artist = get_or_create_artist(lfm_scrobble.pop('artist'))
-            album = get_or_create_album(lfm_scrobble.pop('album'), artist)
+            artist = get_or_create_artist(lfm_scrobble.pop("artist"))
+            album = get_or_create_album(lfm_scrobble.pop("album"), artist)
 
-            lfm_scrobble['artist'] = artist
-            lfm_scrobble['album'] = album
+            lfm_scrobble["artist"] = artist
+            lfm_scrobble["album"] = album
             track = get_or_create_track(**lfm_scrobble)
 
             new_scrobble = Scrobble(
@@ -85,7 +85,7 @@ class LastFM:
         created = Scrobble.objects.bulk_create(new_scrobbles)
         logger.info(
             f"Created {len(created)} scrobbles",
-            extra={'created_scrobbles': created},
+            extra={"created_scrobbles": created},
         )
         return created
 
@@ -100,7 +100,7 @@ class LastFM:
             lfm_params["time_to"] = int(time_to.timestamp())
 
         # if not time_from and not time_to:
-        lfm_params['limit'] = None
+        lfm_params["limit"] = None
 
         found_scrobbles = self.user.get_recent_tracks(**lfm_params)
         # TOOD spin this out into a celery task over certain threshold of found scrobbles?

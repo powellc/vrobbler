@@ -18,9 +18,9 @@ class SeriesListView(generic.ListView):
 
 class SeriesDetailView(generic.DetailView):
     model = Series
-    slug_field = 'uuid'
+    slug_field = "uuid"
 
 
 class VideoDetailView(generic.DetailView):
     model = Video
-    slug_field = 'uuid'
+    slug_field = "uuid"

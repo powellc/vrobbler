@@ -29,7 +29,7 @@ def convert_to_seconds(run_time: str) -> int:
 
 def parse_mopidy_uri(uri: str) -> dict:
     logger.debug(f"Parsing URI: {uri}")
-    parsed_uri = uri.split('/')
+    parsed_uri = uri.split("/")
 
     episode_str = unquote(parsed_uri.pop(-1).strip(".mp3"))
     podcast_str = unquote(parsed_uri.pop(-1))
@@ -43,9 +43,9 @@ def parse_mopidy_uri(uri: str) -> dict:
 
     try:
         if pub_date:
-            episode_num = int(episode_str.split('-')[3])
+            episode_num = int(episode_str.split("-")[3])
         else:
-            episode_num = int(episode_str.split('-')[0])
+            episode_num = int(episode_str.split("-")[0])
     except IndexError:
         episode_num = None
     except ValueError:
@@ -59,14 +59,14 @@ def parse_mopidy_uri(uri: str) -> dict:
         episode_num_gap = len(str(episode_num)) + 1
         episode_str = episode_str.strip(episode_str[:episode_num_gap])
 
-    episode_str = episode_str.replace('-', ' ')
+    episode_str = episode_str.replace("-", " ")
     logger.debug(f"Found episode name {episode_str} from Mopidy URI")
 
     return {
-        'episode_filename': episode_str,
-        'episode_num': episode_num,
-        'podcast_name': podcast_str,
-        'pub_date': pub_date,
+        "episode_filename": episode_str,
+        "episode_num": episode_num,
+        "podcast_name": podcast_str,
+        "pub_date": pub_date,
     }
 
 
@@ -99,19 +99,19 @@ def check_scrobble_for_finish(
                 "in_progress",
                 "is_paused",
                 "played_to_completion",
-                'playback_position_ticks',
+                "playback_position_ticks",
             ]
         )
 
     if scrobble.percent_played % 5 == 0:
         if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
             scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
-            scrobble.save(update_fields=['scrobble_log'])
+            scrobble.save(update_fields=["scrobble_log"])
 
 
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     from scrobbles.models import Scrobble
 
-    if media_obj.__class__.__name__ == 'Book':
+    if media_obj.__class__.__name__ == "Book":
         media_query = models.Q(book=media_obj)
     return Scrobble.objects.filter(media_query, user=user)

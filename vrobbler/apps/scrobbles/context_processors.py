@@ -9,7 +9,7 @@ def now_playing(request):
     if not user.is_authenticated:
         return {}
     return {
-        'now_playing_list': Scrobble.objects.filter(
+        "now_playing_list": Scrobble.objects.filter(
             in_progress=True,
             is_paused=False,
             user=user,

@@ -9,10 +9,10 @@ from profiles.models import UserProfile
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        exclude = ('password',)
+        exclude = ("password",)
 
 
 class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = UserProfile
-        exclude = ('lastfm_password',)
+        exclude = ("lastfm_password",)

@@ -46,7 +46,7 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
     book_table = cur.execute("SELECT * FROM book")
     new_scrobbles = []
     for book_row in book_table:
-        authors = book_row[KoReaderBookColumn.AUTHORS.value].split('\n')
+        authors = book_row[KoReaderBookColumn.AUTHORS.value].split("\n")
         author_list = []
         for author_str in authors:
             logger.debug(f"Looking up author {author_str}")
@@ -119,6 +119,6 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
     created = Scrobble.objects.bulk_create(new_scrobbles)
     logger.info(
         f"Created {len(created)} scrobbles",
-        extra={'created_scrobbles': created},
+        extra={"created_scrobbles": created},
     )
     return created

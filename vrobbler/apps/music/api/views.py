@@ -9,18 +9,18 @@ from music.models import Artist, Album, Track
 
 
 class ArtistViewSet(viewsets.ModelViewSet):
-    queryset = Artist.objects.all().order_by('-created')
+    queryset = Artist.objects.all().order_by("-created")
     serializer_class = ArtistSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
 class AlbumViewSet(viewsets.ModelViewSet):
-    queryset = Album.objects.all().order_by('-created')
+    queryset = Album.objects.all().order_by("-created")
     serializer_class = AlbumSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
 class TrackViewSet(viewsets.ModelViewSet):
-    queryset = Track.objects.all().order_by('-created')
+    queryset = Track.objects.all().order_by("-created")
     serializer_class = TrackSerializer
     permission_classes = [permissions.IsAuthenticated]

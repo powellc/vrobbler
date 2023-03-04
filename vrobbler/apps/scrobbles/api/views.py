@@ -14,7 +14,7 @@ from scrobbles.models import (
 
 
 class ScrobbleViewSet(viewsets.ModelViewSet):
-    queryset = Scrobble.objects.all().order_by('-timestamp')
+    queryset = Scrobble.objects.all().order_by("-timestamp")
     serializer_class = ScrobbleSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -23,7 +23,7 @@ class ScrobbleViewSet(viewsets.ModelViewSet):
 
 
 class KoReaderImportViewSet(viewsets.ModelViewSet):
-    queryset = KoReaderImport.objects.all().order_by('-created')
+    queryset = KoReaderImport.objects.all().order_by("-created")
     serializer_class = KoReaderImportSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -32,7 +32,7 @@ class KoReaderImportViewSet(viewsets.ModelViewSet):
 
 
 class AudioScrobblerTSVImportViewSet(viewsets.ModelViewSet):
-    queryset = AudioScrobblerTSVImport.objects.all().order_by('-created')
+    queryset = AudioScrobblerTSVImport.objects.all().order_by("-created")
     serializer_class = AudioScrobblerTSVImportSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -41,7 +41,7 @@ class AudioScrobblerTSVImportViewSet(viewsets.ModelViewSet):
 
 
 class LastFmImportViewSet(viewsets.ModelViewSet):
-    queryset = LastFmImport.objects.all().order_by('-created')
+    queryset = LastFmImport.objects.all().order_by("-created")
     serializer_class = LastFmImportSerializer
     permission_classes = [permissions.IsAuthenticated]
 

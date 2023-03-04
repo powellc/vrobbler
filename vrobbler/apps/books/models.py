@@ -28,7 +28,7 @@ class Author(TimeStampedModel):
 
 
 class Book(ScrobblableMixin):
-    COMPLETION_PERCENT = getattr(settings, 'BOOK_COMPLETION_PERCENT', 95)
+    COMPLETION_PERCENT = getattr(settings, "BOOK_COMPLETION_PERCENT", 95)
 
     title = models.CharField(max_length=255)
     authors = models.ManyToManyField(Author)
@@ -59,7 +59,7 @@ class Book(ScrobblableMixin):
         return self.authors.first()
 
     def get_absolute_url(self):
-        return reverse("books:book_detail", kwargs={'slug': self.uuid})
+        return reverse("books:book_detail", kwargs={"slug": self.uuid})
 
     @property
     def pages_for_completion(self) -> int:

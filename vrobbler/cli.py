@@ -4,10 +4,10 @@ import sys
 from os import environ as env
 
 
-if not 'DJANGO_SETTINGS_MODULE' in env:
+if not "DJANGO_SETTINGS_MODULE" in env:
     from vrobbler import settings
 
-    env.setdefault('DJANGO_SETTINGS_MODULE', settings.__name__)
+    env.setdefault("DJANGO_SETTINGS_MODULE", settings.__name__)
 
 
 import django
@@ -15,7 +15,7 @@ import django
 django.setup()
 
 # this line must be after django.setup() for logging configure
-logger = logging.getLogger('vrobbler')
+logger = logging.getLogger("vrobbler")
 
 
 def main():
@@ -33,5 +33,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

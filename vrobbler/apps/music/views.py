@@ -17,11 +17,11 @@ class TrackListView(generic.ListView):
 
 class TrackDetailView(generic.DetailView):
     model = Track
-    slug_field = 'uuid'
+    slug_field = "uuid"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        context_data['charts'] = ChartRecord.objects.filter(
+        context_data["charts"] = ChartRecord.objects.filter(
             track=self.object, rank__in=[1, 2, 3]
         )
         return context_data
@@ -35,7 +35,7 @@ class ArtistListView(generic.ListView):
         return (
             super()
             .get_queryset()
-            .annotate(scrobble_count=Count('track__scrobble'))
+            .annotate(scrobble_count=Count("track__scrobble"))
             .order_by("-scrobble_count")
         )
 
@@ -43,17 +43,17 @@ class ArtistListView(generic.ListView):
         context_data = super().get_context_data(
             object_list=object_list, **kwargs
         )
-        context_data['view'] = self.request.GET.get('view')
+        context_data["view"] = self.request.GET.get("view")
         return context_data
 
 
 class ArtistDetailView(generic.DetailView):
     model = Artist
-    slug_field = 'uuid'
+    slug_field = "uuid"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        artist = context_data['object']
+        artist = context_data["object"]
         rank = 1
         tracks_ranked = []
         scrobbles = artist.tracks.first().scrobble_count
@@ -63,8 +63,8 @@ class ArtistDetailView(generic.DetailView):
             tracks_ranked.append((rank, track))
             scrobbles = track.scrobble_count
 
-        context_data['tracks_ranked'] = tracks_ranked
-        context_data['charts'] = ChartRecord.objects.filter(
+        context_data["tracks_ranked"] = tracks_ranked
+        context_data["charts"] = ChartRecord.objects.filter(
             artist=self.object, rank__in=[1, 2, 3]
         )
         return context_data
@@ -77,14 +77,14 @@ class AlbumListView(generic.ListView):
         return (
             super()
             .get_queryset()
-            .annotate(scrobble_count=Count('track__scrobble'))
+            .annotate(scrobble_count=Count("track__scrobble"))
             .order_by("-scrobble_count")
         )
 
 
 class AlbumDetailView(generic.DetailView):
     model = Album
-    slug_field = 'uuid'
+    slug_field = "uuid"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)

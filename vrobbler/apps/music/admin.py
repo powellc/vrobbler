@@ -22,7 +22,7 @@ class AlbumAdmin(admin.ModelAdmin):
     )
     ordering = ("name",)
     filter_horizontal = [
-        'artists',
+        "artists",
     ]
 
 

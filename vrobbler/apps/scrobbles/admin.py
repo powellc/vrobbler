@@ -11,8 +11,8 @@ from scrobbles.models import (
 class ScrobbleInline(admin.TabularInline):
     model = Scrobble
     extra = 0
-    raw_id_fields = ('video', 'podcast_episode', 'track')
-    exclude = ('source_id', 'scrobble_log')
+    raw_id_fields = ("video", "podcast_episode", "track")
+    exclude = ("source_id", "scrobble_log")
 
 
 class ImportBaseAdmin(admin.ModelAdmin):
@@ -81,11 +81,11 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "played_to_completion",
     )
     raw_id_fields = (
-        'video',
-        'podcast_episode',
-        'track',
-        'sport_event',
-        'book',
+        "video",
+        "podcast_episode",
+        "track",
+        "sport_event",
+        "book",
     )
     list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)

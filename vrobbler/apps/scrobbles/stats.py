@@ -38,14 +38,14 @@ def get_scrobble_count_qs(
         tz = pytz.timezone(user.profile.timezone)
 
     tz = pytz.utc
-    data_model = apps.get_model(app_label='music', model_name='Track')
+    data_model = apps.get_model(app_label="music", model_name="Track")
     if model_str == "Artist":
-        data_model = apps.get_model(app_label='music', model_name='Artist')
+        data_model = apps.get_model(app_label="music", model_name="Artist")
     if model_str == "Video":
-        data_model = apps.get_model(app_label='videos', model_name='Video')
+        data_model = apps.get_model(app_label="videos", model_name="Video")
     if model_str == "SportEvent":
         data_model = apps.get_model(
-            app_label='sports', model_name='SportEvent'
+            app_label="sports", model_name="SportEvent"
         )
 
     if model_str == "Artist":
@@ -69,14 +69,14 @@ def get_scrobble_count_qs(
     end = datetime(year, 12, 31, tzinfo=tz)
 
     if year and day and month:
-        logger.debug('Filtering by year, month and day')
+        logger.debug("Filtering by year, month and day")
         start = datetime(year, month, day, 0, 0, tzinfo=tz)
         end = datetime(year, month, day, 23, 59, tzinfo=tz)
     elif year and week:
-        logger.debug('Filtering by year and week')
+        logger.debug("Filtering by year and week")
         start, end = get_start_end_dates_by_week(year, week, tz)
     elif month:
-        logger.debug('Filtering by month')
+        logger.debug("Filtering by month")
         end_day = calendar.monthrange(year, month)[1]
         start = datetime(year, month, 1, tzinfo=tz)
         end = datetime(year, month, end_day, tzinfo=tz)
@@ -113,7 +113,7 @@ def build_charts(
     model_str="Track",
 ):
     ChartRecord = apps.get_model(
-        app_label='scrobbles', model_name='ChartRecord'
+        app_label="scrobbles", model_name="ChartRecord"
     )
     results = get_scrobble_count_qs(year, month, week, day, user, model_str)
     unique_counts = list(set([result.scrobble_count for result in results]))
@@ -125,20 +125,20 @@ def build_charts(
     chart_records = []
     for result in results:
         chart_record = {
-            'year': year,
-            'week': week,
-            'month': month,
-            'day': day,
-            'user': user,
+            "year": year,
+            "week": week,
+            "month": month,
+            "day": day,
+            "user": user,
         }
-        chart_record['rank'] = ranks[result.scrobble_count]
-        chart_record['count'] = result.scrobble_count
-        if model_str == 'Track':
-            chart_record['track'] = result
-        if model_str == 'Video':
-            chart_record['video'] = result
-        if model_str == 'Artist':
-            chart_record['artist'] = result
+        chart_record["rank"] = ranks[result.scrobble_count]
+        chart_record["count"] = result.scrobble_count
+        if model_str == "Track":
+            chart_record["track"] = result
+        if model_str == "Video":
+            chart_record["video"] = result
+        if model_str == "Artist":
+            chart_record["artist"] = result
         chart_records.append(ChartRecord(**chart_record))
     ChartRecord.objects.bulk_create(
         chart_records, ignore_conflicts=True, batch_size=500
@@ -148,7 +148,7 @@ def build_charts(
 def build_yesterdays_charts_for_user(user: "User", model_str="Track") -> None:
     """Given a user calculate needed charts."""
     ChartRecord = apps.get_model(
-        app_label='scrobbles', model_name='ChartRecord'
+        app_label="scrobbles", model_name="ChartRecord"
     )
     tz = pytz.timezone(settings.TIME_ZONE)
     if user and user.is_authenticated:
@@ -199,9 +199,9 @@ def build_yesterdays_charts_for_user(user: "User", model_str="Track") -> None:
 def build_missing_charts_for_user(user: "User", model_str="Track") -> None:
     """"""
     ChartRecord = apps.get_model(
-        app_label='scrobbles', model_name='ChartRecord'
+        app_label="scrobbles", model_name="ChartRecord"
     )
-    Scrobble = apps.get_model(app_label='scrobbles', model_name='Scrobble')
+    Scrobble = apps.get_model(app_label="scrobbles", model_name="Scrobble")
 
     logger.info(f"Generating historical charts for {user}")
     tz = pytz.timezone(settings.TIME_ZONE)
@@ -211,7 +211,7 @@ def build_missing_charts_for_user(user: "User", model_str="Track") -> None:
 
     first_scrobble = (
         Scrobble.objects.filter(user=user, played_to_completion=True)
-        .order_by('created')
+        .order_by("created")
         .first()
     )
 

@@ -49,17 +49,17 @@ class BaseFileImportMixin(TimeStampedModel):
     def human_start(self):
         start = "Unknown"
         if self.processing_started:
-            start = self.processing_started.strftime('%B %d, %Y at %H:%M')
+            start = self.processing_started.strftime("%B %d, %Y at %H:%M")
         return start
 
     @property
     def import_type(self) -> str:
         class_name = self.__class__.__name__
-        if class_name == 'AudioscrobblerTSVImport':
+        if class_name == "AudioscrobblerTSVImport":
             return "Audioscrobbler"
-        if class_name == 'KoReaderImport':
+        if class_name == "KoReaderImport":
             return "KoReader"
-        if self.__class__.__name__ == 'LastFMImport':
+        if self.__class__.__name__ == "LastFMImport":
             return "LastFM"
         return "Generic"
 
@@ -75,7 +75,7 @@ class BaseFileImportMixin(TimeStampedModel):
             logger.warning("No lines in process log found to undo")
             return
 
-        for line in self.process_log.split('\n'):
+        for line in self.process_log.split("\n"):
             scrobble_id = line.split("\t")[0]
             scrobble = Scrobble.objects.filter(id=scrobble_id).first()
             if not scrobble:
@@ -105,7 +105,7 @@ class BaseFileImportMixin(TimeStampedModel):
 
     def mark_finished(self):
         self.processed_finished = timezone.now()
-        self.save(update_fields=['processed_finished'])
+        self.save(update_fields=["processed_finished"])
 
     def record_log(self, scrobbles):
         self.process_log = ""
@@ -133,13 +133,13 @@ class KoReaderImport(BaseFileImportMixin):
 
     def get_absolute_url(self):
         return reverse(
-            'scrobbles:koreader-import-detail', kwargs={'slug': self.uuid}
+            "scrobbles:koreader-import-detail", kwargs={"slug": self.uuid}
         )
 
     def get_path(instance, filename):
-        extension = filename.split('.')[-1]
+        extension = filename.split(".")[-1]
         uuid = instance.uuid
-        return f'koreader-uploads/{uuid}.{extension}'
+        return f"koreader-uploads/{uuid}.{extension}"
 
     sqlite_file = models.FileField(upload_to=get_path, **BNULL)
 
@@ -169,13 +169,13 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
 
     def get_absolute_url(self):
         return reverse(
-            'scrobbles:tsv-import-detail', kwargs={'slug': self.uuid}
+            "scrobbles:tsv-import-detail", kwargs={"slug": self.uuid}
         )
 
     def get_path(instance, filename):
-        extension = filename.split('.')[-1]
+        extension = filename.split(".")[-1]
         uuid = instance.uuid
-        return f'audioscrobbler-uploads/{uuid}.{extension}'
+        return f"audioscrobbler-uploads/{uuid}.{extension}"
 
     tsv_file = models.FileField(upload_to=get_path, **BNULL)
 
@@ -209,7 +209,7 @@ class LastFmImport(BaseFileImportMixin):
 
     def get_absolute_url(self):
         return reverse(
-            'scrobbles:lastfm-import-detail', kwargs={'slug': self.uuid}
+            "scrobbles:lastfm-import-detail", kwargs={"slug": self.uuid}
         )
 
     def process(self, import_all=False):
@@ -332,13 +332,13 @@ class ChartRecord(TimeStampedModel):
 
     @property
     def period_type(self) -> str:
-        period = 'year'
+        period = "year"
         if self.month:
-            period = 'month'
+            period = "month"
         if self.week:
-            period = 'week'
+            period = "week"
         if self.day:
-            period = 'day'
+            period = "day"
         return period
 
     def __str__(self):
@@ -357,7 +357,7 @@ class ChartRecord(TimeStampedModel):
             get_params = get_params = get_params + f"-{self.day}"
         if self.artist:
             get_params = get_params + "&media=Artist"
-        return reverse('scrobbles:charts-home') + get_params
+        return reverse("scrobbles:charts-home") + get_params
 
     @classmethod
     def build(cls, user, **kwargs):
@@ -424,12 +424,12 @@ class Scrobble(TimeStampedModel):
     @property
     def status(self) -> str:
         if self.is_paused:
-            return 'paused'
+            return "paused"
         if self.played_to_completion:
-            return 'finished'
+            return "finished"
         if self.in_progress:
-            return 'in-progress'
-        return 'zombie'
+            return "in-progress"
+        return "zombie"
 
     @property
     def is_stale(self) -> bool:
@@ -488,7 +488,7 @@ class Scrobble(TimeStampedModel):
         return media_obj
 
     def __str__(self):
-        timestamp = self.timestamp.strftime('%Y-%m-%d')
+        timestamp = self.timestamp.strftime("%Y-%m-%d")
         return f"Scrobble of {self.media_obj} ({timestamp})"
 
     @classmethod
@@ -496,28 +496,28 @@ class Scrobble(TimeStampedModel):
         cls, media, user_id: int, scrobble_data: dict
     ) -> "Scrobble":
 
-        if media.__class__.__name__ == 'Track':
+        if media.__class__.__name__ == "Track":
             media_query = models.Q(track=media)
-            scrobble_data['track_id'] = media.id
-        if media.__class__.__name__ == 'Video':
+            scrobble_data["track_id"] = media.id
+        if media.__class__.__name__ == "Video":
             media_query = models.Q(video=media)
-            scrobble_data['video_id'] = media.id
-        if media.__class__.__name__ == 'Episode':
+            scrobble_data["video_id"] = media.id
+        if media.__class__.__name__ == "Episode":
             media_query = models.Q(podcast_episode=media)
-            scrobble_data['podcast_episode_id'] = media.id
-        if media.__class__.__name__ == 'SportEvent':
+            scrobble_data["podcast_episode_id"] = media.id
+        if media.__class__.__name__ == "SportEvent":
             media_query = models.Q(sport_event=media)
-            scrobble_data['sport_event_id'] = media.id
-        if media.__class__.__name__ == 'Book':
+            scrobble_data["sport_event_id"] = media.id
+        if media.__class__.__name__ == "Book":
             media_query = models.Q(book=media)
-            scrobble_data['book_id'] = media.id
+            scrobble_data["book_id"] = media.id
 
         scrobble = (
             cls.objects.filter(
                 media_query,
                 user_id=user_id,
             )
-            .order_by('-modified')
+            .order_by("-modified")
             .first()
         )
         if scrobble and scrobble.can_be_updated:
@@ -527,21 +527,21 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble.update(scrobble_data)
 
-        source = scrobble_data['source']
+        source = scrobble_data["source"]
         logger.info(
             f"Creating for {media.id} - {source}",
             {"scrobble_data": scrobble_data, "media": media},
         )
         # If creating a new scrobble, we don't need status
-        scrobble_data.pop('mopidy_status', None)
-        scrobble_data.pop('jellyfin_status', None)
+        scrobble_data.pop("mopidy_status", None)
+        scrobble_data.pop("jellyfin_status", None)
         return cls.create(scrobble_data)
 
     def update(self, scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
-        scrobble_status = scrobble_data.pop('mopidy_status', None)
+        scrobble_status = scrobble_data.pop("mopidy_status", None)
         if not scrobble_status:
-            scrobble_status = scrobble_data.pop('jellyfin_status', None)
+            scrobble_status = scrobble_data.pop("jellyfin_status", None)
 
         if self.percent_played < 100:
             # Only worry about ticks if we haven't gotten to the end
@@ -566,7 +566,7 @@ class Scrobble(TimeStampedModel):
         cls,
         scrobble_data: dict,
     ) -> "Scrobble":
-        scrobble_data['scrobble_log'] = ""
+        scrobble_data["scrobble_log"] = ""
         scrobble = cls.objects.create(
             **scrobble_data,
         )
@@ -576,7 +576,7 @@ class Scrobble(TimeStampedModel):
         if not self.in_progress:
             return
         self.in_progress = False
-        self.save(update_fields=['in_progress'])
+        self.save(update_fields=["in_progress"])
         logger.info(f"{self.id} - {self.source}")
         check_scrobble_for_finish(self, force_finish)
 
@@ -607,5 +607,5 @@ class Scrobble(TimeStampedModel):
             f"{self.id} - {self.playback_position_ticks} - {self.source}"
         )
         self.save(
-            update_fields=['playback_position_ticks', 'playback_position']
+            update_fields=["playback_position_ticks", "playback_position"]
         )

@@ -9,4 +9,4 @@ class SportEventListView(generic.ListView):
 
 class SportEventDetailView(generic.DetailView):
     model = SportEvent
-    slug_field = 'uuid'
+    slug_field = "uuid"

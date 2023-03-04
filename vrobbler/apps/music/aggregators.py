@@ -29,24 +29,24 @@ def scrobble_counts(user=None):
         user_filter, played_to_completion=True
     )
     data = {}
-    data['today'] = finished_scrobbles_qs.filter(
+    data["today"] = finished_scrobbles_qs.filter(
         timestamp__gte=start_of_today
     ).count()
-    data['week'] = finished_scrobbles_qs.filter(
+    data["week"] = finished_scrobbles_qs.filter(
         timestamp__gte=starting_day_of_current_week
     ).count()
-    data['month'] = finished_scrobbles_qs.filter(
+    data["month"] = finished_scrobbles_qs.filter(
         timestamp__gte=starting_day_of_current_month
     ).count()
-    data['year'] = finished_scrobbles_qs.filter(
+    data["year"] = finished_scrobbles_qs.filter(
         timestamp__gte=starting_day_of_current_year
     ).count()
-    data['alltime'] = finished_scrobbles_qs.count()
+    data["alltime"] = finished_scrobbles_qs.count()
     return data
 
 
 def week_of_scrobbles(
-    user=None, start=None, media: str = 'tracks'
+    user=None, start=None, media: str = "tracks"
 ) -> dict[str, int]:
 
     now = timezone.now()
@@ -62,15 +62,15 @@ def week_of_scrobbles(
     base_qs = Scrobble.objects.filter(user_filter, played_to_completion=True)
 
     media_filter = Q(track__isnull=False)
-    if media == 'movies':
+    if media == "movies":
         media_filter = Q(video__video_type=Video.VideoType.MOVIE)
-    if media == 'series':
+    if media == "series":
         media_filter = Q(video__video_type=Video.VideoType.TV_EPISODE)
 
     for day in range(6, -1, -1):
         start_day = start - timedelta(days=day)
         end = datetime.combine(start_day, datetime.max.time(), now.tzinfo)
-        day_of_week = start_day.strftime('%A')
+        day_of_week = start_day.strftime("%A")
 
         scrobble_day_dict[day_of_week] = base_qs.filter(
             media_filter,
@@ -100,14 +100,14 @@ def live_charts(
     start_day_of_month = now.replace(day=1)
     start_day_of_year = now.replace(month=1, day=1)
 
-    media_model = apps.get_model(app_label='music', model_name=media_type)
+    media_model = apps.get_model(app_label="music", model_name=media_type)
 
     period_queries = {
-        'today': {'scrobble__timestamp__gte': start_of_today},
-        'week': {'scrobble__timestamp__gte': start_day_of_week},
-        'month': {'scrobble__timestamp__gte': start_day_of_month},
-        'year': {'scrobble__timestamp__gte': start_day_of_year},
-        'all': {},
+        "today": {"scrobble__timestamp__gte": start_of_today},
+        "week": {"scrobble__timestamp__gte": start_day_of_week},
+        "month": {"scrobble__timestamp__gte": start_day_of_month},
+        "year": {"scrobble__timestamp__gte": start_day_of_year},
+        "all": {},
     }
 
     time_filter = Q()

@@ -14,7 +14,7 @@ class SeriesAdmin(admin.ModelAdmin):
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    raw_id_fields = ('tv_series',)
+    raw_id_fields = ("tv_series",)
     list_display = (
         "title",
         "video_type",

@@ -72,6 +72,6 @@ class SportEventAdmin(admin.ModelAdmin):
 
     def comp_str(self, obj):
         if obj.home_team:
-            return f'{obj.away_team} @ {obj.home_team}'
+            return f"{obj.away_team} @ {obj.home_team}"
         if obj.player_one:
-            return f'{obj.player_one} v {obj.player_two}'
+            return f"{obj.player_one} v {obj.player_two}"

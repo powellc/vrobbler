@@ -17,19 +17,19 @@ from music.models import Album, Artist, Track
 
 def get_or_create_artist(name: str, mbid: str = None) -> Artist:
     artist = None
-    logger.debug(f'Got artist {name} and mbid: {mbid}')
+    logger.debug(f"Got artist {name} and mbid: {mbid}")
 
-    if 'feat.' in name.lower():
+    if "feat." in name.lower():
         name = re.split("feat.", name, flags=re.IGNORECASE)[0].strip()
-    if 'featuring' in name.lower():
+    if "featuring" in name.lower():
         name = re.split("featuring", name, flags=re.IGNORECASE)[0].strip()
-    if '&' in name.lower():
+    if "&" in name.lower():
         name = re.split("&", name, flags=re.IGNORECASE)[0].strip()
 
     artist_dict = lookup_artist_from_mb(name)
-    mbid = mbid or artist_dict['id']
+    mbid = mbid or artist_dict["id"]
 
-    logger.debug(f'Looking up artist {name} and mbid: {mbid}')
+    logger.debug(f"Looking up artist {name} and mbid: {mbid}")
     artist = Artist.objects.filter(musicbrainz_id=mbid).first()
     if not artist:
         artist = Artist.objects.create(name=name, musicbrainz_id=mbid)
@@ -44,9 +44,9 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
 def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
     album = None
     album_dict = lookup_album_dict_from_mb(name, artist_name=artist.name)
-    mbid = mbid or album_dict['mb_id']
+    mbid = mbid or album_dict["mb_id"]
 
-    logger.debug(f'Looking up album {name} and mbid: {mbid}')
+    logger.debug(f"Looking up album {name} and mbid: {mbid}")
 
     album = Album.objects.filter(musicbrainz_id=mbid).first()
     if not album:
@@ -81,7 +81,7 @@ def get_or_create_track(
             title,
             artist.musicbrainz_id,
             album.musicbrainz_id,
-        )['id']
+        )["id"]
 
     track = Track.objects.filter(musicbrainz_id=mbid).first()
 

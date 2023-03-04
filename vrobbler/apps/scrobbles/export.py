@@ -17,19 +17,19 @@ def export_scrobbles(start_date=None, end_date=None, format="AS"):
         start_query, end_query, track__isnull=False
     )
     headers = []
-    extension = 'tsv'
-    delimiter = '\t'
+    extension = "tsv"
+    delimiter = "\t"
 
     if format == "as":
         headers = [
-            ['#AUDIOSCROBBLER/1.1'],
-            ['#TZ/UTC'],
-            ['#CLIENT/Vrobbler 1.0.0'],
+            ["#AUDIOSCROBBLER/1.1"],
+            ["#TZ/UTC"],
+            ["#CLIENT/Vrobbler 1.0.0"],
         ]
 
     if format == "csv":
-        delimiter = ','
-        extension = 'csv'
+        delimiter = ","
+        extension = "csv"
         headers = [
             [
                 "artists",
@@ -43,7 +43,7 @@ def export_scrobbles(start_date=None, end_date=None, format="AS"):
             ]
         ]
 
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as outfile:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as outfile:
         writer = csv.writer(outfile, delimiter=delimiter)
         for row in headers:
             writer.writerow(row)
@@ -60,7 +60,7 @@ def export_scrobbles(start_date=None, end_date=None, format="AS"):
                 track_number,
                 track.run_time,
                 track_rating,
-                scrobble.timestamp.strftime('%s'),
+                scrobble.timestamp.strftime("%s"),
                 track.musicbrainz_id,
             ]
             writer.writerow(row)

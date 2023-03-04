@@ -24,7 +24,7 @@ class MopidyRequest:
 
     def __init__(self, **kwargs):
         self.request_data = {
-            "name": kwargs.get('name', self.name),
+            "name": kwargs.get("name", self.name),
             "artist": kwargs.get("artist", self.artist),
             "album": kwargs.get("album", self.album),
             "track_number": int(kwargs.get("track_number", self.track_number)),
@@ -61,7 +61,7 @@ class MopidyRequest:
 
 @pytest.fixture
 def valid_auth_token():
-    user = User.objects.create(email='test@exmaple.com')
+    user = User.objects.create(email="test@exmaple.com")
     return Token.objects.create(user=user).key
 
 

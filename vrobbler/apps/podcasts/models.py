@@ -35,7 +35,7 @@ class Podcast(TimeStampedModel):
 
 
 class Episode(ScrobblableMixin):
-    COMPLETION_PERCENT = getattr(settings, 'PODCAST_COMPLETION_PERCENT', 90)
+    COMPLETION_PERCENT = getattr(settings, "PODCAST_COMPLETION_PERCENT", 90)
 
     podcast = models.ForeignKey(Podcast, on_delete=models.DO_NOTHING)
     number = models.IntegerField(**BNULL)
@@ -61,12 +61,12 @@ class Episode(ScrobblableMixin):
         producer before saving the epsiode so it can be scrobbled.
 
         """
-        if not podcast_dict.get('name'):
+        if not podcast_dict.get("name"):
             logger.warning(f"No name from source for podcast, not scrobbling")
             return
 
         producer = None
-        if producer_dict.get('name'):
+        if producer_dict.get("name"):
             producer, producer_created = Producer.objects.get_or_create(
                 **producer_dict
             )
@@ -85,7 +85,7 @@ class Episode(ScrobblableMixin):
         else:
             logger.debug(f"Found podcast {podcast}")
 
-        episode_dict['podcast_id'] = podcast.id
+        episode_dict["podcast_id"] = podcast.id
 
         episode, created = cls.objects.get_or_create(**episode_dict)
         if created:
