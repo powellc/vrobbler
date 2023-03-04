@@ -4,7 +4,7 @@ import sys
 from os import environ as env
 
 
-if not "DJANGO_SETTINGS_MODULE" in env:
+if "DJANGO_SETTINGS_MODULE" not in env:
     from vrobbler import settings
 
     env.setdefault("DJANGO_SETTINGS_MODULE", settings.__name__)
@@ -19,9 +19,6 @@ logger = logging.getLogger("vrobbler")
 
 
 def main():
-    # to get configured settings
-    from django.conf import settings
-
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

@@ -1,7 +1,6 @@
 import json
 import pytest
 
-from scrobbles.models import Scrobble
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
@@ -19,7 +18,7 @@ class MopidyRequest:
     musicbrainz_track_id = "54214d63-5adf-4909-87cd-c65c37a6d558"
     musicbrainz_album_id = "03b864cd-7761-314c-a892-05a89ddff00d"
     musicbrainz_artist_id = "95f5b748-d370-47fe-85bd-0af2dc450bc0"
-    mopidy_uri = "local:track:Sublime%20-%20Sublime/Disc%201%20-%2004%20-%20Same%20in%20the%20End.mp3"
+    mopidy_uri = "local:track:Sublime%20-%20Sublime/Disc%201%20-%2004%20-%20Same%20in%20the%20End.mp3"  # noqa
     status = "resumed"
 
     def __init__(self, **kwargs):

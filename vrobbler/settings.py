@@ -4,7 +4,6 @@ from pathlib import Path
 
 
 import dj_database_url
-from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parent
