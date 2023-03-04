@@ -52,13 +52,11 @@ def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
     if not album:
         album = Album.objects.create(name=name, musicbrainz_id=mbid)
         album.year = album_dict["year"]
-        album.musicbrainz_id = album_dict["mb_id"]
         album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
         album.musicbrainz_albumartist_id = artist.musicbrainz_id
         album.save(
             update_fields=[
                 "year",
-                "musicbrainz_id",
                 "musicbrainz_releasegroup_id",
                 "musicbrainz_albumartist_id",
             ]
