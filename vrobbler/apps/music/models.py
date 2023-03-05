@@ -1,3 +1,4 @@
+import requests
 import logging
 from tempfile import NamedTemporaryFile
 from typing import Dict, Optional
@@ -70,11 +71,10 @@ class Artist(TimeStampedModel):
         self.theaudiodb_genre = tadb_info["genre"]
         self.theaudiodb_mood = tadb_info["mood"]
 
-        img_temp = NamedTemporaryFile(delete=True)
-        img_temp.write(urlopen(tadb_info["thumb_url"]).read())
-        img_temp.flush()
-        img_filename = f"{self.name}_{self.uuid}.jpg"
-        self.thumbnail.save(img_filename, File(img_temp))
+        r = requests.get(tadb_info.get("thumb_url", ""))
+        if r.status_code == 200:
+            fname = f"{self.name}_{self.uuid}.jpg"
+            self.thumbnail.save(fname, ContentFile(r.content), save=True)
 
     @property
     def rym_link(self):

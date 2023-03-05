@@ -19,7 +19,13 @@ class VideoGameCollectionAdmin(admin.ModelAdmin):
 @admin.register(VideoGame)
 class GameAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("title", "igdb_id")
+    list_display = (
+        "hltb_id",
+        "title",
+        "hltb_score",
+        "main_story_time",
+        "release_year",
+    )
     ordering = ("-created",)
     inlines = [
         ScrobbleInline,

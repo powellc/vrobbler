@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Tuple
 
+from django.conf import settings
 import pytz
 import requests
 from django.contrib.auth import get_user_model
@@ -18,68 +19,74 @@ ALT_NAMES_URL = "https://api.igdb.com/v4/alternative_names"
 SCREENSHOT_URL = "https://api.igdb.com/v4/screenshots"
 COVER_URL = "https://api.igdb.com/v4/covers"
 
+IGDB_CLIENT_ID = getattr(settings, "IGDB_CLIENT_ID")
+IGDB_CLIENT_SECRET = getattr(settings, "IGDB_CLIENT_SECRET")
+
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 
-def refresh_igdb_api_token(user_id: int) -> Tuple[str, int]:
-    user = User.objects.get(id=user_id)
+def get_igdb_token() -> str:
     token_url = REFRESH_TOKEN_URL.format(
-        id=user.profile.twitch_client_id,
-        secret=user.profile.twitch_client_secret,
+        id=IGDB_CLIENT_ID, secret=IGDB_CLIENT_SECRET
     )
     response = requests.post(token_url)
     results = json.loads(response.content)
-    return results.get("access_token"), results.get("expires_in")
+    return results.get("access_token")
 
 
-def lookup_game_from_igdb(client_id: str, token: str, game_id: str) -> Dict:
+def lookup_game_from_igdb(igdb_id: str) -> Dict:
+    """Given credsa and an IGDB game ID, lookup the game metadata and return it
+    in a dictionary mapped to our internal game fields
+
+    """
     headers = {
-        "Authorization": f"Bearer {token}",
-        "Client-ID": client_id,
+        "Authorization": f"Bearer {get_igdb_token()}",
+        "Client-ID": IGDB_CLIENT_ID,
     }
     fields = "id,name,alternative_names.*,release_dates.*,cover.*,screenshots.*,rating,rating_count"
 
     game_dict = {}
-    if game_id:
-        body = f"fields {fields}; where id = {game_id};"
-        response = requests.post(GAMES_URL, data=body, headers=headers)
-        results = json.loads(response.content)
-        if results:
-            game = results[0]
-            logger.debug(game)
+    body = f"fields {fields}; where id = {igdb_id};"
+    response = requests.post(GAMES_URL, data=body, headers=headers)
+    results = json.loads(response.content)
+    if not results:
+        logger.warn(f"Lookup of game on IGDB failed for ID {igdb_id}")
+        return game_dict
 
-            alt_name = None
-            if "alternative_names" in game.keys():
-                alt_name = game.get("alternative_names")[0].get("name")
-            screenshot_url = None
-            if "screenshots" in game.keys():
-                screenshot_url = "https:" + game.get("screenshots")[0].get(
-                    "url"
-                ).replace("t_thumb", "t_screenshot_big_2x")
-            cover_url = None
-            if "cover" in game.keys():
-                cover_url = "https:" + game.get("cover").get("url").replace(
-                    "t_thumb", "t_cover_big_2x"
-                )
-            release_date = None
-            if "release_dates" in game.keys():
-                release_date = game.get("release_dates")[0].get("date")
-                if release_date:
-                    release_date = datetime.utcfromtimestamp(
-                        release_date
-                    ).replace(tzinfo=pytz.utc)
+    game = results[0]
 
-            game_dict = {
-                "igdb_id": game.get("id"),
-                "title": game.get("name"),
-                "alternative_name": alt_name,
-                "screenshot_url": screenshot_url,
-                "cover_url": cover_url,
-                "rating": game.get("rating"),
-                "rating_count": game.get("rating_count"),
-                "release_date": release_date,
-            }
+    alt_name = None
+    if "alternative_names" in game.keys():
+        alt_name = game.get("alternative_names")[0].get("name")
+    screenshot_url = None
+    if "screenshots" in game.keys():
+        screenshot_url = "https:" + game.get("screenshots")[0].get(
+            "url"
+        ).replace("t_thumb", "t_screenshot_big_2x")
+    cover_url = None
+    if "cover" in game.keys():
+        cover_url = "https:" + game.get("cover").get("url").replace(
+            "t_thumb", "t_cover_big_2x"
+        )
+    release_date = None
+    if "release_dates" in game.keys():
+        release_date = game.get("release_dates")[0].get("date")
+        if release_date:
+            release_date = datetime.utcfromtimestamp(release_date).replace(
+                tzinfo=pytz.utc
+            )
+
+    game_dict = {
+        "igdb_id": game.get("id"),
+        "title": game.get("name"),
+        "alternative_name": alt_name,
+        "screenshot_url": screenshot_url,
+        "cover_url": cover_url,
+        "rating": game.get("rating"),
+        "rating_count": game.get("rating_count"),
+        "release_date": release_date,
+    }
 
     return game_dict
