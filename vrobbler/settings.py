@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     "podcasts",
     "sports",
     "books",
+    "videogames",
     "mathfilters",
     "rest_framework",
     "allauth",
@@ -304,11 +305,11 @@ LOGGING = {
     "loggers": {
         # Quiet down our console a little
         "django": {
-            "handlers": ["file"],
+            "handlers": ["console"],
             "propagate": True,
         },
         "django.db.backends": {"handlers": ["null"]},
-        "django.server": {"handlers": ["null"]},
+        "django.server": {"handlers": ["console"]},
         "pylast": {"handlers": ["null"], "propagate": False},
         "musicbrainzngs": {"handlers": ["null"], "propagate": False},
         "httpx": {"handlers": ["null"], "propagate": False},
