@@ -1,10 +1,10 @@
 import logging
 from urllib.parse import unquote
 
-from django.contrib.auth import get_user_model
-
 from dateutil.parser import ParserError, parse
+from django.apps import apps
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 
 logger = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ def check_scrobble_for_finish(
 
 
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
-    from scrobbles.models import Scrobble
+    Scrobble = apps.get_model(app_label="scrobbles", model_name="Scrobble")
 
     if media_obj.__class__.__name__ == "Book":
         media_query = models.Q(book=media_obj)
