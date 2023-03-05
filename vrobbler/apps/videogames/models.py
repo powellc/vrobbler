@@ -1,16 +1,18 @@
 import logging
-from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
 
+from vrobbler.apps.scrobbles.utils import get_scrobbles_for_media
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
+User = get_user_model()
 
 
 class VideoGamePlatform(TimeStampedModel):
@@ -93,6 +95,24 @@ class VideoGame(ScrobblableMixin):
     def hltb_link(self):
         return f"https://howlongtobeat.com/game/{self.hltb_id}"
 
+    @property
+    def seconds_for_completion(self) -> int:
+        completion_time = self.run_time_ticks
+        if not completion_time:
+            # Default to 10 hours, why not
+            completion_time = 10 * 60 * 60
+        return int(completion_time * (self.COMPLETION_PERCENT / 100))
+
+    def progress_for_user(self, user_id: int) -> int:
+        """Used to keep track of whether the game is complete or not"""
+        user = User.objects.get(id=user_id)
+        last_scrobble = get_scrobbles_for_media(self, user).last()
+        if not last_scrobble or not last_scrobble.playback_position:
+            logger.warn("No total minutes in last scrobble, no progress")
+            return 0
+        sec_played = last_scrobble.playback_position * 60
+        return int(sec_played / self.run_time) * 100
+
     def fix_metadata(
         self,
         force_update: bool = False,
@@ -107,3 +127,8 @@ class VideoGame(ScrobblableMixin):
 
         if self.igdb_id:
             load_game_data_from_igdb(self.id)
+
+        if (not self.run_time_ticks or force_update) and self.main_story_time:
+            self.run_time_ticks = self.main_story_time * 1000  # miliseconds
+            self.run_time = self.main_story_time
+            self.save(update_fields=["run_time_ticks", "run_time"])

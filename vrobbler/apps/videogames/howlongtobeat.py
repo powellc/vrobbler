@@ -6,6 +6,10 @@ from howlongtobeatpy import HowLongToBeat
 logger = logging.getLogger(__name__)
 
 
+def hrs_to_secs(hrs: float) -> int:
+    return int(hrs * 60 * 60)
+
+
 def lookup_game_from_hltb(name_or_id: str) -> Optional[dict]:
     """Lookup game on HowLongToBeat.com via HLtB ID or a name string and return
     the data in a dictonary mapped to our internal game fields

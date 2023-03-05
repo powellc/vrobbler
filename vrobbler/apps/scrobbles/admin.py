@@ -57,14 +57,7 @@ class ChartRecordAdmin(admin.ModelAdmin):
     ordering = ("-created",)
 
     def media_name(self, obj):
-        if obj.video:
-            return obj.video
-        if obj.track:
-            return obj.track
-        if obj.podcast_episode:
-            return obj.podcast_episode
-        if obj.sport_event:
-            return obj.sport_event
+        return obj.media_obj
 
 
 @admin.register(Scrobble)
@@ -86,6 +79,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "track",
         "sport_event",
         "book",
+        "video_game",
     )
     list_filter = ("is_paused", "in_progress", "source", "track__artist")
     ordering = ("-timestamp",)
@@ -95,14 +89,6 @@ class ScrobbleAdmin(admin.ModelAdmin):
 
     def media_type(self, obj):
         return obj.media_obj.__class__.__name__
-        if obj.video:
-            return "Video"
-        if obj.track:
-            return "Track"
-        if obj.podcast_episode:
-            return "Podcast"
-        if obj.sport_event:
-            return "Sport Event"
 
     def playback_percent(self, obj):
         return obj.percent_played

@@ -11,10 +11,6 @@ from videogames.igdb import lookup_game_from_igdb
 logger = logging.getLogger(__name__)
 
 
-def hrs_to_secs(hrs: float) -> int:
-    return int(hrs * 60 * 60)
-
-
 def get_or_create_videogame(
     name_or_id: str, force_update=False
 ) -> Optional[VideoGame]:

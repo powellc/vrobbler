@@ -112,6 +112,14 @@ def check_scrobble_for_finish(
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     Scrobble = apps.get_model(app_label="scrobbles", model_name="Scrobble")
 
-    if media_obj.__class__.__name__ == "Book":
+    media_query = None
+    media_class = media_obj.__class__.__name__
+    if media_class == "Book":
         media_query = models.Q(book=media_obj)
+    if media_class == "VideoGame":
+        media_query = models.Q(video_game=media_obj)
+
+    if not media_query:
+        logger.warn("Do not know about media {media_class} 🙍")
+        return []
     return Scrobble.objects.filter(media_query, user=user)

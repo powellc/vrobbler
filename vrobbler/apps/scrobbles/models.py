@@ -417,7 +417,6 @@ class Scrobble(TimeStampedModel):
 
     # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
-    videogame_minutes_played = models.IntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
 
     def save(self, *args, **kwargs):
@@ -490,6 +489,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.sport_event
         if self.book:
             media_obj = self.book
+        if self.video_game:
+            media_obj = self.video_game
         return media_obj
 
     def __str__(self):
@@ -501,21 +502,26 @@ class Scrobble(TimeStampedModel):
         cls, media, user_id: int, scrobble_data: dict
     ) -> "Scrobble":
 
-        if media.__class__.__name__ == "Track":
+        media_class = media.__class__.__name__
+
+        if media_class == "Track":
             media_query = models.Q(track=media)
             scrobble_data["track_id"] = media.id
-        if media.__class__.__name__ == "Video":
+        if media_class == "Video":
             media_query = models.Q(video=media)
             scrobble_data["video_id"] = media.id
-        if media.__class__.__name__ == "Episode":
+        if media_class == "Episode":
             media_query = models.Q(podcast_episode=media)
             scrobble_data["podcast_episode_id"] = media.id
-        if media.__class__.__name__ == "SportEvent":
+        if media_class == "SportEvent":
             media_query = models.Q(sport_event=media)
             scrobble_data["sport_event_id"] = media.id
-        if media.__class__.__name__ == "Book":
+        if media_class == "Book":
             media_query = models.Q(book=media)
             scrobble_data["book_id"] = media.id
+        if media_class == "VideoGame":
+            media_query = models.Q(video_game=media)
+            scrobble_data["video_game_id"] = media.id
 
         scrobble = (
             cls.objects.filter(
