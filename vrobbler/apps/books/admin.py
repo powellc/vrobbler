@@ -6,14 +6,14 @@ from scrobbles.admin import ScrobbleInline
 
 
 @admin.register(Author)
-class AlbumAdmin(admin.ModelAdmin):
+class AuthorAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = ("name", "openlibrary_id")
     ordering = ("name",)
 
 
 @admin.register(Book)
-class ArtistAdmin(admin.ModelAdmin):
+class BookAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (
         "title",
@@ -23,3 +23,6 @@ class ArtistAdmin(admin.ModelAdmin):
         "openlibrary_id",
     )
     ordering = ("title",)
+    inlines = [
+        ScrobbleInline,
+    ]

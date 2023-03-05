@@ -1,14 +1,12 @@
 import logging
-from typing import Dict
 
+from books.openlibrary import lookup_book_from_openlibrary
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
-
-from books.utils import lookup_book_from_openlibrary
 from scrobbles.utils import get_scrobbles_for_media
 
 logger = logging.getLogger(__name__)
@@ -68,6 +66,8 @@ class Book(ScrobblableMixin):
             return 0
         return int(self.pages * (self.COMPLETION_PERCENT / 100))
 
-    def progress_for_user(self, user: User) -> int:
+    def progress_for_user(self, user_id: int) -> int:
+        """Used to keep track of whether the book is complete or not"""
+        user = User.objects.get(id=user_id)
         last_scrobble = get_scrobbles_for_media(self, user).last()
         return int((last_scrobble.book_pages_read / self.pages) * 100)

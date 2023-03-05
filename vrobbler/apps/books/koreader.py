@@ -109,6 +109,8 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
         if existing:
             logger.debug(f"Skipping existing scrobble {new_scrobble}")
             continue
+        if book.progress_for_user(user_id) >= Book.COMPLETION_PERCENT:
+            new_scrobble.long_play_complete = True
 
         logger.debug(f"Queued scrobble {new_scrobble} for creation")
         new_scrobbles.append(new_scrobble)
