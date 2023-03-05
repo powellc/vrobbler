@@ -12,10 +12,6 @@ from django_extensions.db.models import TimeStampedModel
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import Episode
-from scrobbles.utils import check_scrobble_for_finish
-from sports.models import SportEvent
-from videos.models import Series, Video
-
 from profiles.utils import (
     end_of_day,
     end_of_month,
@@ -25,6 +21,10 @@ from profiles.utils import (
     start_of_week,
 )
 from scrobbles.stats import build_charts
+from scrobbles.utils import check_scrobble_for_finish
+from sports.models import SportEvent
+from videogames.models import VideoGame
+from videos.models import Series, Video
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -393,6 +393,9 @@ class Scrobble(TimeStampedModel):
         SportEvent, on_delete=models.DO_NOTHING, **BNULL
     )
     book = models.ForeignKey(Book, on_delete=models.DO_NOTHING, **BNULL)
+    video_game = models.ForeignKey(
+        VideoGame, on_delete=models.DO_NOTHING, **BNULL
+    )
     user = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.DO_NOTHING
     )
@@ -412,8 +415,10 @@ class Scrobble(TimeStampedModel):
     source_id = models.TextField(**BNULL)
     scrobble_log = models.TextField(**BNULL)
 
-    # Fields for keeping track of reads between scrobbles
+    # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
+    videogame_minutes_played = models.IntegerField(**BNULL)
+    long_play_complete = models.BooleanField(**BNULL)
 
     def save(self, *args, **kwargs):
         if not self.uuid:
