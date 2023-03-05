@@ -29,7 +29,16 @@ class AlbumAdmin(admin.ModelAdmin):
 @admin.register(Artist)
 class ArtistAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("name", "musicbrainz_id")
+    list_display = (
+        "name",
+        "theaudiodb_mood",
+        "theaudiodb_genre",
+        "musicbrainz_id",
+    )
+    list_filter = (
+        "theaudiodb_mood",
+        "theaudiodb_genre",
+    )
     ordering = ("name",)
 
 
@@ -44,6 +53,7 @@ class TrackAdmin(admin.ModelAdmin):
         "musicbrainz_id",
     )
     list_filter = ("album", "artist")
+    search_fields = ("title",)
     ordering = ("-created",)
     inlines = [
         ScrobbleInline,
