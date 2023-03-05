@@ -14,7 +14,11 @@ client = TheSportsDbClient(api_key=API_KEY)
 
 def lookup_event_from_thesportsdb(event_id: str) -> dict:
 
-    event = client.lookup_event(event_id)["events"][0]
+    try:
+        event = client.lookup_event(event_id)["events"][0]
+    except TypeError:
+        return {}
+
     if not event or type(event) != dict:
         return {}
     league = {}  # client.lookup_league(league_id=event.get('idLeague'))

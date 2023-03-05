@@ -7,8 +7,7 @@ from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
-
-from vrobbler.apps.scrobbles.utils import get_scrobbles_for_media
+from scrobbles.utils import get_scrobbles_for_media
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -132,3 +131,9 @@ class VideoGame(ScrobblableMixin):
             self.run_time_ticks = self.main_story_time * 1000  # miliseconds
             self.run_time = self.main_story_time
             self.save(update_fields=["run_time_ticks", "run_time"])
+
+    @classmethod
+    def find_or_create(cls, data_dict: dict) -> "Game":
+        from videogames.utils import get_or_create_videogame
+
+        return get_or_create_videogame(data_dict.get("hltb_id"))
