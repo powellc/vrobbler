@@ -6,8 +6,9 @@ register = template.Library()
 @register.filter
 def natural_duration(value):
     value = int(value)
-    hours = int(value / 60)
-    minutes = value - (hours * 60)
+    total_minutes = int(value / 60)
+    hours = int(total_minutes / 60)
+    minutes = total_minutes - (hours * 60)
     value_str = ""
     if minutes:
         value_str = f"{minutes} minutes"

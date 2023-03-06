@@ -418,7 +418,7 @@ class Scrobble(TimeStampedModel):
 
     # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
-    video_game_minutes_played = models.IntegerField(**BNULL)
+    long_play_seconds = models.BigIntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
 
     def save(self, *args, **kwargs):
@@ -601,7 +601,7 @@ class Scrobble(TimeStampedModel):
                 "Syncing long play media playback time to elapsed time since start"
             )
             now = timezone.now()
-            updated_playback = (now - self.timestamp).seconds / 60
+            updated_playback = (now - self.timestamp).seconds
 
             media_filter = models.Q(video_game=self.video_game)
             if class_name == "Book":
@@ -612,20 +612,21 @@ class Scrobble(TimeStampedModel):
                 played_to_completion=True,
                 long_play_complete=False,
             ).last()
-            self.video_game_minutes_played = int(updated_playback)
+            self.long_play_seconds = int(updated_playback)
             if last_scrobble:
-                self.video_game_minutes_played = (
+                self.long_play_seconds = (
                     int(last_scrobble.playback_position) + updated_playback
                 )
 
             self.playback_position = int(updated_playback)
+            self.playback_position_ticks = int(updated_playback) * 1000
             self.played_to_completion = True
             self.save(
                 update_fields=[
                     "playback_position",
                     "playback_position_ticks",
                     "played_to_completion",
-                    "video_game_minutes_played",
+                    "long_play_seconds",
                 ]
             )
             return
