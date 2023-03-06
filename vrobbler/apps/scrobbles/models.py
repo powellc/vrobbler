@@ -612,9 +612,11 @@ class Scrobble(TimeStampedModel):
                 played_to_completion=True,
                 long_play_complete=False,
             ).last()
-            self.video_game_minutes_played = (
-                int(last_scrobble.playback_position) + updated_playback
-            )
+            self.video_game_minutes_played = int(updated_playback)
+            if last_scrobble:
+                self.video_game_minutes_played = (
+                    int(last_scrobble.playback_position) + updated_playback
+                )
 
             self.playback_position = int(updated_playback)
             self.played_to_completion = True
