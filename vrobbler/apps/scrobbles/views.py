@@ -44,6 +44,7 @@ from scrobbles.models import (
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
+    manual_scrobble_book,
     manual_scrobble_event,
     manual_scrobble_video,
     manual_scrobble_video_game,
@@ -58,6 +59,7 @@ from scrobbles.tasks import (
 from sports.thesportsdb import lookup_event_from_thesportsdb
 from videos.imdb import lookup_video_from_imdb
 from videogames.howlongtobeat import lookup_game_from_hltb
+from vrobbler.apps.books.openlibrary import lookup_book_from_openlibrary
 
 logger = logging.getLogger(__name__)
 
@@ -181,22 +183,29 @@ class ManualScrobbleView(FormView):
 
         item_id = form.cleaned_data.get("item_id")
         data_dict = None
-        if "tt" in item_id:
-            data_dict = lookup_video_from_imdb(item_id)
-            if data_dict:
-                manual_scrobble_video(data_dict, self.request.user.id)
 
-        if not data_dict:
+        if "-v" in item_id or not data_dict:
+            logger.debug(f"Looking for video game with ID {item_id}")
+            data_dict = lookup_game_from_hltb(item_id.replace("-v", ""))
+            if data_dict:
+                manual_scrobble_video_game(data_dict, self.request.user.id)
+
+        if "-b" in item_id and not data_dict:
+            logger.debug(f"Looking for book with ID {item_id}")
+            data_dict = lookup_book_from_openlibrary(item_id.replace("-b", ""))
+            if data_dict:
+                manual_scrobble_book(data_dict, self.request.user.id)
+
+        if "-s" in item_id and not data_dict:
             logger.debug(f"Looking for sport event with ID {item_id}")
             data_dict = lookup_event_from_thesportsdb(item_id)
             if data_dict:
                 manual_scrobble_event(data_dict, self.request.user.id)
 
-        if not data_dict:
-            logger.debug(f"Looking for video game with ID {item_id}")
-            data_dict = lookup_game_from_hltb(item_id)
+        if "tt" in item_id:
+            data_dict = lookup_video_from_imdb(item_id)
             if data_dict:
-                manual_scrobble_video_game(data_dict, self.request.user.id)
+                manual_scrobble_video(data_dict, self.request.user.id)
 
         return HttpResponseRedirect(reverse("vrobbler-home"))
 

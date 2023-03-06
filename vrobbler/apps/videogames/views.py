@@ -1,5 +1,5 @@
 from django.views import generic
-from videogames.models import VideoGame
+from videogames.models import VideoGame, VideoGamePlatform
 
 
 class VideoGameListView(generic.ListView):
@@ -9,4 +9,9 @@ class VideoGameListView(generic.ListView):
 
 class VideoGameDetailView(generic.DetailView):
     model = VideoGame
+    slug_field = "uuid"
+
+
+class VideoGamePlatformDetailView(generic.DetailView):
+    model = VideoGamePlatform
     slug_field = "uuid"

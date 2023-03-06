@@ -6,6 +6,8 @@ logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://openlibrary.org/search.json?title={title}"
 ISBN_URL = "https://openlibrary.org/isbn/{isbn}.json"
+SEARCH_URL = "https://openlibrary.org/search.json?title={title}"
+COVER_URL = "https://covers.openlibrary.org/b/olid/{id}-L.jpg"
 
 
 def get_first(key: str, result: dict) -> str:
@@ -34,7 +36,7 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
         logger.warn(
             f"Lookup for {title} found top result with mismatched author"
         )
-
+    ol_id = top.get("cover_edition_key")
     return {
         "title": top.get("title"),
         "isbn": top.get("isbn")[0],
@@ -43,4 +45,6 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
         "author_openlibrary_id": get_first("author_key", top),
         "goodreads_id": get_first("id_goodreads", top),
         "first_publish_year": top.get("first_publish_year"),
+        "pages": top.get("number_of_pages_median"),
+        "cover_url": COVER_URL.format(id=ol_id),
     }

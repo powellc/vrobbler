@@ -20,7 +20,8 @@ class AlbumAdmin(admin.ModelAdmin):
         "theaudiodb_score",
         "theaudiodb_genre",
     )
-    ordering = ("name",)
+    ordering = ("-created",)
+    search_fields = ("name",)
     filter_horizontal = [
         "artists",
     ]
@@ -39,7 +40,8 @@ class ArtistAdmin(admin.ModelAdmin):
         "theaudiodb_mood",
         "theaudiodb_genre",
     )
-    ordering = ("name",)
+    search_fields = ("name",)
+    ordering = ("-created",)
 
 
 @admin.register(Track)

@@ -18,7 +18,7 @@ class ScrobbleForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 "class": "form-control form-control-dark w-100",
-                "placeholder": "Scrobble something (IMDB ID, String, TVDB ID ...)",
+                "placeholder": "Scrobble something (ttIMDB, -v Video Game title, -b Book title, -s TheSportsDB ID)",
                 "aria-label": "Scrobble something",
             }
         ),

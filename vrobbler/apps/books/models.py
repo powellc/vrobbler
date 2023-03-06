@@ -30,7 +30,6 @@ class Book(ScrobblableMixin):
 
     title = models.CharField(max_length=255)
     authors = models.ManyToManyField(Author)
-    openlibrary_id = models.CharField(max_length=255, **BNULL)
     goodreads_id = models.CharField(max_length=255, **BNULL)
     koreader_id = models.IntegerField(**BNULL)
     koreader_authors = models.CharField(max_length=255, **BNULL)
@@ -39,6 +38,10 @@ class Book(ScrobblableMixin):
     pages = models.IntegerField(**BNULL)
     language = models.CharField(max_length=4, **BNULL)
     first_publish_year = models.IntegerField(**BNULL)
+    author_name = models.CharField(max_length=255, **BNULL)
+    author_openlibrary_id = models.CharField(max_length=255, **BNULL)
+    openlibrary_id = models.CharField(max_length=255, **BNULL)
+    cover = models.ImageField(upload_to="books/covers/", **BNULL)
 
     def __str__(self):
         return f"{self.title} by {self.author}"
@@ -71,3 +74,11 @@ class Book(ScrobblableMixin):
         user = User.objects.get(id=user_id)
         last_scrobble = get_scrobbles_for_media(self, user).last()
         return int((last_scrobble.book_pages_read / self.pages) * 100)
+
+    @classmethod
+    def find_or_create(cls, data_dict: dict) -> "Game":
+        from books.utils import get_or_create_book
+
+        return get_or_create_book(
+            data_dict.get("title"), data_dict.get("author")
+        )

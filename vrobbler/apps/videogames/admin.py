@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from videogames.models import VideoGame, VideoGameCollection
+from videogames.models import VideoGame, VideoGamePlatform
 
 from scrobbles.admin import ScrobbleInline
 
 
-@admin.register(VideoGameCollection)
-class VideoGameCollectionAdmin(admin.ModelAdmin):
+@admin.register(VideoGamePlatform)
+class VideoGamePlatformAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (
         "name",
@@ -25,6 +25,10 @@ class GameAdmin(admin.ModelAdmin):
         "hltb_score",
         "main_story_time",
         "release_year",
+    )
+    search_fields = (
+        "title",
+        "alternative_name",
     )
     ordering = ("-created",)
     inlines = [

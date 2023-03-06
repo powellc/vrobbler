@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -8,6 +9,7 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
 from scrobbles.utils import get_scrobbles_for_media
+from videogames.igdb import lookup_game_id_from_gdb
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -72,6 +74,7 @@ class VideoGame(ScrobblableMixin):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     cover = models.ImageField(upload_to="games/covers/", **BNULL)
     screenshot = models.ImageField(upload_to="games/screenshots/", **BNULL)
+    summary = models.TextField(**BNULL)
     hltb_cover = models.ImageField(upload_to="games/hltb_covers/", **BNULL)
     rating = models.FloatField(**BNULL)
     rating_count = models.IntegerField(**BNULL)
@@ -94,6 +97,14 @@ class VideoGame(ScrobblableMixin):
     def hltb_link(self):
         return f"https://howlongtobeat.com/game/{self.hltb_id}"
 
+    def igdb_link(self):
+        slug = self.title.lower().replace(" ", "-")
+        return f"https://igdb.com/games/{slug}"
+
+    def save(self, **kwargs):
+        super().save(**kwargs)
+        self.fix_metadata()
+
     @property
     def seconds_for_completion(self) -> int:
         completion_time = self.run_time_ticks
@@ -112,10 +123,7 @@ class VideoGame(ScrobblableMixin):
         sec_played = last_scrobble.playback_position * 60
         return int(sec_played / self.run_time) * 100
 
-    def fix_metadata(
-        self,
-        force_update: bool = False,
-    ):
+    def fix_metadata(self, force_update: bool = False):
         from videogames.utils import (
             get_or_create_videogame,
             load_game_data_from_igdb,
@@ -125,6 +133,9 @@ class VideoGame(ScrobblableMixin):
             get_or_create_videogame(str(self.hltb_id), force_update)
 
         if self.igdb_id:
+            # This almost never works without intervention
+            # self.igdb_id = lookup_game_id_from_gdb(self.title)
+            # self.save(update_fields=["igdb_id"])
             load_game_data_from_igdb(self.id)
 
         if (not self.run_time_ticks or force_update) and self.main_story_time:

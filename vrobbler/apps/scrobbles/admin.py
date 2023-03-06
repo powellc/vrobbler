@@ -11,7 +11,15 @@ from scrobbles.models import (
 class ScrobbleInline(admin.TabularInline):
     model = Scrobble
     extra = 0
-    raw_id_fields = ("video", "podcast_episode", "track")
+    raw_id_fields = (
+        "video",
+        "podcast_episode",
+        "track",
+        "video_game",
+        "book",
+        "sport_event",
+        "user",
+    )
     exclude = ("source_id", "scrobble_log")
 
 
@@ -81,7 +89,11 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "book",
         "video_game",
     )
-    list_filter = ("is_paused", "in_progress", "source", "track__artist")
+    list_filter = (
+        "is_paused",
+        "in_progress",
+        "source",
+    )
     ordering = ("-timestamp",)
 
     def media_name(self, obj):

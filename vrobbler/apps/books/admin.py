@@ -9,7 +9,8 @@ from scrobbles.admin import ScrobbleInline
 class AuthorAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = ("name", "openlibrary_id")
-    ordering = ("name",)
+    ordering = ("-created",)
+    search_fields = ("name",)
 
 
 @admin.register(Book)
@@ -22,7 +23,8 @@ class BookAdmin(admin.ModelAdmin):
         "pages",
         "openlibrary_id",
     )
-    ordering = ("title",)
+    search_fields = ("name",)
+    ordering = ("-created",)
     inlines = [
         ScrobbleInline,
     ]

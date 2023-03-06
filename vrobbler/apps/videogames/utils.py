@@ -54,21 +54,25 @@ def get_or_create_videogame(
     return game
 
 
-def load_game_data_from_igdb(game_id: int) -> Optional[VideoGame]:
+def load_game_data_from_igdb(
+    game_id: int, igdb_id: str = ""
+) -> Optional[VideoGame]:
     """Look up game, if it doesn't exist, lookup data from igdb"""
     game = VideoGame.objects.filter(id=game_id).first()
     if not game:
         logger.warn(f"Video game with ID {game_id} not found")
         return
 
-    if not game.igdb_id:
+    if not game.igdb_id and not igdb_id:
         logger.warn(f"Video game has no IGDB ID")
         return
 
-    logger.info(f"Looking up video game {game.igdb_id}")
-    game_dict = lookup_game_from_igdb(game.igdb_id)
+    igdb_id = game.igdb_id or igdb_id
+
+    logger.info(f"Looking up video game {igdb_id}")
+    game_dict = lookup_game_from_igdb(igdb_id)
     if not game_dict:
-        logger.warn(f"No game data found on IGDB for ID {game.igdb_id}")
+        logger.warn(f"No game data found on IGDB for ID {igdb_id}")
         return
 
     screenshot_url = game_dict.pop("screenshot_url")

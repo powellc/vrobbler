@@ -61,19 +61,20 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
             logger.debug(f"Found author {author}, created: {created}")
 
         book, created = Book.objects.get_or_create(
-            koreader_md5=book_row[KoReaderBookColumn.MD5.value]
+            title=book_row[KoReaderBookColumn.TITLE.value]
         )
 
         if created:
             book.title = book_row[KoReaderBookColumn.TITLE.value]
             book.pages = book_row[KoReaderBookColumn.PAGES.value]
+            book.koreader_md5 = book_row[KoReaderBookColumn.MD5.value]
             book.koreader_id = int(book_row[KoReaderBookColumn.ID.value])
             book.koreader_authors = book_row[KoReaderBookColumn.AUTHORS.value]
             book.run_time_ticks = int(book_row[KoReaderBookColumn.PAGES.value])
             book.save(
                 update_fields=[
-                    "title",
                     "pages",
+                    "koreader_md5",
                     "koreader_id",
                     "koreader_authors",
                 ]

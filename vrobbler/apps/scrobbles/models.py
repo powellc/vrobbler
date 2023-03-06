@@ -20,6 +20,7 @@ from profiles.utils import (
     start_of_month,
     start_of_week,
 )
+from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.stats import build_charts
 from scrobbles.utils import check_scrobble_for_finish
 from sports.models import SportEvent
@@ -403,7 +404,7 @@ class Scrobble(TimeStampedModel):
     # Time keeping
     timestamp = models.DateTimeField(**BNULL)
     playback_position_ticks = models.PositiveBigIntegerField(**BNULL)
-    playback_position = models.CharField(max_length=8, **BNULL)
+    playback_position = models.CharField(max_length=10, **BNULL)
 
     # Status indicators
     is_paused = models.BooleanField(default=False)
@@ -417,6 +418,7 @@ class Scrobble(TimeStampedModel):
 
     # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
+    video_game_minutes_played = models.IntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
 
     def save(self, *args, **kwargs):
@@ -468,6 +470,9 @@ class Scrobble(TimeStampedModel):
     @property
     def can_be_updated(self) -> bool:
         updatable = True
+        if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA:
+            logger.info(f"No - Long play media")
+            updatable = False
         if self.percent_played > 100:
             logger.info(f"No - 100% played - {self.id} - {self.source}")
             updatable = False
@@ -589,6 +594,39 @@ class Scrobble(TimeStampedModel):
         self.in_progress = False
         self.save(update_fields=["in_progress"])
         logger.info(f"{self.id} - {self.source}")
+
+        class_name = self.media_obj.__class__.__name__
+        if class_name in LONG_PLAY_MEDIA:
+            logger.debug(
+                "Syncing long play media playback time to elapsed time since start"
+            )
+            now = timezone.now()
+            updated_playback = (now - self.timestamp).seconds / 60
+
+            media_filter = models.Q(video_game=self.video_game)
+            if class_name == "Book":
+                media_filter = models.Q(book=self.book)
+            last_scrobble = Scrobble.objects.filter(
+                media_filter,
+                user_id=self.user,
+                played_to_completion=True,
+                long_play_complete=False,
+            ).last()
+            self.video_game_minutes_played = (
+                int(last_scrobble.playback_position) + updated_playback
+            )
+
+            self.playback_position = int(updated_playback)
+            self.played_to_completion = True
+            self.save(
+                update_fields=[
+                    "playback_position",
+                    "playback_position_ticks",
+                    "played_to_completion",
+                    "video_game_minutes_played",
+                ]
+            )
+            return
         check_scrobble_for_finish(self, force_finish)
 
     def pause(self) -> None:

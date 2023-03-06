@@ -36,6 +36,23 @@ def get_igdb_token() -> str:
     return results.get("access_token")
 
 
+def lookup_game_id_from_gdb(name: str) -> str:
+
+    headers = {
+        "Authorization": f"Bearer {get_igdb_token()}",
+        "Client-ID": IGDB_CLIENT_ID,
+    }
+
+    body = f'fields name,game,published_at; search "{name}"; limit 20;'
+    response = requests.post(SEARCH_URL, data=body, headers=headers)
+    results = json.loads(response.content)
+    if not results:
+        logger.warn(f"Search of game on IGDB failed for name {name}")
+        return ""
+
+    return results[0]["game"]
+
+
 def lookup_game_from_igdb(igdb_id: str) -> Dict:
     """Given credsa and an IGDB game ID, lookup the game metadata and return it
     in a dictionary mapped to our internal game fields
@@ -45,7 +62,7 @@ def lookup_game_from_igdb(igdb_id: str) -> Dict:
         "Authorization": f"Bearer {get_igdb_token()}",
         "Client-ID": IGDB_CLIENT_ID,
     }
-    fields = "id,name,alternative_names.*,release_dates.*,cover.*,screenshots.*,rating,rating_count"
+    fields = "id,name,alternative_names.*,release_dates.*,cover.*,screenshots.*,rating,rating_count,summary"
 
     game_dict = {}
     body = f"fields {fields}; where id = {igdb_id};"
@@ -87,6 +104,7 @@ def lookup_game_from_igdb(igdb_id: str) -> Dict:
         "rating": game.get("rating"),
         "rating_count": game.get("rating_count"),
         "release_date": release_date,
+        "summary": game.get("summary"),
     }
 
     return game_dict

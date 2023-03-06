@@ -307,11 +307,11 @@ LOGGING = {
     "loggers": {
         # Quiet down our console a little
         "django": {
-            "handlers": ["console"],
+            "handlers": ["null"],
             "propagate": True,
         },
         "django.db.backends": {"handlers": ["null"]},
-        "django.server": {"handlers": ["console"]},
+        "django.server": {"handlers": ["null"]},
         "pylast": {"handlers": ["null"], "propagate": False},
         "musicbrainzngs": {"handlers": ["null"], "propagate": False},
         "httpx": {"handlers": ["null"], "propagate": False},

@@ -16,6 +16,7 @@ from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
 from sports.models import SportEvent
 from videos.models import Video
 from videogames.models import VideoGame
+from books.models import Book
 
 logger = logging.getLogger(__name__)
 
@@ -206,19 +207,38 @@ def manual_scrobble_event(data_dict: dict, user_id: Optional[int]):
 def manual_scrobble_video_game(data_dict: dict, user_id: Optional[int]):
     game = VideoGame.find_or_create(data_dict)
 
-    last_scrobble = Scrobble.objects.filter(
-        video_game=game, user_id=user_id, played_to_completion=True
-    ).last()
-
-    playback_position = 0
-    if last_scrobble and not last_scrobble.playback_position:
-        playback_position = last_scrobble.playback_position + (30 * 60)
     scrobble_dict = {
         "user_id": user_id,
         "timestamp": timezone.now(),
-        "playback_position_ticks": playback_position * 1000,
-        "playback_position": playback_position,
+        "playback_position_ticks": None,  # int(start_playback_position) * 1000,
+        "playback_position": 0,
         "source": "Vrobbler",
+        "long_play_complete": False,
     }
 
     return Scrobble.create_or_update(game, user_id, scrobble_dict)
+
+
+def manual_scrobble_book(data_dict: dict, user_id: Optional[int]):
+    book = Book.find_or_create(data_dict)
+
+    last_scrobble = Scrobble.objects.filter(
+        book=book,
+        user_id=user_id,
+        played_to_completion=True,
+        long_play_complete=False,
+    ).last()
+
+    start_playback_position = 0
+    if last_scrobble:
+        start_playback_position = last_scrobble.playback_position or 0
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_ticks": int(start_playback_position) * 1000,
+        "playback_position": start_playback_position,
+        "source": "Vrobbler",
+        "long_play_complete": False,
+    }
+
+    return Scrobble.create_or_update(book, user_id, scrobble_dict)
