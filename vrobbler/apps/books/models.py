@@ -1,8 +1,10 @@
 import logging
 
+import requests
 from books.openlibrary import lookup_book_from_openlibrary
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
@@ -46,13 +48,18 @@ class Book(ScrobblableMixin):
     def __str__(self):
         return f"{self.title} by {self.author}"
 
-    def fix_metadata(self):
-        if not self.openlibrary_id:
-            book_meta = lookup_book_from_openlibrary(self.title, self.author)
-            self.openlibrary_id = book_meta.get("openlibrary_id")
-            self.isbn = book_meta.get("isbn")
-            self.goodreads_id = book_meta.get("goodreads_id")
-            self.first_pubilsh_year = book_meta.get("first_publish_year")
+    def fix_metadata(self, force_update=False):
+        if not self.openlibrary_id or force_update:
+            book_dict = lookup_book_from_openlibrary(self.title, self.author)
+
+            cover_url = book_dict.pop("cover_url")
+            Book.objects.filter(pk=self.id).update(**book_dict)
+
+            r = requests.get(cover_url)
+            if r.status_code == 200:
+                fname = f"{self.title}_{self.uuid}.jpg"
+                self.cover.save(fname, ContentFile(r.content), save=True)
+
             self.save()
 
     @property
