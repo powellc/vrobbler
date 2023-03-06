@@ -627,7 +627,7 @@ class Scrobble(TimeStampedModel):
                 ]
             )
             return
-        check_scrobble_for_finish(self, force_finish)
+        check_scrobble_for_finish(self, force_finish=force_finish)
 
     def pause(self) -> None:
         if self.is_paused:

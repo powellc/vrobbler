@@ -369,7 +369,7 @@ def import_audioscrobbler_file(request):
 @api_view(["GET"])
 def scrobble_finish(request, uuid):
     user = request.user
-    success_url = reverse_lazy("vrobbler-home")
+    success_url = request.META.get("HTTP_REFERER")
 
     if not user.is_authenticated:
         return HttpResponseRedirect(success_url)

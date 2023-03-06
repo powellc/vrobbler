@@ -36,7 +36,6 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
     except IndexError:
         plot = ""
 
-    logger.debug(f"Received data from IMDB: {media.__dict__}")
     # Build a rough approximation of a Jellyfin data response
     data_dict = {
         "ItemType": item_type,
