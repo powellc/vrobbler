@@ -71,10 +71,12 @@ class Artist(TimeStampedModel):
         self.theaudiodb_genre = tadb_info["genre"]
         self.theaudiodb_mood = tadb_info["mood"]
 
-        r = requests.get(tadb_info.get("thumb_url", ""))
-        if r.status_code == 200:
-            fname = f"{self.name}_{self.uuid}.jpg"
-            self.thumbnail.save(fname, ContentFile(r.content), save=True)
+        thumb_url = tadb_info.get("thumb_url", "")
+        if thumb_url:
+            r = requests.get(thumb_url)
+            if r.status_code == 200:
+                fname = f"{self.name}_{self.uuid}.jpg"
+                self.thumbnail.save(fname, ContentFile(r.content), save=True)
 
     @property
     def rym_link(self):

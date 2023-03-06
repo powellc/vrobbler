@@ -5,9 +5,8 @@ from enum import Enum
 
 import pytz
 
-from books.models import Author, Book
+from books.models import Author, Book, Page
 from scrobbles.models import Scrobble
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +32,38 @@ class KoReaderPageStatColumn(Enum):
     START_TIME = 2
     DURATION = 3
     TOTAL_PAGES = 4
+
+
+def process_pages_for_book(book_id, sqlite_file_path):
+    con = sqlite3.connect(sqlite_file_path)
+    cur = con.cursor()
+
+    book = Book.objects.filter(koreader_id=book_id).first()
+    if not book:
+        logger.error(f"No book found with KoReader ID of {book_id}")
+        return
+
+    page_table = cur.execute(
+        f"SELECT * FROM page_stat_data where id_book={book_id}"
+    )
+    new_pages = []
+    for page_row in page_table:
+        page_number = page_row[KoReaderPageStatColumn.PAGE.value]
+        page, page_created = Page.objects.get_or_create(
+            book=book, number=page_number
+        )
+        if page_created:
+            ts = page_row[KoReaderPageStatColumn.START_TIME.value]
+            page.start_time = datetime.utcfromtimestamp(ts).replace(
+                tzinfo=pytz.utc
+            )
+            page.duration_seconds = page_row[
+                KoReaderPageStatColumn.DURATION.value
+            ]
+            page.save()
+            new_pages.append(page)
+    logger.info("Added {len(new_pages)} for book {book}")
+    return new_pages
 
 
 def process_koreader_sqlite_file(sqlite_file_path, user_id):
@@ -65,21 +96,21 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
         )
 
         if created:
-            book.title = book_row[KoReaderBookColumn.TITLE.value]
-            book.pages = book_row[KoReaderBookColumn.PAGES.value]
-            book.koreader_md5 = book_row[KoReaderBookColumn.MD5.value]
-            book.koreader_id = int(book_row[KoReaderBookColumn.ID.value])
-            book.koreader_authors = book_row[KoReaderBookColumn.AUTHORS.value]
-            book.run_time_ticks = int(book_row[KoReaderBookColumn.PAGES.value])
-            book.save(
-                update_fields=[
-                    "pages",
-                    "koreader_md5",
-                    "koreader_id",
-                    "koreader_authors",
-                ]
-            )
+            pages = book_row[KoReaderBookColumn.PAGES.value]
+            run_time = pages * book.AVG_PAGE_READING_SECONDS
+            run_time_ticks = run_time * 1000
+            book_dict = {
+                "title": book_row[KoReaderBookColumn.TITLE.value],
+                "pages": book_row[KoReaderBookColumn.PAGES.value],
+                "koreader_md5": book_row[KoReaderBookColumn.MD5.value],
+                "koreader_id": int(book_row[KoReaderBookColumn.ID.value]),
+                "koreader_authors": book_row[KoReaderBookColumn.AUTHORS.value],
+                "run_time": run_time,
+                "run_time_ticks": run_time_ticks,
+            }
+            Book.objects.filter(pk=book.id).update(**book_dict)
             book.fix_metadata()
+
             if author_list:
                 book.authors.add(*[a.id for a in author_list])
 
@@ -91,6 +122,7 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
         timestamp = datetime.utcfromtimestamp(
             book_row[KoReaderBookColumn.LAST_OPEN.value]
         ).replace(tzinfo=pytz.utc)
+        process_pages_for_book(book.koreader_id, sqlite_file_path)
 
         new_scrobble = Scrobble(
             book_id=book.id,
