@@ -10,8 +10,8 @@
 <div class="row">
 
     {% if object.hltb_cover%}
-    <p style="float:left; width:402px; padding:0; border: 1px solid #ccc">
-        <img src="{{object.hltb_cover.url}}" width=400 />
+    <p style="float:left; width:202px; padding:0; border: 1px solid #ccc">
+        <img src="{{object.hltb_cover.url}}" width=200 />
     </p>
     {% endif %}
     <div style="float:left; width:600px; margin-left:10px; ">
@@ -28,7 +28,13 @@
 <div class="row">
     <p>{{object.scrobble_set.count}} scrobbles</p>
     <p>{{object.scrobble_set.last.playback_position|natural_duration}}{% if object.scrobble_set.last.long_play_complete %} and completed{% else %} spent playing{% endif %}</p>
-    <p><a href="">Resume long play</a></p>
+    <p>
+        {% if object.scrobble_set.last.long_play_complete == True %}
+        <a href="">Play again</a>
+        {% else %}
+        <a href="">Resume playing</a>
+        {% endif %}
+    </p>
 </div>
 <div class="row">
     <div class="col-md">
@@ -38,6 +44,7 @@
             <thead>
                 <tr>
                     <th scope="col">Date</th>
+                    <th scope="col">Completed</th>
                     <th scope="col">Duration</th>
                     <th scope="col">Platforms</th>
                 </tr>
@@ -46,6 +53,7 @@
                 {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                 <tr>
                     <td>{{scrobble.timestamp}}</td>
+                        <td>{% if scrobble.long_play_complete == True %}Yes{% endif %}</td>
                     <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.long_play_session_seconds|natural_duration}}{% endif %}</td>
                     <td>{% for platform in scrobble.video_game.platforms.all %}<a href="{{platform.get_absolute_url}}">{{platform}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                 </tr>

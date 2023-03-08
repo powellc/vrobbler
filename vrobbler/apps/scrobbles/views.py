@@ -118,7 +118,7 @@ class RecentScrobbleList(ListView):
                 "all": list(live_charts(**track)),
             }
 
-        data["weekly_data"] = week_of_scrobbles(user=user)
+        # data["weekly_data"] = week_of_scrobbles(user=user)
         data["counts"] = scrobble_counts(user)
         data["imdb_form"] = ScrobbleForm
         data["export_form"] = ExportScrobbleForm
@@ -135,6 +135,7 @@ class ScrobbleLongPlaysView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+        context_data["view"] = self.request.GET.get("view", "grid")
         context_data["in_progress"] = get_long_plays_in_progress(
             self.request.user
         )

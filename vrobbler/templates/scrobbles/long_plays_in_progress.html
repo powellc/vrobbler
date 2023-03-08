@@ -20,13 +20,15 @@
     {% if view == 'grid' %}
     <div>
         {% for media in in_progress %}
-        {% if media.cover %}
-        <dl style="width: 130px; float: left; margin-right:10px;">
-            <dd><img src="{{media.cover.url}}" width=120 height=120 /></dd>
+        {% if media.hltb_cover %}
+        <dl style="width: 205px; float: left; margin-right:10px;">
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 /></a></dd>
+            <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
-        {% elif media.hltb_cover %}
-        <dl style="width: 130px; float: left; margin-right:10px;">
-            <dd><img src="{{media.htlb_cover.url}}" width=120 height=120 /></dd>
+        {% elif media.cover %}
+        <dl style="width: 205px; float: left; margin-right:10px;">
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" width=200 /></a></dd>
+            <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
         {% endif %}
         {% endfor %}
@@ -58,13 +60,15 @@
     {% if view == 'grid' %}
     <div>
         {% for media in completed %}
-        {% if media.cover %}
-        <dl style="width: 130px; float: left; margin-right:10px;">
-            <dd><img src="{{media.cover.url}}" width=120 height=120 /></dd>
+        {% if media.hltb_cover %}
+        <dl style="width: 200px; float: left; margin-right:10px;">
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 /></a></dd>
+            <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
-        {% elif media.hltb_cover %}
-        <dl style="width: 130px; float: left; margin-right:10px;">
-            <dd><img src="{{media.htlb_cover.url}}" width=120 height=120 /></dd>
+        {% elif media.cover %}
+        <dl style="width: 200px; float: left; margin-right:10px;">
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" width=200 /></a></dd>
+            <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
         {% endif %}
         {% endfor %}
