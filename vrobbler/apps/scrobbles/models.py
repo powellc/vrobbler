@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import logging
+from typing import Optional
 from uuid import uuid4
 
 from books.models import Book
@@ -448,6 +449,25 @@ class Scrobble(TimeStampedModel):
         return is_stale
 
     @property
+    def previous(self):
+        return (
+            self.media_obj.scrobble_set.filter(timestamp__lt=self.timestamp)
+            .order_by("-timestamp")
+            .last()
+        )
+
+    @property
+    def long_play_session_seconds(self) -> Optional[int]:
+        """Look one scrobble back, if it isn't complete,"""
+        if self.long_play_complete is not None:
+            if self.previous:
+                return int(self.playback_position) - int(
+                    self.previous.playback_position
+                )
+            else:
+                return self.playback_position
+
+    @property
     def percent_played(self) -> int:
         if not self.media_obj:
             return 0
@@ -470,7 +490,7 @@ class Scrobble(TimeStampedModel):
     @property
     def can_be_updated(self) -> bool:
         updatable = True
-        if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA:
+        if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(f"No - Long play media")
             updatable = False
         if self.percent_played > 100:

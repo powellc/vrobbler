@@ -27,7 +27,8 @@
 </div>
 <div class="row">
     <p>{{object.scrobble_set.count}} scrobbles</p>
-    <p><a href="">Start playing</a></p>
+    <p>{{object.scrobble_set.last.playback_position|natural_duration}}{% if object.scrobble_set.last.long_play_complete %} and completed{% else %} spent playing{% endif %}</p>
+    <p><a href="">Resume long play</a></p>
 </div>
 <div class="row">
     <div class="col-md">
@@ -45,7 +46,7 @@
                 {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                 <tr>
                     <td>{{scrobble.timestamp}}</td>
-                    <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.playback_position|natural_duration}}{% endif %}</td>
+                    <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.long_play_session_seconds|natural_duration}}{% endif %}</td>
                     <td>{% for platform in scrobble.video_game.platforms.all %}<a href="{{platform.get_absolute_url}}">{{platform}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                 </tr>
                 {% endfor %}

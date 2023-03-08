@@ -92,6 +92,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
     list_filter = (
         "is_paused",
         "in_progress",
+        "long_play_complete",
         "source",
     )
     ordering = ("-timestamp",)

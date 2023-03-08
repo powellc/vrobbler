@@ -7,6 +7,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from vrobbler.apps.scrobbles.constants import LONG_PLAY_MEDIA
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -123,3 +125,37 @@ def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
         logger.warn("Do not know about media {media_class} 🙍")
         return []
     return Scrobble.objects.filter(media_query, user=user)
+
+
+def get_long_plays_in_progress(user: User) -> list:
+    """Find all books where the last scrobble is not marked complete"""
+    media_list = []
+    for app, model in LONG_PLAY_MEDIA.items():
+        media_obj = apps.get_model(app_label=app, model_name=model)
+        for media in media_obj.objects.all():
+            if (
+                media.scrobble_set.all()
+                and media.scrobble_set.filter(user=user)
+                .last()
+                .long_play_complete
+                == False
+            ):
+                media_list.append(media)
+    return media_list
+
+
+def get_long_plays_completed(user: User) -> list:
+    """Find all books where the last scrobble is not marked complete"""
+    media_list = []
+    for app, model in LONG_PLAY_MEDIA.items():
+        media_obj = apps.get_model(app_label=app, model_name=model)
+        for media in media_obj.objects.all():
+            if (
+                media.scrobble_set.all()
+                and media.scrobble_set.filter(user=user)
+                .last()
+                .long_play_complete
+                == True
+            ):
+                media_list.append(media)
+    return media_list

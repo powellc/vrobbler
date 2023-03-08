@@ -67,4 +67,9 @@ urlpatterns = [
         views.ChartRecordView.as_view(),
         name="charts-home",
     ),
+    path(
+        "long-plays/",
+        views.ScrobbleLongPlaysView.as_view(),
+        name="long-plays",
+    ),
 ]

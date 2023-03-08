@@ -5,6 +5,8 @@ register = template.Library()
 
 @register.filter
 def natural_duration(value):
+    if not value:
+        return
     value = int(value)
     total_minutes = int(value / 60)
     hours = int(total_minutes / 60)

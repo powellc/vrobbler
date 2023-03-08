@@ -32,6 +32,8 @@
             min-height: 3em;
             border-right: 1px solid #777;
         }
+        .now-playing p { margin:0; }
+        .now-playing .right { float:right; margin-right:10px; }
         .latest-scrobble {
             width: 50%;
         }
@@ -220,33 +222,9 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" aria-current="page" href="/tracks/">
-                                <span data-feather="music"></span>
-                                Tracks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/artists/">
-                                <span data-feather="user"></span>
-                                Artists
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/albums/">
-                                <span data-feather="music"></span>
-                                Albums
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/movies/">
-                                <span data-feather="film"></span>
-                                Movies
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/series/">
-                                <span data-feather="tv"></span>
-                                TV Shows
+                                <a class="nav-link" href="/long-plays/">
+                                <span data-feather="playv"></span>
+                                Long plays
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -262,28 +240,30 @@
                         <hr/>
 
                         {% if now_playing_list and user.is_authenticated %}
-                        <ul style="padding-right:10px;">
+                        <ul>
                             <b>Now playing</b>
                             {% for scrobble in now_playing_list %}
-                            <div>
+                            <div class="now-playing">
                                 {% if scrobble.media_obj.album.cover_image %}
-                                <td><img src="{{scrobble.track.album.cover_image.url}}" width=120 height=120 style="border:1px solid black; " /></td><br/>
+                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.track.album.cover_image.url}}" width=75 height=75 style="border:1px solid black; " /></div>
                                 {% endif %}
-                                <a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a><br/>
+                                <p><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></p>
                                 {% if scrobble.media_obj.subtitle %}
-                                <em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em><br/>
+                                <p><em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em></p>
                                 {% endif %}
-                                <small>{{scrobble.timestamp|naturaltime}}<br/> from {{scrobble.source}}</small>
+                                <br/>
+                                <p><small>{{scrobble.timestamp|naturaltime}} from {{scrobble.source}}</small></p>
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
                                 </div>
-                                <a href="{% url "scrobbles:cancel" scrobble.uuid %}">Cancel</a>
-                                <a href="{% url "scrobbles:finish" scrobble.uuid %}">Finish</a>
-                                <hr />
+                                <p class="action-buttons">
+                                    <a href="{% url "scrobbles:cancel" scrobble.uuid %}">Cancel</a>
+                                    <a class="right" href="{% url "scrobbles:finish" scrobble.uuid %}">Finish</a>
+                                </p>
                             </div>
                             {% endfor %}
                         </ul>
-                        <hr/>
+                        {% if now_playing_list|length > 1 %}<hr/>{% endif %}
                         {% endif %}
 
                         {% if active_imports %}

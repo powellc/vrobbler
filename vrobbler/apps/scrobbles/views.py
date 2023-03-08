@@ -57,9 +57,14 @@ from scrobbles.tasks import (
     process_tsv_import,
 )
 from sports.thesportsdb import lookup_event_from_thesportsdb
-from videos.imdb import lookup_video_from_imdb
 from videogames.howlongtobeat import lookup_game_from_hltb
+from videos.imdb import lookup_video_from_imdb
+
 from vrobbler.apps.books.openlibrary import lookup_book_from_openlibrary
+from vrobbler.apps.scrobbles.utils import (
+    get_long_plays_completed,
+    get_long_plays_in_progress,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +79,7 @@ class RecentScrobbleList(ListView):
             completed_for_user = Scrobble.objects.filter(
                 played_to_completion=True, user=user
             )
+            data["long_play_in_progress"] = get_long_plays_in_progress(user)
             data["video_scrobble_list"] = completed_for_user.filter(
                 video__isnull=False
             ).order_by("-timestamp")[:15]
@@ -122,6 +128,18 @@ class RecentScrobbleList(ListView):
         return Scrobble.objects.filter(
             track__isnull=False, in_progress=False
         ).order_by("-timestamp")[:15]
+
+
+class ScrobbleLongPlaysView(TemplateView):
+    template_name = "scrobbles/long_plays_in_progress.html"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data["in_progress"] = get_long_plays_in_progress(
+            self.request.user
+        )
+        context_data["completed"] = get_long_plays_completed(self.request.user)
+        return context_data
 
 
 class ScrobbleImportListView(TemplateView):
@@ -181,28 +199,28 @@ class ManualScrobbleView(FormView):
 
     def form_valid(self, form):
 
-        item_id = form.cleaned_data.get("item_id")
+        key, item_id = form.cleaned_data.get("item_id").split(" ")
         data_dict = None
 
-        if "-v" in item_id or not data_dict:
+        if key == "-v":
             logger.debug(f"Looking for video game with ID {item_id}")
             data_dict = lookup_game_from_hltb(item_id.replace("-v", ""))
             if data_dict:
                 manual_scrobble_video_game(data_dict, self.request.user.id)
 
-        if "-b" in item_id and not data_dict:
+        if key == "-b":
             logger.debug(f"Looking for book with ID {item_id}")
             data_dict = lookup_book_from_openlibrary(item_id.replace("-b", ""))
             if data_dict:
                 manual_scrobble_book(data_dict, self.request.user.id)
 
-        if "-s" in item_id and not data_dict:
+        if key == "-s":
             logger.debug(f"Looking for sport event with ID {item_id}")
             data_dict = lookup_event_from_thesportsdb(item_id)
             if data_dict:
                 manual_scrobble_event(data_dict, self.request.user.id)
 
-        if "tt" in item_id:
+        if key == "-i":
             data_dict = lookup_video_from_imdb(item_id)
             if data_dict:
                 manual_scrobble_video(data_dict, self.request.user.id)

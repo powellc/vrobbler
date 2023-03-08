@@ -45,7 +45,7 @@
                     {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.playback_position|natural_duration}}{% endif %}</td>
+                        <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.long_play_session_seconds|natural_duration}}{% endif %}</td>
                         <td>{% for author in scrobble.book.authors.all %}<a href="{{author.get_absolute_url}}">{{author}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                     </tr>
                     {% endfor %}

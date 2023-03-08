@@ -1,0 +1,95 @@
+{% extends "base_list.html" %}
+{% load urlreplace %}
+
+{% block title %}Long Plays{% endblock %}
+
+{% block lists %}
+<div class="row">
+    <p class="view">
+        <span class="view-links">
+            {% if view == 'grid' %}
+            View as <a href="?{% urlreplace view='list' %}">List</a>
+            {% else %}
+            View as <a href="?{% urlreplace view='grid' %}">Grid</a>
+            {% endif %}
+        </span>
+    </p>
+    <hr />
+
+    <h2>In progress</h2>
+    {% if view == 'grid' %}
+    <div>
+        {% for media in in_progress %}
+        {% if media.cover %}
+        <dl style="width: 130px; float: left; margin-right:10px;">
+            <dd><img src="{{media.cover.url}}" width=120 height=120 /></dd>
+        </dl>
+        {% elif media.hltb_cover %}
+        <dl style="width: 130px; float: left; margin-right:10px;">
+            <dd><img src="{{media.htlb_cover.url}}" width=120 height=120 /></dd>
+        </dl>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Scrobbles</th>
+                        <th scope="col">Title</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for media in in_progress %}
+                    <tr>
+                        <td>{{media.scrobble_set.count}}</td>
+                        <td><a href="{{media.get_absolute_url}}">{{media}}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <h2>Completed</h2>
+    {% if view == 'grid' %}
+    <div>
+        {% for media in completed %}
+        {% if media.cover %}
+        <dl style="width: 130px; float: left; margin-right:10px;">
+            <dd><img src="{{media.cover.url}}" width=120 height=120 /></dd>
+        </dl>
+        {% elif media.hltb_cover %}
+        <dl style="width: 130px; float: left; margin-right:10px;">
+            <dd><img src="{{media.htlb_cover.url}}" width=120 height=120 /></dd>
+        </dl>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Scrobbles</th>
+                        <th scope="col">Title</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for media in completed %}
+                    <tr>
+                        <td>{{media.scrobble_set.count}}</td>
+                        <td><a href="{{media.get_absolute_url}}">{{media}}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
