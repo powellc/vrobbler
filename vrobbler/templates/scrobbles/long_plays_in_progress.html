@@ -21,12 +21,12 @@
     <div>
         {% for media in in_progress %}
         {% if media.hltb_cover %}
-        <dl style="width: 205px; float: left; margin-right:10px;">
+        <dl style="width: 210px; float: left; margin-right:10px;">
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 /></a></dd>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
         {% elif media.cover %}
-        <dl style="width: 205px; float: left; margin-right:10px;">
+        <dl style="width: 210px; float: left; margin-right:10px;">
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" width=200 /></a></dd>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
@@ -61,12 +61,12 @@
     <div>
         {% for media in completed %}
         {% if media.hltb_cover %}
-        <dl style="width: 200px; float: left; margin-right:10px;">
+        <dl style="width: 210px; float: left; margin-right:10px;">
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 /></a></dd>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
         {% elif media.cover %}
-        <dl style="width: 200px; float: left; margin-right:10px;">
+        <dl style="width: 210px; float: left; margin-right:10px;">
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" width=200 /></a></dd>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
