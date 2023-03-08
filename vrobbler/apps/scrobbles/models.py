@@ -451,10 +451,19 @@ class Scrobble(TimeStampedModel):
     @property
     def previous(self):
         return (
-            self.media_obj.scrobble_set.filter(timestamp__lt=self.timestamp)
-            .order_by("-timestamp")
-            .last()
+            self.media_obj.scrobble_set.order_by("-timestamp")
+            .filter(timestamp__lt=self.timestamp)
+            .first()
         )
+
+    @property
+    def session_pages_read(self) -> Optional[int]:
+        """Look one scrobble back, if it isn't complete,"""
+        if not self.book_pages_read:
+            return
+        if self.previous:
+            return self.book_pages_read - self.previous.book_pages_read
+        return self.book_pages_read
 
     @property
     def percent_played(self) -> int:
