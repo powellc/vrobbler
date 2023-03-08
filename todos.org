@@ -2,88 +2,12 @@
 
 A fun way to keep track of things in the project to fix or improve.
 
-* DONE [#A] Fix fetching artwork without release group :bug:
-CLOSED: [2023-01-29 Sun 14:27]
-
-When we get artwork from Musicbrianz, and it's not found, we should check for
-release groups as well. This will stop issues with missing artwork because of
-obscure MB release matches.
-
-* DONE [#A] Fix Jellyfin music scrobbling N+1 past 90 completion percent :bug:
-CLOSED: [2023-01-30 Mon 18:31]
-:LOGBOOK:
-CLOCK: [2023-01-30 Mon 18:00]--[2023-01-30 Mon 18:31] =>  0:31
-:END:
-
-If we play music from Jellyfin and the track reaches 90% completion, the
-scrobbling goes crazy and starts creating new scrobbles with every update.
-
-The cause is pretty simple, but the solution is hard. We want to mark a scrobble
-as complete for the following conditions:
-
-- Play stopped and percent played beyond 90%
-- Play completely finished
-
-But if we keep listening beyond 90, we should basically ignore updates (or just
-update the existing scrobble)
-* DONE [#A] Add support for Audioscrobbler tab-separated file uploads :improvement:
-CLOSED: [2023-02-03 Fri 16:52]
-
-An example of the format:
-#+begin_src csv
-,
-#AUDIOSCROBBLER/1.1
-#TZ/UNKNOWN
-#CLIENT/Rockbox sansaclipplus $Revision$
-75 Dollar Bill	I Was Real	I Was Real	4	1015	S	1740494944	64ff5f53-d187-4512-827e-7606c69e66ff
-75 Dollar Bill	I Was Real	I Was Real	4	1015	S	1740494990	64ff5f53-d187-4512-827e-7606c69e66ff
-311	311	Down	1	173	S	1740495003	00476c23-fd9e-464b-9b27-a62d69f3d4f4
-311	311	Down	1	173	L	1740495049	00476c23-fd9e-464b-9b27-a62d69f3d4f4
-311	311	Down	1	173	L	1740495113	00476c23-fd9e-464b-9b27-a62d69f3d4f4
-311	311	Random	2	187	S	1740495190	530c09f3-46fe-4d90-b11f-7b63bcb4b373
-311	311	Random	2	187	L	1740495194	530c09f3-46fe-4d90-b11f-7b63bcb4b373
-311	311	Jackolantern’s Weather	3	204	L	1740495382	cc3b2dec-5d99-47ea-8930-20bf258be4ea
-311	311	All Mixed Up	4	182	L	1740495586	980a78b5-5bdd-4f50-9e3a-e13261e2817b
-311	311	Hive	5	179	L	1740495768	18f6dc98-d3a2-4f81-b967-97359d14c68c
-311	311	Guns (Are for Pussies)	6	137	L	1740495948	5e97ed9f-c8cc-4282-9cbe-f8e17aee5128
-311	311	Misdirected Hostility	7	179	S	1740496085	61ff2c1a-fc9c-44c3-8da1-5e50a44245af
-,
-#+end_src
-* DONE [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
-CLOSED: [2023-02-17 Fri 00:10]
-
-This would allow a few nice flows. One, you'd be able to record the play of an
-entire album by just dropping the muscibrainz_id in. This could be helpful for
-offline listening. It would also mean bad metadata from mopidy would not break
-scrobbling.
-* DONE When updating musicbrainz IDs, clear and run fetch artwrok :improvement:
-CLOSED: [2023-02-17 Fri 00:11]
-* TODO [#A] Add ability to manually scrobble albums or tracks from MB :improvement:
-
-Given a UUID from musicbrainz, we should be able to scrobble an album or
-individual track.
-
 * TODO [#A] Add django-storage to store files on S3 :improvement:
 * TODO [#B] Adjust cancel/finish task to use javascript to submit :improvement:
-* TODO [#B] Implement a detail view for TV shows :improvement:
-* TODO [#B] Implement a detail view for Moviews :improvement:
-* TODO [#C] Implement keeping track of week/month/year chart-toppers :improvement:
-:LOGBOOK:
-CLOCK: [2023-01-30 Mon 16:30]--[2023-01-30 Mon 18:00] =>  1:30
-:END:
-
-Maloja does this cool thing where artists and tracks get recorded as the top
-track of a given week, month or year. They get gold, silver or bronze stars for
-their place in the time period.
-
-I could see this being implemented as a separate Chart table which gets
-populated at the end of a time period and has a start and end date that defines
-a period, along with a one, two, three instance.
-
-Of course, it could also be a data model without a table, where it runs some fun
-calculations, stores it's values in Redis as a long-term lookup table and just
-has to re-populate when the server restarts.
-* TODO [#C] Move to using more robust mopidy-webhooks pacakge form pypi :improvement:
+* TODO [#B] Implement a detail view for TV shows :improvement:views:
+* TODO [#B] Implement a detail view for Movies :improvement:views:
+* TODO Add view for long-play content (books, video games) to restart them :views:improvement:
+* TODO [#C] Move to using more robust mopidy-webhooks pacakge form pypi :utility:improvement:
 ** Example payloads from mopidy-webhooks
 *** Podcast playback ended
 #+begin_src json
@@ -374,9 +298,98 @@ has to re-populate when the server restarts.
     }
 }
 #+end_src
-* TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :improvement:
-* TODO [#C] Figure out how to add to web-scrobbler :imropvement:
+* TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :utililty:improvement:
+* TODO [#C] Figure out how to add to web-scrobbler :improvement:scrobbling:
 
 An example:
 https://github.com/web-scrobbler/web-scrobbler/blob/master/src/core/background/scrobbler/maloja-scrobbler.js
+* TODO Update weekly live chart to be 7-day continuous rather than weekly :views:bug:
+The live view will be blank every Monday, no reason to tie it to a day of the
+week. It should be "the last 7 days"
+* TODO Add "service provider" to TV Series, and use that for source when available :bug:scrobbling:
+* DONE Add live chart view like Maloja :improvement:views:
+CLOSED: [2023-03-07 Tue 11:13]
+* DONE Add rudimentary video game scrobbling :improvement:content:videogames:
+CLOSED: [2023-03-07 Tue 11:11]
+* DONE Add ability to scrobble from KOReader statistics files :improvement:books:content:
+CLOSED: [2023-03-07 Tue 11:11]
 
+* DONE [#A] Fix fetching artwork without release group :bug:
+CLOSED: [2023-01-29 Sun 14:27]
+
+When we get artwork from Musicbrianz, and it's not found, we should check for
+release groups as well. This will stop issues with missing artwork because of
+obscure MB release matches.
+
+* DONE [#A] Fix Jellyfin music scrobbling N+1 past 90 completion percent :bug:
+CLOSED: [2023-01-30 Mon 18:31]
+:LOGBOOK:
+CLOCK: [2023-01-30 Mon 18:00]--[2023-01-30 Mon 18:31] =>  0:31
+:END:
+
+If we play music from Jellyfin and the track reaches 90% completion, the
+scrobbling goes crazy and starts creating new scrobbles with every update.
+
+The cause is pretty simple, but the solution is hard. We want to mark a scrobble
+as complete for the following conditions:
+
+- Play stopped and percent played beyond 90%
+- Play completely finished
+
+But if we keep listening beyond 90, we should basically ignore updates (or just
+update the existing scrobble)
+* DONE [#A] Add support for Audioscrobbler tab-separated file uploads :improvement:
+CLOSED: [2023-02-03 Fri 16:52]
+
+An example of the format:
+#+begin_src csv
+,
+#AUDIOSCROBBLER/1.1
+#TZ/UNKNOWN
+#CLIENT/Rockbox sansaclipplus $Revision$
+75 Dollar Bill	I Was Real	I Was Real	4	1015	S	1740494944	64ff5f53-d187-4512-827e-7606c69e66ff
+75 Dollar Bill	I Was Real	I Was Real	4	1015	S	1740494990	64ff5f53-d187-4512-827e-7606c69e66ff
+311	311	Down	1	173	S	1740495003	00476c23-fd9e-464b-9b27-a62d69f3d4f4
+311	311	Down	1	173	L	1740495049	00476c23-fd9e-464b-9b27-a62d69f3d4f4
+311	311	Down	1	173	L	1740495113	00476c23-fd9e-464b-9b27-a62d69f3d4f4
+311	311	Random	2	187	S	1740495190	530c09f3-46fe-4d90-b11f-7b63bcb4b373
+311	311	Random	2	187	L	1740495194	530c09f3-46fe-4d90-b11f-7b63bcb4b373
+311	311	Jackolantern’s Weather	3	204	L	1740495382	cc3b2dec-5d99-47ea-8930-20bf258be4ea
+311	311	All Mixed Up	4	182	L	1740495586	980a78b5-5bdd-4f50-9e3a-e13261e2817b
+311	311	Hive	5	179	L	1740495768	18f6dc98-d3a2-4f81-b967-97359d14c68c
+311	311	Guns (Are for Pussies)	6	137	L	1740495948	5e97ed9f-c8cc-4282-9cbe-f8e17aee5128
+311	311	Misdirected Hostility	7	179	S	1740496085	61ff2c1a-fc9c-44c3-8da1-5e50a44245af
+,
+#+end_src
+* DONE [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
+CLOSED: [2023-02-17 Fri 00:10]
+
+This would allow a few nice flows. One, you'd be able to record the play of an
+entire album by just dropping the muscibrainz_id in. This could be helpful for
+offline listening. It would also mean bad metadata from mopidy would not break
+scrobbling.
+* DONE When updating musicbrainz IDs, clear and run fetch artwrok :improvement:
+CLOSED: [2023-02-17 Fri 00:11]
+* DONE [#A] Add ability to manually scrobble albums or tracks from MB :improvement:
+CLOSED: [2023-03-07 Tue 11:09]
+
+Given a UUID from musicbrainz, we should be able to scrobble an album or
+individual track.
+
+* DONE [#C] Implement keeping track of week/month/year chart-toppers :improvement:
+CLOSED: [2023-03-07 Tue 11:10]
+:LOGBOOK:
+CLOCK: [2023-01-30 Mon 16:30]--[2023-01-30 Mon 18:00] =>  1:30
+:END:
+
+Maloja does this cool thing where artists and tracks get recorded as the top
+track of a given week, month or year. They get gold, silver or bronze stars for
+their place in the time period.
+
+I could see this being implemented as a separate Chart table which gets
+populated at the end of a time period and has a start and end date that defines
+a period, along with a one, two, three instance.
+
+Of course, it could also be a data model without a table, where it runs some fun
+calculations, stores it's values in Redis as a long-term lookup table and just
+has to re-populate when the server restarts.
