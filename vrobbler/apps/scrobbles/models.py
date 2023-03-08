@@ -457,17 +457,6 @@ class Scrobble(TimeStampedModel):
         )
 
     @property
-    def long_play_session_seconds(self) -> Optional[int]:
-        """Look one scrobble back, if it isn't complete,"""
-        if self.long_play_complete is not None:
-            if self.previous:
-                return int(self.playback_position) - int(
-                    self.previous.playback_position
-                )
-            else:
-                return self.playback_position
-
-    @property
     def percent_played(self) -> int:
         if not self.media_obj:
             return 0
