@@ -15,5 +15,7 @@ def natural_duration(value):
     if minutes:
         value_str = f"{minutes} minutes"
     if hours:
+        if not value_str:
+            return f"{hours} hours"
         value_str = f"{hours} hours, " + value_str
     return value_str
