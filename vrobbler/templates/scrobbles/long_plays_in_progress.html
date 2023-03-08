@@ -1,20 +1,9 @@
 {% extends "base_list.html" %}
-{% load urlreplace %}
 
 {% block title %}Long Plays{% endblock %}
 
 {% block lists %}
 <div class="row">
-    <p class="view">
-        <span class="view-links">
-            {% if view == 'grid' %}
-            View as <a href="?{% urlreplace view='list' %}">List</a>
-            {% else %}
-            View as <a href="?{% urlreplace view='grid' %}">Grid</a>
-            {% endif %}
-        </span>
-    </p>
-    <hr />
 
     <h2>In progress</h2>
     {% if view == 'grid' %}
