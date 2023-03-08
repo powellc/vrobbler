@@ -200,7 +200,9 @@ class ManualScrobbleView(FormView):
 
     def form_valid(self, form):
 
-        key, item_id = form.cleaned_data.get("item_id").split(" ")
+        item_str = form.cleaned_data.get("item_id")
+        key = item_str[:2]
+        item_id = item_str[3:]
         data_dict = None
 
         if key == "-v":
