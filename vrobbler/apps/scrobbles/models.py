@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import uuid4
 
 from books.models import Book
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
@@ -614,16 +615,17 @@ class Scrobble(TimeStampedModel):
         logger.info(f"{self.id} - {self.source}")
 
         class_name = self.media_obj.__class__.__name__
-        if class_name in LONG_PLAY_MEDIA:
+        if class_name in LONG_PLAY_MEDIA.values():
             now = timezone.now()
             self.played_to_completion = True
             self.playback_position = (now - self.timestamp).seconds
             # TODO Refactor ticks outta here, this is silly
-            self.playback_position_ticks = int(updated_playback) * 1000
+            self.playback_position_ticks = int(self.playback_position) * 1000
 
             media_filter = models.Q(video_game=self.video_game)
             if class_name == "Book":
                 media_filter = models.Q(book=self.book)
+
             # Check for last scrobble, and if present, update long play time
             last_scrobble = Scrobble.objects.filter(
                 media_filter,
