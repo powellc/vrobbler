@@ -117,9 +117,11 @@ class RecentScrobbleList(ListView):
                 "year": list(live_charts(**track, chart_period="year")),
                 "all": list(live_charts(**track)),
             }
+            data["counts"] = scrobble_counts(user)
+        else:
+            data["weekly_data"] = week_of_scrobbles()
+            data["counts"] = scrobble_counts()
 
-        # data["weekly_data"] = week_of_scrobbles(user=user)
-        data["counts"] = scrobble_counts(user)
         data["imdb_form"] = ScrobbleForm
         data["export_form"] = ExportScrobbleForm
         return data

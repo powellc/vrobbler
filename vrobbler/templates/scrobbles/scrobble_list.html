@@ -78,8 +78,9 @@
         </div>
     </div>
 
-    {% if show_chart %}
-    <canvas class="my-4 w-100" id="myChart" width="900" height="150"></canvas>
+    {% if not user.is_authenticated %}
+    <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
+    <canvas class="my-4 w-100" id="myChart" width="900" height="300"></canvas>
     {% endif %}
 
     <div class="container">
@@ -434,8 +435,7 @@
 
         <div class="row">
         <h2>Last Scrobbles</h2>
-        <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> |
-            This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
+        <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
         </div>
         <div class="row">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -670,7 +670,7 @@
             scales: {
                 yAxes: [{
                 ticks: {
-                    beginAtZero: false
+                    beginAtZero: true
                 }
                 }]
             },
