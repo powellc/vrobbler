@@ -615,30 +615,28 @@ class Scrobble(TimeStampedModel):
 
         class_name = self.media_obj.__class__.__name__
         if class_name in LONG_PLAY_MEDIA:
-            logger.debug(
-                "Syncing long play media playback time to elapsed time since start"
-            )
             now = timezone.now()
-            updated_playback = (now - self.timestamp).seconds
+            self.played_to_completion = True
+            self.playback_position = (now - self.timestamp).seconds
+            # TODO Refactor ticks outta here, this is silly
+            self.playback_position_ticks = int(updated_playback) * 1000
 
             media_filter = models.Q(video_game=self.video_game)
             if class_name == "Book":
                 media_filter = models.Q(book=self.book)
+            # Check for last scrobble, and if present, update long play time
             last_scrobble = Scrobble.objects.filter(
                 media_filter,
                 user_id=self.user,
                 played_to_completion=True,
                 long_play_complete=False,
             ).last()
-            self.long_play_seconds = int(updated_playback)
+            self.long_play_seconds = self.playback_position
             if last_scrobble:
-                self.long_play_seconds = (
-                    int(last_scrobble.playback_position) + updated_playback
-                )
+                self.long_play_seconds = int(
+                    last_scrobble.playback_position
+                ) + int(self.playback_position)
 
-            self.playback_position = int(updated_playback)
-            self.playback_position_ticks = int(updated_playback) * 1000
-            self.played_to_completion = True
             self.save(
                 update_fields=[
                     "playback_position",
