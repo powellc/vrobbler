@@ -417,6 +417,7 @@ class Scrobble(TimeStampedModel):
     source = models.CharField(max_length=255, **BNULL)
     source_id = models.TextField(**BNULL)
     scrobble_log = models.TextField(**BNULL)
+    notes = models.TextField(**BNULL)
 
     # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
@@ -467,6 +468,10 @@ class Scrobble(TimeStampedModel):
         return self.book_pages_read
 
     @property
+    def is_long_play(self) -> bool:
+        return self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values()
+
+    @property
     def percent_played(self) -> int:
         if not self.media_obj:
             return 0
@@ -482,8 +487,20 @@ class Scrobble(TimeStampedModel):
             playback_ticks = (timezone.now() - self.timestamp).seconds * 1000
 
         percent = int((playback_ticks / self.media_obj.run_time_ticks) * 100)
-        if percent > 100:
-            percent = 100
+
+        if self.is_long_play:
+            run_time_secs = int(self.media_obj.run_time)
+            playback_secs = (timezone.now() - self.timestamp).seconds
+            long_play_secs = 0
+            if self.previous and not self.previous.long_play_complete:
+                long_play_secs = self.previous.long_play_seconds or 0
+            percent = int(
+                ((playback_secs + long_play_secs) / run_time_secs) * 100
+            )
+
+        # if percent > 100:
+        #    percent = 100
+
         return percent
 
     @property
