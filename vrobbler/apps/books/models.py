@@ -153,7 +153,7 @@ class Book(ScrobblableMixin):
 
     @classmethod
     def find_or_create(cls, data_dict: dict) -> "Game":
-        from books.utils import get_or_create_book
+        from books.utils import update_or_create_book
 
         return update_or_create_book(
             data_dict.get("title"), data_dict.get("author")
