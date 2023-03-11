@@ -1,7 +1,10 @@
 from django.core.files.base import ContentFile
 import requests
 from typing import Optional
-from books.openlibrary import lookup_book_from_openlibrary
+from books.openlibrary import (
+    lookup_author_from_openlibrary,
+    lookup_book_from_openlibrary,
+)
 from books.models import Author, Book
 
 
@@ -17,27 +20,26 @@ def update_or_create_book(
     if book_created or force_update:
         cover_url = book_dict.pop("cover_url")
         ol_author_id = book_dict.pop("ol_author_id")
-        ol_author_name = book_dict.pop("ol_author_name")
-        author_image_url = book_dict.pop("author_image_url")
 
         Book.objects.filter(pk=book.id).update(**book_dict)
         book.refresh_from_db()
 
         # Process authors
-        if ol_author_name and ol_author_id:
-            author, author_created = Author.objects.get_or_create(
-                name=ol_author_name
-            )
-            if author_created or force_update:
-                author.openlibrary_id = ol_author_id
-                author.save()
+        author_dict = lookup_author_from_openlibrary(ol_author_id)
+        author = Author.objects.filter(openlibrary_id=ol_author_id).first()
+        if not author:
+            author_image_url = author_dict.pop("author_headshot_url", None)
 
+            author = Author.objects.create(**author_dict)
+
+            if author_image_url:
                 r = requests.get(author_image_url)
                 if r.status_code == 200:
                     fname = f"{author.name}_{author.uuid}.jpg"
                     author.headshot.save(
                         fname, ContentFile(r.content), save=True
                     )
+        book.authors.add(author)
 
         # Process cover URL
         r = requests.get(cover_url)

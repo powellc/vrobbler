@@ -44,6 +44,7 @@ def lookup_author_from_openlibrary(olid: str) -> dict:
             bio = results.get("bio")
     return {
         "name": results.get("name"),
+        "openlibrary_id": olid,
         "wikipedia_url": results.get("wikipedia"),
         "wikidata_id": remote_ids.get("wikidata"),
         "isni": remote_ids.get("isni"),
@@ -76,14 +77,13 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
             f"Lookup for {title} found top result with mismatched author"
         )
     ol_id = top.get("cover_edition_key")
-    author_ol_id = get_first("author_key", top)
+    ol_author_id = get_first("author_key", top)
     first_sentence = ""
     if top.get("first_sentence"):
         try:
             first_sentence = top.get("first_sentence")[0].get("value")
         except AttributeError:
             first_sentence = top.get("first_sentence")[0]
-    print(top)
     return {
         "title": top.get("title"),
         "isbn": top.get("isbn")[0],
@@ -93,5 +93,5 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
         "first_sentence": first_sentence,
         "pages": top.get("number_of_pages_median", None),
         "cover_url": COVER_URL.format(id=ol_id),
-        "ol_author_id": author_ol_id,
+        "ol_author_id": ol_author_id,
     }
