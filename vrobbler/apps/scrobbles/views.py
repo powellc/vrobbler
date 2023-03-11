@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 
 import pytz
+from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -31,6 +32,7 @@ from scrobbles.api import serializers
 from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
+    LONG_PLAY_MEDIA,
 )
 from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
@@ -60,8 +62,8 @@ from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
 from videos.imdb import lookup_video_from_imdb
 
-from vrobbler.apps.books.openlibrary import lookup_book_from_openlibrary
-from vrobbler.apps.scrobbles.utils import (
+from books.openlibrary import lookup_book_from_openlibrary
+from scrobbles.utils import (
     get_long_plays_completed,
     get_long_plays_in_progress,
 )
@@ -386,6 +388,84 @@ def import_audioscrobbler_file(request):
         return Response(
             file_serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def scrobble_start(request, uuid):
+    user = request.user
+    success_url = request.META.get("HTTP_REFERER")
+
+    if not user.is_authenticated:
+        return HttpResponseRedirect(success_url)
+
+    media_obj = None
+    for app, model in LONG_PLAY_MEDIA.items():
+        media_model = apps.get_model(app_label=app, model_name=model)
+        media_obj = media_model.objects.filter(uuid=uuid).first()
+        if media_obj:
+            break
+
+    if not media_obj:
+        return
+
+    scrobble = None
+    user_id = request.user.id
+    if media_obj and media_obj.__class__.__name__ == "Book":
+        data_dict = {
+            "title": media_obj.title,
+            "author": media_obj.author.name,
+        }
+        scrobble = manual_scrobble_book(data_dict, user_id)
+    if media_obj and media_obj.__class__.__name__ == "VideoGame":
+        data_dict = {"hltb_id": media_obj.hltb_id}
+        scrobble = manual_scrobble_video_game(data_dict, user_id)
+
+    if scrobble:
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            f"Scrobble of {scrobble.media_obj} started.",
+        )
+    else:
+        messages.add_message(
+            request, messages.ERROR, f"Media with uuid {uuid} not found."
+        )
+    return HttpResponseRedirect(success_url)
+
+
+@api_view(["GET"])
+def scrobble_longplay_finish(request, uuid):
+    user = request.user
+    success_url = request.META.get("HTTP_REFERER")
+
+    if not user.is_authenticated:
+        return HttpResponseRedirect(success_url)
+
+    media_obj = None
+    for app, model in LONG_PLAY_MEDIA.items():
+        media_model = apps.get_model(app_label=app, model_name=model)
+        media_obj = media_model.objects.filter(uuid=uuid).first()
+        if media_obj:
+            break
+
+    if not media_obj:
+        return
+
+    last_scrobble = media_obj.last_long_play_scrobble_for_user(user)
+    if last_scrobble and last_scrobble.long_play_complete == False:
+        last_scrobble.long_play_complete = True
+        last_scrobble.save(update_fields=["long_play_complete"])
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            f"Long play of {media_obj} finished.",
+        )
+    else:
+        messages.add_message(
+            request, messages.ERROR, f"Media with uuid {uuid} not found."
+        )
+    return HttpResponseRedirect(success_url)
 
 
 @permission_classes([IsAuthenticated])

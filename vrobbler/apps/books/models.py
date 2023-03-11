@@ -12,7 +12,7 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import LongPlayScrobblableMixin, ScrobblableMixin
 from scrobbles.utils import get_scrobbles_for_media
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class Author(TimeStampedModel):
                 self.headshot.save(fname, ContentFile(r.content), save=True)
 
 
-class Book(ScrobblableMixin):
+class Book(LongPlayScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, "BOOK_COMPLETION_PERCENT", 95)
     AVG_PAGE_READING_SECONDS = getattr(
         settings, "AVERAGE_PAGE_READING_SECONDS", 60
@@ -77,6 +77,16 @@ class Book(ScrobblableMixin):
 
     def __str__(self):
         return f"{self.title} by {self.author}"
+
+    @property
+    def subtitle(self):
+        return f" by {self.author}"
+
+    def get_start_url(self):
+        return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
+
+    def get_absolute_url(self):
+        return reverse("books:book_detail", kwargs={"slug": self.uuid})
 
     def fix_metadata(self, force_update=False):
         if not self.openlibrary_id or force_update:
@@ -129,9 +139,6 @@ class Book(ScrobblableMixin):
     @property
     def author(self):
         return self.authors.first()
-
-    def get_absolute_url(self):
-        return reverse("books:book_detail", kwargs={"slug": self.uuid})
 
     @property
     def pages_for_completion(self) -> int:

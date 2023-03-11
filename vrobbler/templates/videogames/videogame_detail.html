@@ -5,16 +5,24 @@
 
 {% block title %}{{object.title}}{% endblock %}
 
+{% block head_extra %}
+<style>
+.cover img { width: 250px; }
+.cover { float: left; width:252px; padding:0; border: 1px solid #ccc; }
+.summary {
+     float:left; width:600px; margin-left:10px;
+ }
+</style>
+{% endblock  %}
+
 {% block lists %}
 
 <div class="row">
 
     {% if object.hltb_cover%}
-    <p style="float:left; width:202px; padding:0; border: 1px solid #ccc">
-        <img src="{{object.hltb_cover.url}}" width=200 />
-    </p>
+    <div class="cover"><img src="{{object.hltb_cover.url}}" /></div>
     {% endif %}
-    <div style="float:left; width:600px; margin-left:10px; ">
+    <div class="summary">
         {% if object.summary %}
         <p>{{object.summary|safe|linebreaks|truncatewords:160}}</p>
         <hr/>

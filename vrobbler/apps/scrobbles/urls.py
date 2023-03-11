@@ -19,8 +19,14 @@ urlpatterns = [
         views.KoReaderImportCreateView.as_view(),
         name="koreader-file-upload",
     ),
-    path("finish/<slug:uuid>", views.scrobble_finish, name="finish"),
-    path("cancel/<slug:uuid>", views.scrobble_cancel, name="cancel"),
+    path("start/<slug:uuid>/", views.scrobble_start, name="start"),
+    path("finish/<slug:uuid>/", views.scrobble_finish, name="finish"),
+    path("cancel/<slug:uuid>/", views.scrobble_cancel, name="cancel"),
+    path(
+        "long-play-finish/<slug:uuid>/",
+        views.scrobble_longplay_finish,
+        name="longplay-finish",
+    ),
     path(
         "upload/",
         views.AudioScrobblerImportCreateView.as_view(),

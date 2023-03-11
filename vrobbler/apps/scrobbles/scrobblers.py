@@ -222,21 +222,11 @@ def manual_scrobble_video_game(data_dict: dict, user_id: Optional[int]):
 def manual_scrobble_book(data_dict: dict, user_id: Optional[int]):
     book = Book.find_or_create(data_dict)
 
-    last_scrobble = Scrobble.objects.filter(
-        book=book,
-        user_id=user_id,
-        played_to_completion=True,
-        long_play_complete=False,
-    ).last()
-
-    start_playback_position = 0
-    if last_scrobble:
-        start_playback_position = last_scrobble.playback_position or 0
     scrobble_dict = {
         "user_id": user_id,
         "timestamp": timezone.now(),
-        "playback_position_ticks": int(start_playback_position) * 1000,
-        "playback_position": start_playback_position,
+        "playback_position_ticks": None,
+        "playback_position": 0,
         "source": "Vrobbler",
         "long_play_complete": False,
     }

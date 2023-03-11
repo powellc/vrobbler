@@ -31,11 +31,13 @@
             min-height: 3em;
             border-right: 1px solid #777;
         }
+        .now-playing { margin-right:20px;}
         .now-playing p { margin:0; }
         .now-playing .right { float:right; margin-right:10px; }
         .latest-scrobble {
             width: 50%;
         }
+        .now-playing img { height:75px; width: 75px; object-fit: cover; }
 
         .progress-bar {
             width: 100%;
@@ -244,13 +246,18 @@
                             {% for scrobble in now_playing_list %}
                             <div class="now-playing">
                                 {% if scrobble.media_obj.album.cover_image %}
-                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.track.album.cover_image.url}}" width=75 height=75 style="border:1px solid black; " /></div>
+                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.album.cover_image.url}}" /></div>
+                                {% endif %}
+                                {% if scrobble.media_obj.cover %}
+                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.cover.url}}" /></div>
+                                {% endif %}
+                                {% if scrobble.media_obj.hltb_cover %}
+                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.hltb_cover.url}}" /></div>
                                 {% endif %}
                                 <p><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></p>
                                 {% if scrobble.media_obj.subtitle %}
                                 <p><em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em></p>
                                 {% endif %}
-                                <br/>
                                 <p><small>{{scrobble.timestamp|naturaltime}} from {{scrobble.source}}</small></p>
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
@@ -259,6 +266,7 @@
                                     <a href="{% url "scrobbles:cancel" scrobble.uuid %}">Cancel</a>
                                     <a class="right" href="{% url "scrobbles:finish" scrobble.uuid %}">Finish</a>
                                 </p>
+                                {% if not forloop.last %}<hr/>{% endif %}
                             </div>
                             {% endfor %}
                         </ul>
