@@ -20,13 +20,14 @@ def convert_to_seconds(run_time: str) -> int:
     This is actually deprecated, as we now convert to seconds before saving.
     But for older videos, we'll leave this here.
     """
+    run_time_int = 0
     if ":" in str(run_time):
         run_time_list = run_time.split(":")
         hours = int(run_time_list[0])
         minutes = int(run_time_list[1])
         seconds = int(run_time_list[2])
-        run_time = (((hours * 60) + minutes) * 60) + seconds
-    return int(run_time)
+        run_time_int = int((((hours * 60) + minutes) * 60) + seconds)
+    return run_time_int
 
 
 def parse_mopidy_uri(uri: str) -> dict:

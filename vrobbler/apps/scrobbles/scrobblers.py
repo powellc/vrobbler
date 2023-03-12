@@ -102,10 +102,13 @@ def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     elif data_dict.get("NotificationType") == "PlaybackStop":
         jellyfin_status = "stopped"
 
+    playback_seconds = convert_to_seconds(
+        data_dict.get("PlaybackPosition", "")
+    )
     return {
         "user_id": user_id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_seconds": data_dict.get("PlaybackPosition", ""),
+        "playback_position_seconds": playback_seconds,
         "source": data_dict.get("ClientName", "Vrobbler"),
         "source_id": data_dict.get("MediaSourceId"),
         "jellyfin_status": jellyfin_status,
