@@ -62,7 +62,7 @@ def process_pages_for_book(book_id, sqlite_file_path):
             ]
             page.save()
             new_pages.append(page)
-    logger.info("Added {len(new_pages)} for book {book}")
+    logger.info(f"Added {len(new_pages)} for book {book}")
     return new_pages
 
 
@@ -112,10 +112,16 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
             if author_list:
                 book.authors.add(*[a.id for a in author_list])
 
-        playback_position_seconds = int(
-            book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]
-        )
-        pages_read = int(book_row[KoReaderBookColumn.TOTAL_READ_PAGES.value])
+        playback_position_seconds = 0
+        if book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]:
+            playback_position_seconds = book_row[
+                KoReaderBookColumn.TOTAL_READ_TIME.value
+            ]
+        pages_read = 0
+        if book_row[KoReaderBookColumn.TOTAL_READ_PAGES.value]:
+            pages_read = int(
+                book_row[KoReaderBookColumn.TOTAL_READ_PAGES.value]
+            )
         timestamp = datetime.utcfromtimestamp(
             book_row[KoReaderBookColumn.LAST_OPEN.value]
         ).replace(tzinfo=pytz.utc)
