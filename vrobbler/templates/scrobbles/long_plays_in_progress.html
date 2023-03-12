@@ -47,6 +47,9 @@
                     <tr>
                         <th scope="col">Scrobbles</th>
                         <th scope="col">Title</th>
+                        <th scope="col"></th>
+                        <th scope="col">Resume</th>
+                        <th scope="col">Finish</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,6 +57,9 @@
                     <tr>
                         <td>{{media.scrobble_set.count}}</td>
                         <td><a href="{{media.get_absolute_url}}">{{media}}</a></td>
+                        <td>{% if media.author %}{{media.author}}{% else %}{{media.platforms.first}}{% endif %}</td>
+                        <td><a type="button" class="btn btn-sm btn-primary" href="{{media.get_start_url}}">Resume</a></td>
+                        <td><a type="button" class="right btn btn-sm " href="{{media.get_longplay_finish_url}}">Finish</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -88,6 +94,7 @@
                     <tr>
                         <th scope="col">Scrobbles</th>
                         <th scope="col">Title</th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,6 +102,7 @@
                     <tr>
                         <td>{{media.scrobble_set.count}}</td>
                         <td><a href="{{media.get_absolute_url}}">{{media}}</a></td>
+                        <td>{% if media.author %}{{media.author}}{% else %}{{media.platforms.first}}{% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
