@@ -5,9 +5,9 @@ app_name = "scrobbles"
 
 urlpatterns = [
     path(
-        "manual/imdb/",
+        "manual/lookup/",
         views.ManualScrobbleView.as_view(),
-        name="imdb-manual-scrobble",
+        name="lookup-manual-scrobble",
     ),
     path(
         "manual/audioscrobbler/",
@@ -19,9 +19,6 @@ urlpatterns = [
         views.KoReaderImportCreateView.as_view(),
         name="koreader-file-upload",
     ),
-    path("start/<slug:uuid>/", views.scrobble_start, name="start"),
-    path("finish/<slug:uuid>/", views.scrobble_finish, name="finish"),
-    path("cancel/<slug:uuid>/", views.scrobble_cancel, name="cancel"),
     path(
         "long-play-finish/<slug:uuid>/",
         views.scrobble_longplay_finish,
@@ -78,4 +75,7 @@ urlpatterns = [
         views.ScrobbleLongPlaysView.as_view(),
         name="long-plays",
     ),
+    path("<slug:uuid>/start/", views.scrobble_start, name="start"),
+    path("<slug:uuid>/finish/", views.scrobble_finish, name="finish"),
+    path("<slug:uuid>/cancel/", views.scrobble_cancel, name="cancel"),
 ]
