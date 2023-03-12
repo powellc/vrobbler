@@ -72,10 +72,6 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
         return {}
 
     top = results.get("docs")[0]
-    if author and author not in top["author_name"]:
-        logger.warn(
-            f"Lookup for {title} found top result with mismatched author"
-        )
     ol_id = top.get("cover_edition_key")
     ol_author_id = get_first("author_key", top)
     first_sentence = ""

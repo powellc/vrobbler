@@ -160,7 +160,10 @@ class Book(LongPlayScrobblableMixin):
         """Used to keep track of whether the book is complete or not"""
         user = User.objects.get(id=user_id)
         last_scrobble = get_scrobbles_for_media(self, user).last()
-        return int((last_scrobble.book_pages_read / self.pages) * 100)
+        progress = 0
+        if last_scrobble:
+            progress = int((last_scrobble.book_pages_read / self.pages) * 100)
+        return progress
 
     @classmethod
     def find_or_create(cls, data_dict: dict) -> "Game":
