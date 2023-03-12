@@ -105,11 +105,6 @@ def check_scrobble_for_finish(
             ]
         )
 
-    if scrobble.percent_played % 5 == 0:
-        if getattr(settings, "KEEP_DETAILED_SCROBBLE_LOGS", False):
-            scrobble.scrobble_log += f"\n{str(scrobble.timestamp)} - {scrobble.playback_position} - {str(scrobble.playback_position_ticks)} - {str(scrobble.percent_played)}%"
-            scrobble.save(update_fields=["scrobble_log"])
-
 
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     Scrobble = apps.get_model(app_label="scrobbles", model_name="Scrobble")
