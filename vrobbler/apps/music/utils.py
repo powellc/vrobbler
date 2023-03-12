@@ -72,8 +72,7 @@ def get_or_create_track(
     artist: Artist,
     album: Album,
     mbid: str = None,
-    run_time=None,
-    run_time_ticks=None,
+    run_time_seconds=None,
 ) -> Track:
     track = None
     if not mbid:
@@ -91,8 +90,7 @@ def get_or_create_track(
             artist=artist,
             album=album,
             musicbrainz_id=mbid,
-            run_time=run_time,
-            run_time_ticks=run_time_ticks,
+            run_time_seconds=run_time_seconds,
         )
 
     return track

@@ -145,9 +145,8 @@ class VideoGame(LongPlayScrobblableMixin):
             load_game_data_from_igdb(self.id)
 
         if (not self.run_time_ticks or force_update) and self.main_story_time:
-            self.run_time_ticks = self.main_story_time * 1000  # miliseconds
-            self.run_time = self.main_story_time
-            self.save(update_fields=["run_time_ticks", "run_time"])
+            self.run_time_seconds = self.main_story_time
+            self.save(update_fields=["run_time_seconds"])
 
     @classmethod
     def find_or_create(cls, data_dict: dict) -> "Game":

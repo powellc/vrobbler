@@ -78,18 +78,16 @@ def check_scrobble_for_finish(
     completion_percent = scrobble.media_obj.COMPLETION_PERCENT
 
     if scrobble.percent_played >= completion_percent or force_finish:
-        logger.info(f"{scrobble.id} {completion_percent} met, finishing")
-
         if (
-            scrobble.playback_position_ticks
-            and scrobble.media_obj.run_time_ticks
-            and force_to_100
+            scrobble.playback_position_seconds
+            and scrobble.media_obj.run_time_seconds
         ):
-            scrobble.playback_position_ticks = (
-                scrobble.media_obj.run_time_ticks
+            logger.info(f"{scrobble.id} {completion_percent} met, finishing")
+            scrobble.playback_position_seconds = (
+                scrobble.media_obj.run_time_seconds
             )
             logger.info(
-                f"{scrobble.playback_position_ticks} set to {scrobble.media_obj.run_time_ticks}"
+                f"{scrobble.playback_position_seconds} set to {scrobble.media_obj.run_time_seconds}"
             )
 
         scrobble.in_progress = False
@@ -101,7 +99,7 @@ def check_scrobble_for_finish(
                 "in_progress",
                 "is_paused",
                 "played_to_completion",
-                "playback_position_ticks",
+                "playback_position_seconds",
             ]
         )
 

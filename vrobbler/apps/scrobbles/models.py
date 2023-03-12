@@ -406,7 +406,7 @@ class Scrobble(TimeStampedModel):
     # Time keeping
     timestamp = models.DateTimeField(**BNULL)
     playback_position_ticks = models.PositiveBigIntegerField(**BNULL)
-    playback_position = models.CharField(max_length=10, **BNULL)
+    playback_position_seconds = models.IntegerField(**BNULL)
 
     # Status indicators
     is_paused = models.BooleanField(default=False)
@@ -476,26 +476,25 @@ class Scrobble(TimeStampedModel):
         if not self.media_obj:
             return 0
 
-        if self.media_obj and not self.media_obj.run_time_ticks:
+        if self.media_obj and not self.media_obj.run_time_seconds:
             return 100
 
-        if not self.playback_position_ticks and self.played_to_completion:
+        if not self.playback_position_seconds and self.played_to_completion:
             return 100
 
-        playback_ticks = self.playback_position_ticks
-        if not playback_ticks:
-            playback_ticks = (timezone.now() - self.timestamp).seconds * 1000
+        playback_seconds = self.playback_position_seconds
+        if not playback_seconds:
+            playback_seconds = (timezone.now() - self.timestamp).seconds
 
-        percent = int((playback_ticks / self.media_obj.run_time_ticks) * 100)
+        run_time_secs = self.media_obj.run_time_seconds
+        percent = int((playback_seconds / run_time_secs) * 100)
 
         if self.is_long_play:
-            run_time_secs = int(self.media_obj.run_time)
-            playback_secs = (timezone.now() - self.timestamp).seconds
             long_play_secs = 0
             if self.previous and not self.previous.long_play_complete:
                 long_play_secs = self.previous.long_play_seconds or 0
             percent = int(
-                ((playback_secs + long_play_secs) / run_time_secs) * 100
+                ((playback_seconds + long_play_secs) / run_time_secs) * 100
             )
 
         # if percent > 100:
@@ -635,9 +634,7 @@ class Scrobble(TimeStampedModel):
         if class_name in LONG_PLAY_MEDIA.values():
             now = timezone.now()
             self.played_to_completion = True
-            self.playback_position = (now - self.timestamp).seconds
-            # TODO Refactor ticks outta here, this is silly
-            self.playback_position_ticks = int(self.playback_position) * 1000
+            self.playback_position_seconds = (now - self.timestamp).seconds
 
             media_filter = models.Q(video_game=self.video_game)
             if class_name == "Book":
@@ -650,16 +647,15 @@ class Scrobble(TimeStampedModel):
                 played_to_completion=True,
                 long_play_complete=False,
             ).last()
-            self.long_play_seconds = self.playback_position
+            self.long_play_seconds = self.playback_position_seconds
             if last_scrobble:
                 self.long_play_seconds = int(
-                    last_scrobble.playback_position
-                ) + int(self.playback_position)
+                    last_scrobble.playback_position_seconds
+                ) + int(self.playback_position_seconds)
 
             self.save(
                 update_fields=[
-                    "playback_position",
-                    "playback_position_ticks",
+                    "playback_position_seconds",
                     "played_to_completion",
                     "long_play_seconds",
                 ]
@@ -688,11 +684,8 @@ class Scrobble(TimeStampedModel):
         self.delete()
 
     def update_ticks(self, data) -> None:
-        self.playback_position_ticks = data.get("playback_position_ticks")
-        self.playback_position = data.get("playback_position")
+        self.playback_position_seconds = data.get("playback_position_seconds")
         logger.info(
-            f"{self.id} - {self.playback_position_ticks} - {self.source}"
+            f"{self.id} - {self.playback_position_seconds} - {self.source}"
         )
-        self.save(
-            update_fields=["playback_position_ticks", "playback_position"]
-        )
+        self.save(update_fields=["playback_position_seconds"])

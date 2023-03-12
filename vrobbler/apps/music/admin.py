@@ -51,7 +51,6 @@ class TrackAdmin(admin.ModelAdmin):
         "title",
         "album",
         "artist",
-        "run_time",
         "musicbrainz_id",
     )
     list_filter = ("album", "artist")

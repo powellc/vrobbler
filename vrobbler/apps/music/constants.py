@@ -1,6 +1,5 @@
 JELLYFIN_POST_KEYS = {
     "ITEM_TYPE": "ItemType",
-    "RUN_TIME_TICKS": "RunTimeTicks",
     "RUN_TIME": "RunTime",
     "TITLE": "Name",
     "TIMESTAMP": "UtcTimestamp",

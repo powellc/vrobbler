@@ -27,7 +27,6 @@ class EpisodeAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "podcast",
-        "run_time",
     )
     list_filter = ("podcast",)
     ordering = ("-created",)

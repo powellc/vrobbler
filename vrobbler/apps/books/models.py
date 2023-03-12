@@ -131,8 +131,9 @@ class Book(LongPlayScrobblableMixin):
                     self.cover.save(fname, ContentFile(r.content), save=True)
 
             if self.pages:
-                self.run_time = self.pages * int(self.AVG_PAGE_READING_SECONDS)
-                self.run_time_ticks = int(self.run_time) * 1000
+                self.run_time_seconds = self.pages * int(
+                    self.AVG_PAGE_READING_SECONDS
+                )
 
             self.save()
 

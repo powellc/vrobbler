@@ -107,13 +107,11 @@ class LastFM:
 
         for scrobble in found_scrobbles:
             run_time = None
-            run_time_ticks = None
             mbid = None
             artist = None
 
             try:
-                run_time_ticks = scrobble.track.get_duration()
-                run_time = int(run_time_ticks / 1000)
+                run_time = int(scrobble.track.get_duration() / 1000)
                 mbid = scrobble.track.get_mbid()
                 artist = scrobble.track.get_artist().name
             except pylast.MalformedResponseError as e:

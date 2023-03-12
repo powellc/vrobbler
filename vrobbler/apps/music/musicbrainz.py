@@ -42,7 +42,7 @@ def lookup_album_from_mb(musicbrainz_id: str) -> dict:
             {
                 "title": recording["title"],
                 "musicbrainz_id": recording["id"],
-                "run_time_ticks": track["length"],
+                "run_time": track["length"] / 1000,
             }
         )
 

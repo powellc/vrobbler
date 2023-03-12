@@ -41,9 +41,6 @@ class Sport(TheSportsDbMixin):
         default=SportEventType.UNKNOWN,
     )
 
-    # TODO Add these to the default run_time for Football
-    # run_time_seconds = 11700
-    # run_time_ticks = run_time_seconds * 1000
     @property
     def default_event_run_time_ticks(self):
         default_run_time = getattr(
@@ -51,7 +48,7 @@ class Sport(TheSportsDbMixin):
         )
         if self.default_event_run_time:
             default_run_time = self.default_event_run_time
-        return default_run_time * 1000
+        return default_run_time
 
 
 class League(TheSportsDbMixin):
@@ -231,8 +228,7 @@ class SportEvent(ScrobblableMixin):
             "player_two": player_two,
             "start": data_dict["Start"],
             "round": round,
-            "run_time_ticks": data_dict.get("RunTimeTicks"),
-            "run_time": data_dict.get("RunTime", ""),
+            "run_time_seconds": data_dict.get("RunTime", 0),
         }
         event, _created = cls.objects.get_or_create(**event_dict)
 

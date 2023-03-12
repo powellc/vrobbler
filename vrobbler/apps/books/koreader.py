@@ -98,15 +98,13 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
         if created:
             pages = book_row[KoReaderBookColumn.PAGES.value]
             run_time = pages * book.AVG_PAGE_READING_SECONDS
-            run_time_ticks = run_time * 1000
             book_dict = {
                 "title": book_row[KoReaderBookColumn.TITLE.value],
                 "pages": book_row[KoReaderBookColumn.PAGES.value],
                 "koreader_md5": book_row[KoReaderBookColumn.MD5.value],
                 "koreader_id": int(book_row[KoReaderBookColumn.ID.value]),
                 "koreader_authors": book_row[KoReaderBookColumn.AUTHORS.value],
-                "run_time": run_time,
-                "run_time_ticks": run_time_ticks,
+                "run_time_seconds": run_time,
             }
             Book.objects.filter(pk=book.id).update(**book_dict)
             book.fix_metadata()
@@ -114,10 +112,9 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
             if author_list:
                 book.authors.add(*[a.id for a in author_list])
 
-        playback_position = int(
+        playback_position_seconds = int(
             book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]
         )
-        playback_position_ticks = playback_position * 1000
         pages_read = int(book_row[KoReaderBookColumn.TOTAL_READ_PAGES.value])
         timestamp = datetime.utcfromtimestamp(
             book_row[KoReaderBookColumn.LAST_OPEN.value]
@@ -129,8 +126,7 @@ def process_koreader_sqlite_file(sqlite_file_path, user_id):
             user_id=user_id,
             source="KOReader",
             timestamp=timestamp,
-            playback_position_ticks=playback_position_ticks,
-            playback_position=playback_position,
+            playback_position_seconds=playback_position_seconds,
             played_to_completion=True,
             in_progress=False,
             book_pages_read=pages_read,

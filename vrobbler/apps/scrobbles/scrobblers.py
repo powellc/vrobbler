@@ -37,8 +37,7 @@ def mopidy_scrobble_podcast(
     episode_name = parsed_data.get("episode_filename")
     episode_dict = {
         "title": episode_name,
-        "run_time_ticks": data_dict.get("run_time_ticks"),
-        "run_time": data_dict.get("run_time"),
+        "run_time_seconds": data_dict.get("run_time"),
         "number": parsed_data.get("episode_num"),
         "pub_date": parsed_data.get("pub_date"),
         "mopidy_uri": mopidy_uri,
@@ -50,7 +49,7 @@ def mopidy_scrobble_podcast(
     mopidy_data = {
         "user_id": user_id,
         "timestamp": timezone.now(),
-        "playback_position_ticks": data_dict.get("playback_time_ticks"),
+        "playback_position_seconds": data_dict.get("playback_time_ticks"),
         "source": "Mopidy",
         "mopidy_status": data_dict.get("status"),
     }
@@ -78,15 +77,15 @@ def mopidy_scrobble_track(
         mbid=data_dict.get("musicbrainz_track_id"),
         artist=artist,
         album=album,
-        run_time_ticks=data_dict.get("run_time_ticks"),
-        run_time=data_dict.get("run_time"),
+        run_time_seconds=data_dict.get("run_time"),
     )
 
     # Now we run off a scrobble
+    playback_seconds = data_dict.get("playback_time_ticks") / 1000
     mopidy_data = {
         "user_id": user_id,
         "timestamp": timezone.now(),
-        "playback_position_ticks": data_dict.get("playback_time_ticks"),
+        "playback_position_seconds": playback_seconds,
         "source": "Mopidy",
         "mopidy_status": data_dict.get("status"),
     }
@@ -103,15 +102,10 @@ def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
     elif data_dict.get("NotificationType") == "PlaybackStop":
         jellyfin_status = "stopped"
 
-    playback_ticks = data_dict.get("PlaybackPositionTicks", "")
-    if playback_ticks:
-        playback_ticks = playback_ticks // 10000
-
     return {
         "user_id": user_id,
         "timestamp": parse(data_dict.get("UtcTimestamp")),
-        "playback_position_ticks": playback_ticks,
-        "playback_position": data_dict.get("PlaybackPosition", ""),
+        "playback_position_seconds": data_dict.get("PlaybackPosition", ""),
         "source": data_dict.get("ClientName", "Vrobbler"),
         "source_id": data_dict.get("MediaSourceId"),
         "jellyfin_status": jellyfin_status,
@@ -142,9 +136,6 @@ def jellyfin_scrobble_track(
         mbid=data_dict.get(JELLYFIN_POST_KEYS["ALBUM_MB_ID"]),
     )
 
-    run_time_ticks = (
-        data_dict.get(JELLYFIN_POST_KEYS["RUN_TIME_TICKS"]) // 10000
-    )
     run_time = convert_to_seconds(
         data_dict.get(JELLYFIN_POST_KEYS["RUN_TIME"])
     )
@@ -152,15 +143,13 @@ def jellyfin_scrobble_track(
         title=data_dict.get("Name"),
         artist=artist,
         album=album,
-        run_time_ticks=run_time_ticks,
-        run_time=run_time,
+        run_time_seconds=run_time,
     )
 
     scrobble_dict = build_scrobble_dict(data_dict, user_id)
 
     # A hack to make Jellyfin work more like Mopidy for music tracks
-    scrobble_dict["playback_position_ticks"] = 0
-    scrobble_dict["playback_position"] = ""
+    scrobble_dict["playback_position_seconds"] = 0
 
     return Scrobble.create_or_update(track, user_id, scrobble_dict)
 
@@ -210,8 +199,7 @@ def manual_scrobble_video_game(data_dict: dict, user_id: Optional[int]):
     scrobble_dict = {
         "user_id": user_id,
         "timestamp": timezone.now(),
-        "playback_position_ticks": None,  # int(start_playback_position) * 1000,
-        "playback_position": 0,
+        "playback_position_seconds": 0,
         "source": "Vrobbler",
         "long_play_complete": False,
     }
@@ -225,8 +213,7 @@ def manual_scrobble_book(data_dict: dict, user_id: Optional[int]):
     scrobble_dict = {
         "user_id": user_id,
         "timestamp": timezone.now(),
-        "playback_position_ticks": None,
-        "playback_position": 0,
+        "playback_position_seconds": 0,
         "source": "Vrobbler",
         "long_play_complete": False,
     }

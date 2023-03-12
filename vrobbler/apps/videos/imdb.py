@@ -22,9 +22,6 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
     if runtimes:
         run_time_seconds = int(runtimes[0]) * 60
 
-    # Ticks otherwise known as miliseconds
-    run_time_ticks = run_time_seconds * 1000 * 1000
-
     item_type = "Movie"
     if media.get("series title"):
         item_type = "Episode"
@@ -45,7 +42,6 @@ def lookup_video_from_imdb(imdb_id: str) -> dict:
         "Year": media.get("year"),
         "Provider_imdb": imdb_id,
         "RunTime": run_time_seconds,
-        "RunTimeTicks": run_time_ticks,
         "SeriesName": media.get("series title"),
         "EpisodeNumber": media.get("episode"),
         "SeasonNumber": media.get("season"),
