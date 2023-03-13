@@ -126,7 +126,7 @@ def get_long_plays_in_progress(user: User) -> list:
     media_list = []
     for app, model in LONG_PLAY_MEDIA.items():
         media_obj = apps.get_model(app_label=app, model_name=model)
-        for media in media_obj.objects.all():
+        for media in media_obj.objects.all().order_by("-scrobble__timestamp"):
             if (
                 media.scrobble_set.all()
                 and media.scrobble_set.filter(user=user)
@@ -143,7 +143,7 @@ def get_long_plays_completed(user: User) -> list:
     media_list = []
     for app, model in LONG_PLAY_MEDIA.items():
         media_obj = apps.get_model(app_label=app, model_name=model)
-        for media in media_obj.objects.all():
+        for media in media_obj.objects.all().order_by("-scrobble__timestamp"):
             if (
                 media.scrobble_set.all()
                 and media.scrobble_set.filter(user=user)
