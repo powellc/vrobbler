@@ -1,56 +1,44 @@
 import logging
 from django.utils import timezone
 
-from imdb import Cinemagoer
+from imdb import Cinemagoer, helpers
+from imdb.Character import IMDbParserError
 
 imdb_client = Cinemagoer()
 
 logger = logging.getLogger(__name__)
 
 
-def lookup_video_from_imdb(imdb_id: str) -> dict:
-
-    if "tt" not in imdb_id:
-        logger.warning(f"IMDB ID should begin with 'tt' {imdb_id}")
-        return
-
-    lookup_id = imdb_id.strip("tt")
-    media = imdb_client.get_movie(lookup_id)
-
-    run_time_seconds = 60 * 60
-    runtimes = media.get("runtimes")
-    if runtimes:
-        run_time_seconds = int(runtimes[0]) * 60
-
-    item_type = "Movie"
-    if media.get("series title"):
-        item_type = "Episode"
+def lookup_video_from_imdb(name_or_id: str, kind: str = "movie") -> dict:
+    name_or_id = name_or_id.strip("tt")
+    video_dict = {}
+    imdb_id = None
 
     try:
-        plot = media.get("plot")[0]
-    except TypeError:
-        plot = ""
-    except IndexError:
-        plot = ""
+        imdb_id = int(name_or_id)
+    except ValueError:
+        pass
 
-    # Build a rough approximation of a Jellyfin data response
-    data_dict = {
-        "ItemType": item_type,
-        "Name": media.get("title"),
-        "Overview": plot,
-        "Tagline": media.get("tagline"),
-        "Year": media.get("year"),
-        "Provider_imdb": imdb_id,
-        "RunTime": run_time_seconds,
-        "SeriesName": media.get("series title"),
-        "EpisodeNumber": media.get("episode"),
-        "SeasonNumber": media.get("season"),
-        "PlaybackPositionTicks": 1,
-        "PlaybackPosition": 1,
-        "UtcTimestamp": timezone.now().strftime("%Y-%m-%d %H:%M:%S.%f%z"),
-        "IsPaused": False,
-        "PlayedToCompletion": False,
-    }
-    logger.debug(f"Parsed data from IMDB data: {data_dict}")
+    if imdb_id:
+        imdb_result = imdb_client.get_movie(name_or_id)
+        video_dict = imdb_result
 
-    return data_dict
+    if not video_dict:
+        imdb_results = imdb_client.search_movie(name_or_id)
+        if len(imdb_results) > 1:
+            for result in imdb_results:
+                if result["kind"] == kind:
+                    video_dict = result
+                    break
+
+        if len(imdb_results) == 1:
+            video_dict = imdb_results[0]
+
+    if not video_dict:
+        logger.warn(f"No video found for key {name_or_id}")
+        return video_dict
+
+    cover_url = video_dict.get("cover url")
+    if cover_url:
+        video_dict["cover url"] = helpers.resizeImage(cover_url, width=800)
+    return video_dict

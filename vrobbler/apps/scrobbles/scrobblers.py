@@ -158,11 +158,6 @@ def jellyfin_scrobble_track(
 
 
 def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
-    if not data_dict.get("Provider_imdb", None):
-        logger.error(
-            "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
-        )
-        return
     video = Video.find_or_create(data_dict)
 
     scrobble_dict = build_scrobble_dict(data_dict, user_id)
@@ -170,25 +165,21 @@ def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
-def manual_scrobble_video(data_dict: dict, user_id: Optional[int]):
-    if not data_dict.get("Provider_imdb", None):
-        logger.error(
-            "No IMDB ID received. This is likely because all metadata is bad, not scrobbling"
-        )
-        return
-    video = Video.find_or_create(data_dict)
+def manual_scrobble_video(imdb_id: str, user_id: int):
+    video = Video.find_or_create({"imdb_id": imdb_id})
 
-    scrobble_dict = build_scrobble_dict(data_dict, user_id)
+    # TODO allow series to be marked with a source id
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_seconds": 0,
+        "source": "Vrobbler",
+    }
 
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
 def manual_scrobble_event(data_dict: dict, user_id: Optional[int]):
-    if not data_dict.get("Provider_thesportsdb", None):
-        logger.error(
-            "No TheSportsDB ID received. This is likely because all metadata is bad, not scrobbling"
-        )
-        return
     event = SportEvent.find_or_create(data_dict)
 
     scrobble_dict = build_scrobble_dict(data_dict, user_id)

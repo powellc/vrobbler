@@ -7,7 +7,7 @@ from scrobbles.admin import ScrobbleInline
 @admin.register(Series)
 class SeriesAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("name", "tagline")
+    list_display = ("name", "imdb_id")
     ordering = ("-created",)
 
 

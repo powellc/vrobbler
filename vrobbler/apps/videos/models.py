@@ -2,13 +2,18 @@ import logging
 from typing import Dict
 from uuid import uuid4
 
+import requests
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-from scrobbles.utils import convert_to_seconds
 from scrobbles.mixins import ScrobblableMixin
+from scrobbles.utils import convert_to_seconds
+from taggit.managers import TaggableManager
+
+from videos.imdb import lookup_video_from_imdb
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -17,10 +22,12 @@ BNULL = {"blank": True, "null": True}
 class Series(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
-    overview = models.TextField(**BNULL)
-    tagline = models.TextField(**BNULL)
-    # tvdb_id = models.CharField(max_length=20, **BNULL)
-    # imdb_id = models.CharField(max_length=20, **BNULL)
+    plot = models.TextField(**BNULL)
+    imdb_id = models.CharField(max_length=20, **BNULL)
+    imdb_rating = models.FloatField(**BNULL)
+    cover_image = models.ImageField(upload_to="videos/series/", **BNULL)
+
+    genres = TaggableManager()
 
     def __str__(self):
         return self.name
@@ -30,6 +37,22 @@ class Series(TimeStampedModel):
 
     class Meta:
         verbose_name_plural = "series"
+
+    def fix_metadata(self, force_update=False):
+        imdb_dict = lookup_video_from_imdb(self.name, kind="tv series")
+        logger.info(imdb_dict)
+        self.imdb_id = imdb_dict.get("movieID")
+        self.imdb_rating = imdb_dict.get("rating")
+        self.plot = imdb_dict.get("plot outline")
+        self.save(update_fields=["imdb_id", "imdb_rating", "plot"])
+
+        cover_url = imdb_dict.get("cover url")
+
+        if (not self.cover_image or force_update) and cover_url:
+            r = requests.get(cover_url)
+            if r.status_code == 200:
+                fname = f"{self.name}_{self.uuid}.jpg"
+                self.cover_image.save(fname, ContentFile(r.content), save=True)
 
 
 class Video(ScrobblableMixin):
@@ -54,9 +77,13 @@ class Video(ScrobblableMixin):
     tv_series = models.ForeignKey(Series, on_delete=models.DO_NOTHING, **BNULL)
     season_number = models.IntegerField(**BNULL)
     episode_number = models.IntegerField(**BNULL)
-    tvdb_id = models.CharField(max_length=20, **BNULL)
     imdb_id = models.CharField(max_length=20, **BNULL)
+    imdb_rating = models.FloatField(**BNULL)
+    cover_image = models.ImageField(upload_to="videos/video/", **BNULL)
     tvrage_id = models.CharField(max_length=20, **BNULL)
+    tvdb_id = models.CharField(max_length=20, **BNULL)
+    plot = models.TextField(**BNULL)
+    year = models.IntegerField(**BNULL)
 
     class Meta:
         unique_together = [["title", "imdb_id"]]
@@ -87,6 +114,21 @@ class Video(ScrobblableMixin):
     def link(self):
         return self.imdb_link
 
+    def fix_metadata(self, force_update=False):
+        imdb_dict = lookup_video_from_imdb(self.imdb_id)
+        self.imdb_rating = imdb_dict.get("rating")
+        self.plot = imdb_dict.get("plot outline")
+        self.year = imdb_dict.get("year")
+        self.save(update_fields=["imdb_rating", "plot", "year"])
+
+        cover_url = imdb_dict.get("cover url")
+
+        if (not self.cover_image or force_update) and cover_url:
+            r = requests.get(cover_url)
+            if r.status_code == 200:
+                fname = f"{self.title}_{self.uuid}.jpg"
+                self.cover_image.save(fname, ContentFile(r.content), save=True)
+
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Video":
         """Given a data dict from Jellyfin, does the heavy lifting of looking up
@@ -94,44 +136,21 @@ class Video(ScrobblableMixin):
         exist.
 
         """
-        video_dict = {
-            "title": data_dict.get("Name", ""),
-            "imdb_id": data_dict.get("Provider_imdb", None),
-            "video_type": Video.VideoType.MOVIE,
-        }
+        from videos.utils import (
+            get_or_create_video,
+            get_or_create_video_from_jellyfin,
+        )
 
-        series = None
-        if data_dict.get("ItemType", "") == "Episode":
-            series_name = data_dict.get("SeriesName", "")
-            series, series_created = Series.objects.get_or_create(
-                name=series_name
+        if "NotificationType" not in data_dict.keys():
+            name_or_id = data_dict.get("imdb_id") or data_dict.get("title")
+            video = get_or_create_video(name_or_id)
+            return video
+
+        if not data_dict.get("Provider_imdb"):
+            title = data_dict.get("Name", "")
+            logger.warn(
+                f"No IMDB ID from Jellyfin, check metadata for {title}"
             )
-            video_dict["video_type"] = Video.VideoType.TV_EPISODE
+            return
 
-        video, created = cls.objects.get_or_create(**video_dict)
-
-        run_time_ticks = data_dict.get("RunTimeTicks", None)
-        if run_time_ticks:
-            run_time_ticks = run_time_ticks // 10000
-
-        video_extra_dict = {
-            "year": data_dict.get("Year", ""),
-            "overview": data_dict.get("Overview", None),
-            "tagline": data_dict.get("Tagline", None),
-            "run_time_ticks": run_time_ticks,
-            "run_time": convert_to_seconds(data_dict.get("RunTime", "")),
-            "tvdb_id": data_dict.get("Provider_tvdb", None),
-            "tvrage_id": data_dict.get("Provider_tvrage", None),
-            "episode_number": data_dict.get("EpisodeNumber", None),
-            "season_number": data_dict.get("SeasonNumber", None),
-        }
-
-        if series:
-            video_extra_dict["tv_series_id"] = series.id
-
-        if not video.run_time_ticks:
-            for key, value in video_extra_dict.items():
-                setattr(video, key, value)
-            video.save()
-
-        return video
+        return get_or_create_video_from_jellyfin(data_dict)

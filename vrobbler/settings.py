@@ -33,6 +33,8 @@ DEBUG = os.getenv("VROBBLER_DEBUG", False)
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
+TAGGIT_CASE_INSENSITIVE = True
+
 KEEP_DETAILED_SCROBBLE_LOGS = os.getenv(
     "VROBBLER_KEEP_DETAILED_SCROBBLE_LOGS", False
 )
@@ -91,6 +93,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_filters",
     "django_extensions",
+    "taggit",
     "rest_framework.authtoken",
     "encrypted_field",
     "profiles",

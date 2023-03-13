@@ -60,7 +60,6 @@ from scrobbles.tasks import (
 )
 from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
-from videos.imdb import lookup_video_from_imdb
 
 from books.openlibrary import lookup_book_from_openlibrary
 from scrobbles.utils import (
@@ -228,9 +227,7 @@ class ManualScrobbleView(FormView):
                 manual_scrobble_event(data_dict, self.request.user.id)
 
         if key == "-i":
-            data_dict = lookup_video_from_imdb(item_id)
-            if data_dict:
-                manual_scrobble_video(data_dict, self.request.user.id)
+            manual_scrobble_video(item_id, self.request.user.id)
 
         return HttpResponseRedirect(reverse("vrobbler-home"))
 
