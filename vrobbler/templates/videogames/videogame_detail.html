@@ -39,15 +39,13 @@
         {% endif %}
         <p style="float:right;">
             <a href="{{object.igdb_link}}"><img src="{% static " images/igdb-logo.png" %}" width=35></a>
-            <a href="{{object.hltb_link}}"><img style="background: black;" src="{% static " images/hltb.webp" %}"
-                    width=35></a>
+            <a href="{{object.hltb_link}}"><img style="background: black;" src="{% static " images/hltb.webp" %}" width=35></a>
         </p>
     </div>
 </div>
 <div class="row">
     <p>{{object.scrobble_set.count}} scrobbles</p>
-    <p>{{object.scrobble_set.last.long_play_seconds|natural_duration}}{% if object.scrobble_set.last.long_play_complete
-        %} and completed{% else %} spent playing{% endif %}</p>
+    <p>{{object.scrobble_set.last.long_play_seconds|natural_duration}}{% if object.scrobble_set.last.long_play_complete %} and completed{% else %} spent playing{% endif %}</p>
     <p>
         {% if object.scrobble_set.last.long_play_complete == True %}
         <a href="">Play again</a>
@@ -74,11 +72,8 @@
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
                         <td>{% if scrobble.long_play_complete == True %}Yes{% endif %}</td>
-                        <td>{% if scrobble.in_progress %}Now playing{% else
-                            %}{{scrobble.playback_position_seconds|natural_duration}}{% endif %}</td>
-                        <td>{% for platform in scrobble.video_game.platforms.all %}<a
-                                href="{{platform.get_absolute_url}}">{{platform}}</a>{% if not forloop.last %}, {% endif
-                            %}{% endfor %}</td>
+                        <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.playback_position_seconds|natural_duration}}{% endif %}</td>
+                        <td>{% for platform in scrobble.video_game.platforms.all %}<a href="{{platform.get_absolute_url}}">{{platform}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
