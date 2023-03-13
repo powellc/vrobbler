@@ -139,6 +139,8 @@ def get_long_plays_in_progress(user: User) -> dict:
                     media_dict["inactive"].append(media)
                 else:
                     media_dict["active"].append(media)
+    media_dict["active"].reverse()
+    media_dict["inactive"].reverse()
     return media_dict
 
 
