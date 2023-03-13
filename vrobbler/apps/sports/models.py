@@ -34,7 +34,7 @@ class TheSportsDbMixin(TimeStampedModel):
 
 
 class Sport(TheSportsDbMixin):
-    default_event_run_time = models.IntegerField(**BNULL)
+    default_event_run_time_seconds = models.IntegerField(**BNULL)
     default_event_type = models.CharField(
         max_length=2,
         choices=SportEventType.choices,
@@ -42,12 +42,12 @@ class Sport(TheSportsDbMixin):
     )
 
     @property
-    def default_event_run_time_ticks(self):
+    def default_event_run_time_seconds(self):
         default_run_time = getattr(
             settings, "DEFAULT_EVENT_RUNTIME_SECONDS", 14400
         )
-        if self.default_event_run_time:
-            default_run_time = self.default_event_run_time
+        if self.default_event_run_time_seconds:
+            default_run_time = self.default_event_run_time_seconds
         return default_run_time
 
 

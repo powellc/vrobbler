@@ -136,8 +136,7 @@ class LastFM:
                     "album": scrobble.album,
                     "title": scrobble.track.title,
                     "mbid": mbid,
-                    "run_time": run_time,
-                    "run_time_ticks": run_time_ticks,
+                    "run_time_seconds": run_time,
                     "timestamp": timestamp,
                 }
             )
