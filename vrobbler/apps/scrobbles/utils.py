@@ -6,6 +6,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from vrobbler.apps.profiles.utils import now_user_timezone
 
 from vrobbler.apps.scrobbles.constants import LONG_PLAY_MEDIA
 
@@ -121,21 +122,24 @@ def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     return Scrobble.objects.filter(media_query, user=user)
 
 
-def get_long_plays_in_progress(user: User) -> list:
+def get_long_plays_in_progress(user: User) -> dict:
     """Find all books where the last scrobble is not marked complete"""
-    media_list = []
+    media_dict = {
+        "active": [],
+        "inactive": [],
+    }
+    now = now_user_timezone(user.profile)
     for app, model in LONG_PLAY_MEDIA.items():
         media_obj = apps.get_model(app_label=app, model_name=model)
         for media in media_obj.objects.all().order_by("-scrobble__timestamp"):
-            if (
-                media.scrobble_set.all()
-                and media.scrobble_set.filter(user=user)
-                .last()
-                .long_play_complete
-                == False
-            ):
-                media_list.append(media)
-    return media_list
+            last_scrobble = media.scrobble_set.filter(user=user).last()
+            if last_scrobble and last_scrobble.long_play_complete == False:
+                days_past = (now - last_scrobble.timestamp).days
+                if days_past > 7:
+                    media_dict["inactive"].append(media)
+                else:
+                    media_dict["active"].append(media)
+    return media_dict
 
 
 def get_long_plays_completed(user: User) -> list:
@@ -143,7 +147,7 @@ def get_long_plays_completed(user: User) -> list:
     media_list = []
     for app, model in LONG_PLAY_MEDIA.items():
         media_obj = apps.get_model(app_label=app, model_name=model)
-        for media in media_obj.objects.all().order_by("-scrobble__timestamp"):
+        for media in media_obj.objects.all():
             if (
                 media.scrobble_set.all()
                 and media.scrobble_set.filter(user=user)

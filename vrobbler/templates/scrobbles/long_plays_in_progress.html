@@ -14,10 +14,11 @@
 {% block lists %}
 <div class="row">
 
-    <h2>In progress</h2>
     {% if view == 'grid' %}
-    <div>
-        {% for media in in_progress %}
+    {% for period, medias in in_progress.items %}
+    <h2>{% if period == "active" %}Recently played{% else %}More than a week ago{% endif %}</h2>
+    <div class="col-md">
+        {% for media in medias %}
         <dl>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
             {% if media.hltb_cover %}
@@ -32,6 +33,7 @@
         </dl>
         {% endfor %}
     </div>
+    {% endfor %}
     {% else %}
     <div class="col-md">
         <div class="table-responsive">
