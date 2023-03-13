@@ -22,7 +22,7 @@ class VideoAdmin(admin.ModelAdmin):
         "tv_series",
         "season_number",
         "episode_number",
-        "imdb_id",
+        "imdb_rating",
     )
     list_filter = ("year", "tv_series", "video_type")
     ordering = ("-created",)

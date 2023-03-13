@@ -37,6 +37,7 @@ def lookup_video_from_imdb(name_or_id: str, kind: str = "movie") -> dict:
     if not video_dict:
         logger.warn(f"No video found for key {name_or_id}")
         return video_dict
+    imdb_client.update(video_dict)
 
     cover_url = video_dict.get("cover url")
     if cover_url:

@@ -29,21 +29,30 @@ class Series(TimeStampedModel):
 
     genres = TaggableManager()
 
-    def __str__(self):
-        return self.name
-
-    def imdb_link(self):
-        return f"https://www.imdb.com/title/{self.imdb_id}"
-
     class Meta:
         verbose_name_plural = "series"
 
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("videos:series_detail", kwargs={"slug": self.uuid})
+
+    def imdb_link(self):
+        return f"https://www.imdb.com/title/tt{self.imdb_id}"
+
+    def scrobbles_for_user(self, user_id: int):
+        from scrobbles.models import Scrobble
+
+        return Scrobble.objects.filter(
+            video__tv_series=self, user=user_id, played_to_completion=True
+        ).order_by("-timestamp")
+
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.name, kind="tv series")
-        logger.info(imdb_dict)
-        self.imdb_id = imdb_dict.get("movieID")
-        self.imdb_rating = imdb_dict.get("rating")
-        self.plot = imdb_dict.get("plot outline")
+        self.imdb_id = imdb_dict.data.get("imdbID")
+        self.imdb_rating = imdb_dict.data.get("arithmetic mean")
+        self.plot = imdb_dict.data.get("plot outline")
         self.save(update_fields=["imdb_id", "imdb_rating", "plot"])
 
         cover_url = imdb_dict.get("cover url")
@@ -104,7 +113,7 @@ class Video(ScrobblableMixin):
 
     @property
     def imdb_link(self):
-        return f"https://www.imdb.com/title/{self.imdb_id}"
+        return f"https://www.imdb.com/title/tt{self.imdb_id}"
 
     @property
     def info_link(self):
@@ -116,10 +125,14 @@ class Video(ScrobblableMixin):
 
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.imdb_id)
-        self.imdb_rating = imdb_dict.get("rating")
-        self.plot = imdb_dict.get("plot outline")
-        self.year = imdb_dict.get("year")
-        self.save(update_fields=["imdb_rating", "plot", "year"])
+        if imdb_dict.get("runtimes") and len(imdb_dict.get("runtimes")) > 0:
+            self.run_time_seconds = int(imdb_dict.get("runtimes")[0]) * 60
+        self.imdb_rating = imdb_dict.data.get("rating")
+        self.plot = imdb_dict.data.get("plot")
+        self.year = imdb_dict.data.get("year")
+        self.save(
+            update_fields=["imdb_rating", "plot", "year", "run_time_seconds"]
+        )
 
         cover_url = imdb_dict.get("cover url")
 

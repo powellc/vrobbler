@@ -20,6 +20,14 @@ class SeriesDetailView(generic.DetailView):
     model = Series
     slug_field = "uuid"
 
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        context_data["scrobbles"] = self.object.scrobbles_for_user(
+            self.request.user.id
+        )
+        return context_data
+
 
 class VideoDetailView(generic.DetailView):
     model = Video

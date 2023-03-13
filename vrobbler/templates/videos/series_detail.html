@@ -17,16 +17,12 @@
     <div class="cover"><img src="{{object.cover_image.url}}" /></div>
     {% endif %}
     <div class="summary">
-        {% if object.overview %}
-        <p><em>{{object.overview}}</em></p>
-        {% endif %}
         {% if object.plot%}
         <p>{{object.plot|safe|linebreaks|truncatewords:160}}</p>
         <hr />
         {% endif %}
         <p style="float:right;">
             <a href="{{object.imdb_link}}"><img src="{% static " images/imdb-logo.png" %}" width=35></a>
-            <a href="{{object.tmdb_link}}"><img style="background: black;" src="{% static " images/tmdb-logo.png" %}" width=35></a>
         </p>
     </div>
 </div>
@@ -38,22 +34,18 @@
                 <thead>
                     <tr>
                         <th scope="col">Date</th>
-                        {% if object.tv_series %}
-                        <th scope="col">Series</th>
+                        <th scope="col">Title</th>
                         <th scope="col">Season</th>
                         <th scope="col">Episode</th>
-                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
-                    {% for scrobble in object.scrobble_set.all %}
+                    {% for scrobble in scrobbles %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        {% if object.tv_series %}
-                        <td><a href="{{scrobble.video.tv_series.get_absolute_url}}">{{scrobble.video.tv_series}}</a></td>
-                        <td>{{scrobble.video.season_number}}</td>
-                        <td>{{scrobble.video.episode_number}}</td>
-                        {% endif %}
+                        <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
+                        <td>{{scrobble.media_obj.season_number}}</td>
+                        <td>{{scrobble.media_obj.episode_number}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
