@@ -50,6 +50,7 @@ def get_or_create_videogame(
                 fname = f"{game.title}_cover_{game.uuid}.jpg"
                 game.hltb_cover.save(fname, ContentFile(r.content), save=True)
                 logger.debug("Loaded cover image from HLtB")
+        game.fix_metadata()
 
     return game
 
