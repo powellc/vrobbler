@@ -107,10 +107,6 @@ class VideoGame(LongPlayScrobblableMixin):
     def get_start_url(self):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
 
-    def save(self, **kwargs):
-        super().save(**kwargs)
-        self.fix_metadata()
-
     @property
     def seconds_for_completion(self) -> int:
         completion_time = self.run_time_ticks
