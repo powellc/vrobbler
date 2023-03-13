@@ -131,7 +131,7 @@ def get_long_plays_in_progress(user: User) -> dict:
     now = now_user_timezone(user.profile)
     for app, model in LONG_PLAY_MEDIA.items():
         media_obj = apps.get_model(app_label=app, model_name=model)
-        for media in media_obj.objects.all().order_by("-scrobble__timestamp"):
+        for media in media_obj.objects.all():
             last_scrobble = media.scrobble_set.filter(user=user).last()
             if last_scrobble and last_scrobble.long_play_complete == False:
                 days_past = (now - last_scrobble.timestamp).days

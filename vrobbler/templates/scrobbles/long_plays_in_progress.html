@@ -16,6 +16,7 @@
 
     {% if view == 'grid' %}
     {% for period, medias in in_progress.items %}
+    {% if medias %}
     <h2>{% if period == "active" %}Recently played{% else %}More than a week ago{% endif %}</h2>
     <div class="col-md">
         {% for media in medias %}
@@ -33,6 +34,7 @@
         </dl>
         {% endfor %}
     </div>
+    {% endif %}
     {% endfor %}
     {% else %}
     <div class="col-md">
