@@ -5,8 +5,8 @@
 
 {% block head_extra %}
 <style>
-    .cover {float:left; width:300px; margin-right:10px;}
-    .summary{float:left; width:600px; margin-left:10px;}
+    .cover {float:left; width:150px; margin-right:10px;}
+    .summary {float:left; width:600px; margin-left:10px;}
 </style>
 {% endblock %}
 
@@ -14,7 +14,7 @@
 
 <div class="row">
     {% if object.cover_image %}
-    <div class="cover"><img src="{{object.cover_image.url}}" /></div>
+    <div class="cover"><img class="cover" src="{{object.cover_image.url}}" /></div>
     {% endif %}
     <div class="summary">
         {% if object.plot%}

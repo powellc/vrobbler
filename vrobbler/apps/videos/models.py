@@ -50,6 +50,10 @@ class Series(TimeStampedModel):
 
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.name, kind="tv series")
+        if not imdb_dict:
+            logger.warn(f"No imdb data for {self}")
+            return
+
         self.imdb_id = imdb_dict.data.get("imdbID")
         self.imdb_rating = imdb_dict.data.get("arithmetic mean")
         self.plot = imdb_dict.data.get("plot outline")
@@ -125,6 +129,9 @@ class Video(ScrobblableMixin):
 
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.imdb_id)
+        if not imdb_dict:
+            logger.warn(f"No imdb data for {self}")
+            return
         if imdb_dict.get("runtimes") and len(imdb_dict.get("runtimes")) > 0:
             self.run_time_seconds = int(imdb_dict.get("runtimes")[0]) * 60
         self.imdb_rating = imdb_dict.data.get("rating")
