@@ -1,33 +1,76 @@
 {% extends "base_list.html" %}
 {% load static %}
 
-{% block title %}{{object.title}}{% if object.tv_series %} - {{object.tv_series}}{% endif %}{% endblock %}
+{% block title %}{{object.title}}{% endblock %}
 
 {% block head_extra %}
 <style>
-    .cover {float:left; width:150px; margin-right:10px;}
-    .summary{float:left; width:600px; margin-left:10px;}
+.cover   {float:left; width:412px; margin-right:10px; padding-bottom:15px;}
+.summary {float:left; width:600px; margin-left:10px;}
+.header  {padding-bottom:15px;}
+.image-wrapper { contain: content; }
+.caption {
+     position: fixed;
+     top: 15px;
+     left: 30px;
+     padding: 5px;
+     font-size: 110%;
+     font-weight: bold;
+     color:white;
+     background:rgba(0,0,0,0.4);
+}
+.caption-footer {
+     position: fixed;
+     bottom: 30px;
+     left: 30px;
+     padding: 5px;
+     font-size: 110%;
+     font-weight: bold;
+     color:white;
+     background:rgba(0,0,0,0.4);
+}
+dl {
+    display: flex;
+    flex-flow: row wrap;
+    padding-right:20px;
+    border:none;
+}
+dt {
+    flex-basis: 20%;
+    padding: 5px;
+    background: #3cf;
+    text-align: right;
+    color: #fff;
+}
+dd {
+    flex-basis: 70%;
+    flex-grow: 1;
+    margin: 0;
+    padding: 5px;
+    border:none;
+}
 </style>
 {% endblock %}
 
 {% block lists %}
 
-<div class="row">
-    {% if object.cover_image %}
-    <div class="cover"><img src="{{object.cover_image.url}}" /></div>
-    {% endif %}
+<div class="row header">
+    <div class="cover image-wrapper">
+        {% if object.imdb_rating %}<div class="caption">{{object.imdb_rating}}</div>{% endif %}
+        <img src="{% if object.cover_image %}{{object.cover_image.url}}{% else %}{% static 'images/no-video-cover.jpg' %}{% endif %}" width="400px" />
+        <div class="caption-footer">{{object.year}}{% if object.tv_series %} | <b>S</b>{{object.season_number}} <b>E</b>{{object.episode_number}}{% endif %}</div>
+    </div>
     <div class="summary">
-        {% if object.overview %}
-        <p><em>{{object.overview}}</em></p>
-        {% endif %}
-        {% if object.plot%}
-        <p>{{object.plot|safe|linebreaks|truncatewords:160}}</p>
+    {% if object.tv_series %}<h4><a href="{{object.tv_series.get_absolute_url}}">{{object.tv_series}}</a> - S{{object.season_number}}E{{object.episode_number}}</h4>{% endif %}
+        {% if object.overview %}<p><em>{{object.overview}}</em></p>{% endif %}
+        {% if object.plot%}<p>{{object.plot|safe|linebreaks|truncatewords:160}}</p>{% endif %}
         <hr />
-        {% endif %}
         <p style="float:right;">
             <a href="{{object.imdb_link}}"><img src="{% static " images/imdb-logo.png" %}" width=35></a>
-            <a href="{{object.tmdb_link}}"><img style="background: black;" src="{% static " images/tmdb-logo.png" %}" width=35></a>
         </p>
+
+    </div>
+    <div class="deets">
     </div>
 </div>
 <div class="row">
@@ -38,22 +81,12 @@
                 <thead>
                     <tr>
                         <th scope="col">Date</th>
-                        {% if object.tv_series %}
-                        <th scope="col">Series</th>
-                        <th scope="col">Season</th>
-                        <th scope="col">Episode</th>
-                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for scrobble in object.scrobble_set.all %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        {% if object.tv_series %}
-                        <td><a href="{{scrobble.video.tv_series.get_absolute_url}}">{{scrobble.video.tv_series}}</a></td>
-                        <td>{{scrobble.video.season_number}}</td>
-                        <td>{{scrobble.video.episode_number}}</td>
-                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
