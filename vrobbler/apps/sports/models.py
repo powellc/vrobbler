@@ -81,7 +81,10 @@ class Round(TheSportsDbMixin):
     season = models.ForeignKey(Season, on_delete=models.DO_NOTHING, **BNULL)
 
     def __str__(self):
-        return f"{self.name} of {self.season}"
+        value = f"{self.name} of {self.season}"
+        if not self.name:
+            value = f"{self.thesportsdb_id} of {self.season}"
+        return value
 
 
 class SportEvent(ScrobblableMixin):
@@ -174,7 +177,9 @@ class SportEvent(ScrobblableMixin):
         # Find or create our Round
         rid = data_dict.get("RoundId")
         round, r_created = Round.objects.get_or_create(
-            thesportsdb_id=rid, season=season
+            thesportsdb_id=rid,
+            season=season,
+            name=rid,
         )
         if r_created:
             round.season = season
