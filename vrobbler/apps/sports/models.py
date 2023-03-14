@@ -42,7 +42,7 @@ class Sport(TheSportsDbMixin):
     )
 
     @property
-    def default_event_run_time_seconds(self):
+    def default_event_run_time(self):
         default_run_time = getattr(
             settings, "DEFAULT_EVENT_RUNTIME_SECONDS", 14400
         )
