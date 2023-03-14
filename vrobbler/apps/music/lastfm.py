@@ -56,7 +56,8 @@ class LastFM:
             album = get_or_create_album(lfm_scrobble.pop("album"), artist)
 
             lfm_scrobble["artist"] = artist
-            lfm_scrobble["album"] = album
+            if album:
+                lfm_scrobble["album"] = album
             track = get_or_create_track(**lfm_scrobble)
 
             new_scrobble = Scrobble(

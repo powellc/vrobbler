@@ -1,7 +1,6 @@
 import logging
 import re
-
-from musicbrainzngs.caa import musicbrainz
+from typing import Optional
 
 from music.musicbrainz import (
     lookup_album_dict_from_mb,
@@ -41,15 +40,19 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
     return artist
 
 
-def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
+def get_or_create_album(
+    name: str, artist: Artist, mbid: str = None
+) -> Optional[Album]:
     album = None
     album_dict = lookup_album_dict_from_mb(name, artist_name=artist.name)
+
+    name = name or album_dict["name"]
     mbid = mbid or album_dict["mb_id"]
 
     logger.debug(f"Looking up album {name} and mbid: {mbid}")
 
     album = Album.objects.filter(musicbrainz_id=mbid).first()
-    if not album:
+    if not album and name:
         album = Album.objects.create(name=name, musicbrainz_id=mbid)
         album.year = album_dict["year"]
         album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
@@ -63,6 +66,8 @@ def get_or_create_album(name: str, artist: Artist, mbid: str = None) -> Album:
         )
         album.artists.add(artist)
         album.fetch_artwork()
+    if not album:
+        logger.warn(f"No album found for {name} and {mbid}")
 
     return album
 
