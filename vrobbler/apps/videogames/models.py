@@ -138,7 +138,7 @@ class VideoGame(LongPlayScrobblableMixin):
             # This almost never works without intervention
             # self.igdb_id = lookup_game_id_from_gdb(self.title)
             # self.save(update_fields=["igdb_id"])
-            load_game_data_from_igdb(self.id)
+            load_game_data_from_igdb(self.id, self.igdb_id)
 
         if (not self.run_time_ticks or force_update) and self.main_story_time:
             self.run_time_seconds = self.main_story_time
