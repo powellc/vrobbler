@@ -72,15 +72,19 @@ def load_game_data_from_igdb(
 
     logger.info(f"Looking up video game {igdb_id}")
     game_dict = lookup_game_from_igdb(igdb_id)
+
     if not game_dict:
         logger.warn(f"No game data found on IGDB for ID {igdb_id}")
         return
 
     screenshot_url = game_dict.pop("screenshot_url")
     cover_url = game_dict.pop("cover_url")
+    genres = game_dict.pop("genres")
 
     VideoGame.objects.filter(pk=game.id).update(**game_dict)
     game.refresh_from_db()
+
+    game.genre.add(*genres)
 
     if not game.screenshot:
         r = requests.get(screenshot_url)

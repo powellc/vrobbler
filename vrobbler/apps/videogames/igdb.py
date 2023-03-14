@@ -62,7 +62,7 @@ def lookup_game_from_igdb(igdb_id: str) -> Dict:
         "Authorization": f"Bearer {get_igdb_token()}",
         "Client-ID": IGDB_CLIENT_ID,
     }
-    fields = "id,name,alternative_names.*,release_dates.*,cover.*,screenshots.*,rating,rating_count,summary"
+    fields = "id,name,alternative_names.*,genres.*,release_dates.*,cover.*,screenshots.*,rating,rating_count,summary"
 
     game_dict = {}
     body = f"fields {fields}; where id = {igdb_id};"
@@ -94,6 +94,10 @@ def lookup_game_from_igdb(igdb_id: str) -> Dict:
             release_date = datetime.utcfromtimestamp(release_date).replace(
                 tzinfo=pytz.utc
             )
+    genres = []
+    if "genres" in game.keys():
+        for genre in game.get("genres"):
+            genres.append(genre["name"])
 
     game_dict = {
         "igdb_id": game.get("id"),
@@ -105,6 +109,7 @@ def lookup_game_from_igdb(igdb_id: str) -> Dict:
         "rating_count": game.get("rating_count"),
         "release_date": release_date,
         "summary": game.get("summary"),
+        "genres": genres,
     }
 
     return game_dict
