@@ -68,6 +68,7 @@ def lookup_album_dict_from_mb(release_name: str, artist_name: str) -> dict:
 
     return {
         "year": year,
+        "title": top_result["title"],
         "mb_id": top_result["id"],
         "mb_group_id": top_result["release-group"]["id"],
     }
