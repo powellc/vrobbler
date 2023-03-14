@@ -6,6 +6,7 @@ from scrobbles.models import (
     LastFmImport,
     Scrobble,
 )
+from scrobbles.mixins import Genre
 
 
 class ScrobbleInline(admin.TabularInline):
@@ -47,6 +48,14 @@ class LastFmImportAdmin(ImportBaseAdmin):
 @admin.register(KoReaderImport)
 class KoReaderImportAdmin(ImportBaseAdmin):
     """"""
+
+
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "source",
+    )
 
 
 @admin.register(ChartRecord)

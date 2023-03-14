@@ -5,11 +5,29 @@ from uuid import uuid4
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
+from taggit.managers import TaggableManager
 from scrobbles.utils import get_scrobbles_for_media
+from taggit.models import TagBase, GenericTaggedItemBase
 
 BNULL = {"blank": True, "null": True}
 
 logger = logging.getLogger(__name__)
+
+
+class Genre(TagBase):
+    source = models.CharField(max_length=255, **BNULL)
+
+    class Meta:
+        verbose_name = "Genre"
+        verbose_name_plural = "Genres"
+
+
+class ObjectWithGenres(GenericTaggedItemBase):
+    tag = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_items",
+    )
 
 
 class ScrobblableMixin(TimeStampedModel):
@@ -19,6 +37,8 @@ class ScrobblableMixin(TimeStampedModel):
     title = models.CharField(max_length=255, **BNULL)
     run_time_seconds = models.IntegerField(**BNULL)
     run_time_ticks = models.PositiveBigIntegerField(**BNULL)
+
+    genre = TaggableManager(through=ObjectWithGenres)
 
     class Meta:
         abstract = True

@@ -9,8 +9,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-from scrobbles.mixins import ScrobblableMixin
-from scrobbles.utils import convert_to_seconds
+from scrobbles.mixins import ObjectWithGenres, ScrobblableMixin
 from taggit.managers import TaggableManager
 
 from videos.imdb import lookup_video_from_imdb
@@ -27,7 +26,7 @@ class Series(TimeStampedModel):
     imdb_rating = models.FloatField(**BNULL)
     cover_image = models.ImageField(upload_to="videos/series/", **BNULL)
 
-    genres = TaggableManager()
+    genre = TaggableManager(through=ObjectWithGenres)
 
     class Meta:
         verbose_name_plural = "series"
@@ -49,7 +48,10 @@ class Series(TimeStampedModel):
         ).order_by("-timestamp")
 
     def fix_metadata(self, force_update=False):
-        imdb_dict = lookup_video_from_imdb(self.name, kind="tv series")
+        name_or_id = self.name
+        if self.imdb_id:
+            name_or_id = self.imdb_id
+        imdb_dict = lookup_video_from_imdb(name_or_id)
         if not imdb_dict:
             logger.warn(f"No imdb data for {self}")
             return
@@ -66,6 +68,9 @@ class Series(TimeStampedModel):
             if r.status_code == 200:
                 fname = f"{self.name}_{self.uuid}.jpg"
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
+
+        if genres := imdb_dict.data.get("genres"):
+            self.genre.add(*genres)
 
 
 class Video(ScrobblableMixin):
@@ -148,6 +153,9 @@ class Video(ScrobblableMixin):
             if r.status_code == 200:
                 fname = f"{self.title}_{self.uuid}.jpg"
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
+
+        if genres := imdb_dict.data.get("genres"):
+            self.genre.add(*genres)
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Video":
