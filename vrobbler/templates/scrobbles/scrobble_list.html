@@ -522,6 +522,7 @@
                                 <tr>
                                     <th scope="col">Date</th>
                                     <th scope="col">Title</th>
+                                    <th scope="col">Round</th>
                                     <th scope="col">League</th>
                                 </tr>
                             </thead>
@@ -530,7 +531,8 @@
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
                                     <td>{{scrobble.sport_event.title}}</td>
-                                    <td>{{scrobble.sport_event.league.abbreviation}}</td>
+                                    <td>{{scrobble.sport_event.round.name}}</td>
+                                    <td>{{scrobble.sport_event.round.season.league}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
