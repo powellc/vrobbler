@@ -58,7 +58,7 @@ def get_or_create_album(
         album.year = album_dict["year"]
         album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
         album.musicbrainz_albumartist_id = artist.musicbrainz_id
-        album.musicbrainz_id = album_dict["mbid"]
+        album.musicbrainz_id = album_dict["mb_id"]
         album.save(
             update_fields=[
                 "musicbrainz_id",
