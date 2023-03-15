@@ -44,8 +44,7 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
                 mbid=row[7],
                 artist=artist,
                 album=album,
-                run_time=row[4],
-                run_time_ticks=int(row[4]) * 1000,
+                run_time_seconds=int(row[4]),
             )
 
             timestamp = (
