@@ -258,7 +258,7 @@ class ChartRecord(TimeStampedModel):
     """
 
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
-    rank = models.IntegerField()
+    rank = models.IntegerField(db_index=True)
     count = models.IntegerField(default=0)
     year = models.IntegerField(default=timezone.now().year)
     month = models.IntegerField(**BNULL)
