@@ -14,6 +14,11 @@ from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
 from music.theaudiodb import lookup_artist_from_tadb, lookup_album_from_tadb
+from vrobbler.apps.music.allmusic import (
+    get_allmusic_slug,
+    scrape_data_from_allmusic,
+)
+from vrobbler.apps.music.bandcamp import get_bandcamp_slug
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -26,6 +31,8 @@ class Artist(TimeStampedModel):
     theaudiodb_genre = models.CharField(max_length=255, **BNULL)
     theaudiodb_mood = models.CharField(max_length=255, **BNULL)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
+    allmusic_id = models.CharField(max_length=100, **BNULL)
+    bandcamp_id = models.CharField(max_length=100, **BNULL)
     thumbnail = models.ImageField(upload_to="artist/", **BNULL)
 
     class Meta:
@@ -37,6 +44,18 @@ class Artist(TimeStampedModel):
     @property
     def mb_link(self):
         return f"https://musicbrainz.org/artist/{self.musicbrainz_id}"
+
+    @property
+    def allmusic_link(self):
+        if self.allmusic_id:
+            return f"https://www.allmusic.com/artist/{self.allmusic_id}"
+        return ""
+
+    @property
+    def bandcamp_link(self):
+        if self.bandcamp_id:
+            return f"https://{self.bandcamp_id}.bandcamp.com/"
+        return ""
 
     def get_absolute_url(self):
         return reverse("music:artist_detail", kwargs={"slug": self.uuid})
@@ -60,6 +79,24 @@ class Artist(TimeStampedModel):
         from scrobbles.models import ChartRecord
 
         return ChartRecord.objects.filter(track__artist=self).order_by("-year")
+
+    def scrape_allmusic(self, force=False) -> None:
+        if not self.allmusic_id or force:
+            slug = get_allmusic_slug(self.name)
+            if not slug:
+                logger.info(f"No allmsuic link for {self}")
+                return
+            self.allmusic_id = slug
+            self.save(update_fields=["allmusic_id"])
+
+    def scrape_bandcamp(self, force=False) -> None:
+        if not self.bandcamp_id or force:
+            slug = get_bandcamp_slug(self.name)
+            if not slug:
+                logger.info(f"No bandcamp link for {self}")
+                return
+            self.bandcamp_id = slug
+            self.save(update_fields=["bandcamp_id"])
 
     def fix_metadata(self):
         tadb_info = lookup_artist_from_tadb(self.name)
@@ -109,6 +146,9 @@ class Album(TimeStampedModel):
     theaudiodb_speed = models.CharField(max_length=255, **BNULL)
     theaudiodb_theme = models.CharField(max_length=255, **BNULL)
     allmusic_id = models.CharField(max_length=255, **BNULL)
+    allmusic_rating = models.IntegerField(**BNULL)
+    allmusic_review = models.TextField(**BNULL)
+    bandcamp_id = models.CharField(max_length=100, **BNULL)
     rateyourmusic_id = models.CharField(max_length=255, **BNULL)
     wikipedia_slug = models.CharField(max_length=255, **BNULL)
     discogs_id = models.CharField(max_length=255, **BNULL)
@@ -139,6 +179,29 @@ class Album(TimeStampedModel):
     def primary_artist(self):
         return self.artists.first()
 
+    def scrape_allmusic(self, force=False) -> None:
+        if not self.allmusic_id or force:
+            slug = get_allmusic_slug(self.name, self.primary_artist.name)
+            if not slug:
+                logger.info(
+                    f"No allmsuic link for {self} by {self.primary_artist}"
+                )
+                return
+            self.allmusic_id = slug
+            self.save(update_fields=["allmusic_id"])
+
+        allmusic_data = scrape_data_from_allmusic(self.allmusic_link)
+
+        if not allmusic_data:
+            logger.info(
+                f"No allmsuic data for {self} by {self.primary_artist}"
+            )
+            return
+
+        self.allmusic_review = allmusic_data["review"]
+        self.allmusic_rating = allmusic_data["rating"]
+        self.save(update_fields=["allmusic_review", "allmusic_rating"])
+
     def scrape_theaudiodb(self) -> None:
         artist = "Various Artists"
         if self.primary_artist:
@@ -149,6 +212,15 @@ class Album(TimeStampedModel):
             return
 
         Album.objects.filter(pk=self.pk).update(**album_data)
+
+    def scrape_bandcamp(self, force=False) -> None:
+        if not self.bandcamp_id or force:
+            slug = get_bandcamp_slug(self.primary_artist.name, self.name)
+            if not slug:
+                logger.info(f"No bandcamp link for {self}")
+                return
+            self.bandcamp_id = slug
+            self.save(update_fields=["bandcamp_id"])
 
     def fix_metadata(self):
         if (
@@ -198,6 +270,7 @@ class Album(TimeStampedModel):
             ):
                 self.fetch_artwork()
         self.scrape_theaudiodb()
+        self.scrape_allmusic()
 
     def fetch_artwork(self, force=False):
         if not self.cover_image and not force:
@@ -242,7 +315,7 @@ class Album(TimeStampedModel):
     @property
     def allmusic_link(self) -> str:
         if self.allmusic_id:
-            return f"https://www.allmusic.com/artist/{self.allmusic_id}"
+            return f"https://www.allmusic.com/album/{self.allmusic_id}"
         return ""
 
     @property
@@ -262,6 +335,12 @@ class Album(TimeStampedModel):
         artist_slug = self.primary_artist.name.lower().replace(" ", "-")
         album_slug = self.name.lower().replace(" ", "-")
         return f"https://rateyourmusic.com/release/album/{artist_slug}/{album_slug}/"
+
+    @property
+    def bandcamp_link(self):
+        if self.bandcamp_id and self.primary_artist.bandcamp_id:
+            return f"https://{self.primary_artist.bandcamp_id}.bandcamp.com/album/{self.bandcamp_id}"
+        return ""
 
     @property
     def bandcamp_search_link(self):

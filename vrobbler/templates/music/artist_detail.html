@@ -26,7 +26,8 @@
         <p style="float:right;">
             <a href="{{artist.mb_link}}"><img src="{% static "images/musicbrainz-logo.png" %}" width=35></a>
             <a href="{{artist.rym_link}}"><img src="{% static "images/rateyourmusic-logo.jpg" %}" width=35></a>
-            <a href="{{artist.bandcamp_search_link}}"><img src="{% static "images/bandcamp-logo.png" %}" width=35></a>
+            {% if artist.bandcamp_link %}<a href="{{artist.bandcamp_link}}"><img src="{% static "images/bandcamp-logo.png" %}" width=35></a>{% endif %}
+            {% if artist.allmusic_link %}<a href="{{artist.allmusic_link}}"><img src="{% static "images/allmusic-logo.png" %}" width=35></a>{% endif %}
         </p>
     </div>
 </div>

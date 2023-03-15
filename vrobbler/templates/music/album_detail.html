@@ -16,12 +16,15 @@
     <div style="float:left; width:600px; margin-left:10px; ">
         {% if object.theaudiodb_description %}
         <p>{{object.theaudiodb_description|safe|linebreaks|truncatewords:160}}</p>
-        <hr/>
         {% endif %}
+        {% if object.allmusic_review%}
+        <p>{{object.allmusic_review|safe|linebreaks|truncatewords:160}}</p>
+        {% endif %}
+        <hr/>
         <p style="float:right;">
             <a href="{{album.mb_link}}"><img src="{% static "images/musicbrainz-logo.png" %}" width=35></a>
             <a href="{{album.rym_link}}"><img src="{% static "images/rateyourmusic-logo.jpg" %}" width=35></a>
-            <a href="{{album.bandcamp_search_link}}"><img src="{% static "images/bandcamp-logo.png" %}" width=35></a>
+            {% if album.bandcamp_link %}<a href="{{album.bandcamp_link}}"><img src="{% static "images/bandcamp-logo.png" %}" width=35></a>{% endif %}
             {% if album.tadb_link %}<a href="{{album.tadb_link}}"><img src="{% static "images/theaudiodb-logo.png" %}" width=35></a>{% endif %}
             {% if album.allmusic_link %}<a href="{{album.allmusic_link}}"><img src="{% static "images/allmusic-logo.png" %}" width=35></a>{% endif %}
         </p>

@@ -37,6 +37,7 @@ django-encrypted-field = "^1.0.5"
 celery = "^5.2.7"
 honcho = "^1.1.0"
 howlongtobeatpy = "^1.0.5"
+beautifulsoup4 = "^4.11.2"
 
 [tool.poetry.dev-dependencies]
 Werkzeug = "2.0.3"
