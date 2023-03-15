@@ -190,7 +190,7 @@ class Album(TimeStampedModel):
 
     def scrape_allmusic(self, force=False) -> None:
         if not self.allmusic_id or force:
-            slug = get_allmusic_slug(self.name, self.primary_artist.name)
+            slug = get_allmusic_slug(self.name, self.album_artist.name)
             if not slug:
                 logger.info(
                     f"No allmsuic link for {self} by {self.primary_artist}"
@@ -278,6 +278,7 @@ class Album(TimeStampedModel):
                 or self.cover_image == "default-image-replace-me"
             ):
                 self.fetch_artwork()
+        self.fix_album_artist()
         self.scrape_theaudiodb()
         self.scrape_allmusic()
 
