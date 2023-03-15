@@ -25,6 +25,7 @@ class Series(TimeStampedModel):
     imdb_id = models.CharField(max_length=20, **BNULL)
     imdb_rating = models.FloatField(**BNULL)
     cover_image = models.ImageField(upload_to="videos/series/", **BNULL)
+    preferred_source = models.CharField(max_length=100, **BNULL)
 
     genre = TaggableManager(through=ObjectWithGenres)
 

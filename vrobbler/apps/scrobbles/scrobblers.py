@@ -168,12 +168,14 @@ def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
 def manual_scrobble_video(imdb_id: str, user_id: int):
     video = Video.find_or_create({"imdb_id": imdb_id})
 
-    # TODO allow series to be marked with a source id
+    # When manually scrobbling, try finding a source from the series
+    if video.tv_series:
+        source = video.tv_series.preferred_source or "Vrobbler"
     scrobble_dict = {
         "user_id": user_id,
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
-        "source": "Vrobbler",
+        "source": source,
     }
 
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
