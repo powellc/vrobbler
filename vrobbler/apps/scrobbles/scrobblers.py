@@ -176,6 +176,7 @@ def manual_scrobble_video(imdb_id: str, user_id: int):
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
         "source": source,
+        "source_id": "Manually scrobbled from Vrobbler and looked up via IMDB",
     }
 
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
@@ -197,6 +198,7 @@ def manual_scrobble_video_game(data_dict: dict, user_id: Optional[int]):
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
         "source": "Vrobbler",
+        "source_id": "Manually scrobbled from Vrobbler and looked up via HLTB.com",
         "long_play_complete": False,
     }
 
