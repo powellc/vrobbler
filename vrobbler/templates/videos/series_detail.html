@@ -28,6 +28,13 @@
     <div class="cover image-wrapper">
         {% if object.imdb_rating %}<div class="caption">{{object.imdb_rating}}</div>{% endif %}
         <img src="{% if object.cover_image %}{{object.cover_image.url}}{% else %}{% static 'images/no-video-cover.jpg' %}{% endif %}" width="400px" />
+        {% if next_episode_id %}
+        <form id="scrobble-form" action="{% url 'scrobbles:lookup-manual-scrobble' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="item_id" id="id_item_id" value="-i {{next_episode_id}}">
+            <button type="submit" class="btn btn-primary">Start next episode</button>
+        </form>
+        {% endif %}
     </div>
     <div class="summary">
         {% if object.plot%}<p>{{object.plot|safe|linebreaks|truncatewords:160}}</p>{% endif %}

@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Dict, Optional
 from uuid import uuid4
 
 import requests
@@ -40,12 +40,32 @@ class Series(TimeStampedModel):
     def imdb_link(self):
         return f"https://www.imdb.com/title/tt{self.imdb_id}"
 
-    def scrobbles_for_user(self, user_id: int):
+    def scrobbles_for_user(self, user_id: int, include_playing=False):
         from scrobbles.models import Scrobble
 
+        played_query = models.Q(played_to_completion=True)
+        if include_playing:
+            played_query = models.Q()
         return Scrobble.objects.filter(
-            video__tv_series=self, user=user_id, played_to_completion=True
+            played_query,
+            video__tv_series=self,
+            user=user_id,
         ).order_by("-timestamp")
+
+    def last_scrobbled_episode(self, user_id: int) -> Optional["Video"]:
+        episode = None
+        last_scrobble = self.scrobbles_for_user(
+            user_id, include_playing=True
+        ).first()
+        if last_scrobble:
+            episode = last_scrobble.media_obj
+        return episode
+
+    def is_episode_playing(self, user_id: int) -> bool:
+        last_scrobble = self.scrobbles_for_user(
+            user_id, include_playing=True
+        ).first()
+        return not last_scrobble.played_to_completion
 
     def fix_metadata(self, force_update=False):
         name_or_id = self.name
@@ -95,6 +115,7 @@ class Video(ScrobblableMixin):
     tv_series = models.ForeignKey(Series, on_delete=models.DO_NOTHING, **BNULL)
     season_number = models.IntegerField(**BNULL)
     episode_number = models.IntegerField(**BNULL)
+    next_imdb_id = models.CharField(max_length=20, **BNULL)
     imdb_id = models.CharField(max_length=20, **BNULL)
     imdb_rating = models.FloatField(**BNULL)
     cover_image = models.ImageField(upload_to="videos/video/", **BNULL)

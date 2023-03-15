@@ -229,7 +229,7 @@ class ManualScrobbleView(FormView):
         if key == "-i":
             manual_scrobble_video(item_id, self.request.user.id)
 
-        return HttpResponseRedirect(reverse("vrobbler-home"))
+        return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
 class JsonableResponseMixin:
@@ -272,7 +272,7 @@ class AudioScrobblerImportCreateView(
         self.object.user = self.request.user
         self.object.save()
         process_tsv_import.delay(self.object.id)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
 class KoReaderImportCreateView(
@@ -288,7 +288,7 @@ class KoReaderImportCreateView(
         self.object.user = self.request.user
         self.object.save()
         process_koreader_import.delay(self.object.id)
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
 @permission_classes([IsAuthenticated])
@@ -300,8 +300,7 @@ def lastfm_import(request):
 
     process_lastfm_import.delay(lfm_import.id)
 
-    success_url = reverse_lazy("vrobbler-home")
-    return HttpResponseRedirect(success_url)
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
 @csrf_exempt
@@ -394,6 +393,7 @@ def scrobble_start(request, uuid):
     success_url = request.META.get("HTTP_REFERER")
 
     if not user.is_authenticated:
+
         return HttpResponseRedirect(success_url)
 
     media_obj = None
@@ -506,7 +506,7 @@ def scrobble_cancel(request, uuid):
         )
     else:
         messages.add_message(request, messages.ERROR, "Scrobble not found.")
-    return HttpResponseRedirect(success_url)
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
 @permission_classes([IsAuthenticated])

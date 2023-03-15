@@ -37,6 +37,7 @@ def get_or_create_video(name_or_id: str, force_update=False):
             "run_time_seconds": run_time_seconds,
             "episode_number": imdb_dict.get("episode", None),
             "season_number": imdb_dict.get("season", None),
+            "next_imdb_id": imdb_dict.get("next episode", None),
             "tv_series_id": series.id if series else None,
         }
         Video.objects.filter(pk=video.id).update(**video_dict)
