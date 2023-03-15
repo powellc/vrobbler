@@ -246,7 +246,7 @@
                             {% for scrobble in now_playing_list %}
                             <div class="now-playing">
                                 {% if scrobble.media_obj.album.cover_image %}
-                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.album.cover_image.url}}" /></div>
+                                <div style="float:left;padding-right:10px;padding-bottom:10px;"><img src="{{scrobble.media_obj.album.cover_image.url}}" /></div>
                                 {% endif %}
                                 {% if scrobble.media_obj.cover %}
                                 <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.cover.url}}" /></div>
