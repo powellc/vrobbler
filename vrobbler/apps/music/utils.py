@@ -7,6 +7,7 @@ from music.musicbrainz import (
     lookup_artist_from_mb,
     lookup_track_from_mb,
 )
+from music.constants import VARIOUS_ARTIST_DICT
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ def get_or_create_album(
 
     logger.debug(f"Looking up album {name} and mbid: {mbid}")
 
-    album = Album.objects.filter(artist=artist, name=name).first()
+    album = Album.objects.filter(album_artist=artist, name=name).first()
 
     if not album and name:
         album = Album.objects.create(name=name, musicbrainz_id=mbid)
@@ -102,3 +103,11 @@ def get_or_create_track(
         )
 
     return track
+
+
+def get_or_create_various_artists():
+    artist = Artist.objects.filter(name="Various Artists").first()
+    if not artist:
+        artist = Artist.objects.create(**VARIOUS_ARTIST_DICT)
+        logger.info("Created Various Artists placeholder")
+    return artist

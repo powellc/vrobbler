@@ -1,4 +1,3 @@
-import requests
 import logging
 from tempfile import NamedTemporaryFile
 from typing import Dict, Optional
@@ -6,19 +5,17 @@ from urllib.request import urlopen
 from uuid import uuid4
 
 import musicbrainzngs
+import requests
 from django.conf import settings
 from django.core.files.base import ContentFile, File
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
+from music.allmusic import get_allmusic_slug, scrape_data_from_allmusic
+from music.bandcamp import get_bandcamp_slug
+from music.theaudiodb import lookup_album_from_tadb, lookup_artist_from_tadb
 from scrobbles.mixins import ScrobblableMixin
-from music.theaudiodb import lookup_artist_from_tadb, lookup_album_from_tadb
-from vrobbler.apps.music.allmusic import (
-    get_allmusic_slug,
-    scrape_data_from_allmusic,
-)
-from vrobbler.apps.music.bandcamp import get_bandcamp_slug
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -28,6 +25,7 @@ class Artist(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     biography = models.TextField(**BNULL)
+    theaudiodb_id = models.CharField(max_length=255, unique=True, **BNULL)
     theaudiodb_genre = models.CharField(max_length=255, **BNULL)
     theaudiodb_mood = models.CharField(max_length=255, **BNULL)
     musicbrainz_id = models.CharField(max_length=255, **BNULL)
@@ -129,6 +127,9 @@ class Artist(TimeStampedModel):
 class Album(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
+    album_artist = models.ForeignKey(
+        Artist, related_name="albums", on_delete=models.DO_NOTHING, **BNULL
+    )
     artists = models.ManyToManyField(Artist)
     year = models.IntegerField(**BNULL)
     musicbrainz_id = models.CharField(max_length=255, unique=True, **BNULL)
@@ -175,9 +176,17 @@ class Album(TimeStampedModel):
             .order_by("-scrobble_count")
         )
 
-    @property
-    def primary_artist(self):
-        return self.artists.first()
+    def fix_album_artist(self):
+        from music.utils import get_or_create_various_artists
+
+        multiple_artists = self.artists.count() > 1
+        if not self.album_artist:
+            if multiple_artists:
+                self.album_artist = get_or_create_various_artists()
+            else:
+                self.album_artist = self.artists.first()
+
+            self.save(update_fields=["album_artist"])
 
     def scrape_allmusic(self, force=False) -> None:
         if not self.allmusic_id or force:

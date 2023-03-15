@@ -11,7 +11,7 @@ class AlbumAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "year",
-        "primary_artist",
+        "album_artist",
         "theaudiodb_genre",
         "theaudiodb_mood",
         "musicbrainz_id",
