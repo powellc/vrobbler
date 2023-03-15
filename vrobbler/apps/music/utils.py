@@ -47,18 +47,20 @@ def get_or_create_album(
     album_dict = lookup_album_dict_from_mb(name, artist_name=artist.name)
 
     name = name or album_dict["title"]
-    mbid = mbid or album_dict["mb_id"]
 
     logger.debug(f"Looking up album {name} and mbid: {mbid}")
 
-    album = Album.objects.filter(musicbrainz_id=mbid).first()
+    album = Album.objects.filter(artist=artist, name=name).first()
+
     if not album and name:
         album = Album.objects.create(name=name, musicbrainz_id=mbid)
         album.year = album_dict["year"]
         album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
         album.musicbrainz_albumartist_id = artist.musicbrainz_id
+        album.musicbrainz_id = album_dict["mbid"]
         album.save(
             update_fields=[
+                "musicbrainz_id",
                 "year",
                 "musicbrainz_releasegroup_id",
                 "musicbrainz_albumartist_id",
@@ -66,6 +68,7 @@ def get_or_create_album(
         )
         album.artists.add(artist)
         album.fetch_artwork()
+        album.scrape_allmusic()
     if not album:
         logger.warn(f"No album found for {name} and {mbid}")
 

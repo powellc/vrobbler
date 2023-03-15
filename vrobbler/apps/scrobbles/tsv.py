@@ -37,7 +37,7 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
                 )
                 continue
             artist = get_or_create_artist(row[0])
-            album = get_or_create_album(row[1], artist, row[7])
+            album = get_or_create_album(row[1], artist)
 
             track = get_or_create_track(
                 title=row[2],
