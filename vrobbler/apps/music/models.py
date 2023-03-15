@@ -193,7 +193,7 @@ class Album(TimeStampedModel):
             slug = get_allmusic_slug(self.name, self.album_artist.name)
             if not slug:
                 logger.info(
-                    f"No allmsuic link for {self} by {self.primary_artist}"
+                    f"No allmsuic link for {self} by {self.album_artist}"
                 )
                 return
             self.allmusic_id = slug
@@ -202,9 +202,7 @@ class Album(TimeStampedModel):
         allmusic_data = scrape_data_from_allmusic(self.allmusic_link)
 
         if not allmusic_data:
-            logger.info(
-                f"No allmsuic data for {self} by {self.primary_artist}"
-            )
+            logger.info(f"No allmsuic data for {self} by {self.album_artist}")
             return
 
         self.allmusic_review = allmusic_data["review"]
@@ -213,8 +211,8 @@ class Album(TimeStampedModel):
 
     def scrape_theaudiodb(self) -> None:
         artist = "Various Artists"
-        if self.primary_artist:
-            artist = self.primary_artist.name
+        if self.album_artist:
+            artist = self.album_artist.name
         album_data = lookup_album_from_tadb(self.name, artist)
         if not album_data.get("theaudiodb_id"):
             logger.info(f"No data for {self} found in TheAudioDB")
@@ -224,7 +222,7 @@ class Album(TimeStampedModel):
 
     def scrape_bandcamp(self, force=False) -> None:
         if not self.bandcamp_id or force:
-            slug = get_bandcamp_slug(self.primary_artist.name, self.name)
+            slug = get_bandcamp_slug(self.album_artist.name, self.name)
             if not slug:
                 logger.info(f"No bandcamp link for {self}")
                 return
@@ -342,19 +340,19 @@ class Album(TimeStampedModel):
 
     @property
     def rym_link(self):
-        artist_slug = self.primary_artist.name.lower().replace(" ", "-")
+        artist_slug = self.album_artist.name.lower().replace(" ", "-")
         album_slug = self.name.lower().replace(" ", "-")
         return f"https://rateyourmusic.com/release/album/{artist_slug}/{album_slug}/"
 
     @property
     def bandcamp_link(self):
-        if self.bandcamp_id and self.primary_artist.bandcamp_id:
-            return f"https://{self.primary_artist.bandcamp_id}.bandcamp.com/album/{self.bandcamp_id}"
+        if self.bandcamp_id and self.album_artist.bandcamp_id:
+            return f"https://{self.album_artist.bandcamp_id}.bandcamp.com/album/{self.bandcamp_id}"
         return ""
 
     @property
     def bandcamp_search_link(self):
-        artist = self.primary_artist.name.lower()
+        artist = self.album_artist.name.lower()
         album = self.name.lower()
         return f"https://bandcamp.com/search?q={album} {artist}&item_type=a"
 

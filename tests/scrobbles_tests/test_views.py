@@ -72,7 +72,6 @@ def test_scrobble_mopidy_same_track_different_album(
         content_type="application/json",
     )
 
-    print(response.data)
     assert response.status_code == 200
     assert response.data == {"scrobble_id": 2}
     scrobble = Scrobble.objects.last()

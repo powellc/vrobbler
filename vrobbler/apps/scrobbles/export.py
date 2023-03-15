@@ -52,7 +52,7 @@ def export_scrobbles(start_date=None, end_date=None, format="AS"):
             track = scrobble.track
             track_number = 0  # TODO Add track number
             track_rating = "S"  # TODO implement ratings?
-            track_artist = track.artist or track.album.primary_artist
+            track_artist = track.artist or track.album.album_artist
             row = [
                 track_artist,
                 track.album.name,
