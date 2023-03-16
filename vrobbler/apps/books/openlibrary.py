@@ -80,9 +80,12 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
             first_sentence = top.get("first_sentence")[0].get("value")
         except AttributeError:
             first_sentence = top.get("first_sentence")[0]
+    isbn = None
+    if top.get("isbn"):
+        isbn = top.get("isbn")[0]
     return {
         "title": top.get("title"),
-        "isbn": top.get("isbn")[0],
+        "isbn": isbn,
         "openlibrary_id": ol_id,
         "goodreads_id": get_first("id_goodreads", top),
         "first_publish_year": top.get("first_publish_year"),
