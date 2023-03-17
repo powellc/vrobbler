@@ -3,12 +3,13 @@ import logging
 from datetime import datetime
 
 import pytz
-from scrobbles.models import Scrobble
 from music.utils import (
     get_or_create_album,
     get_or_create_artist,
     get_or_create_track,
 )
+from scrobbles.constants import AsTsvColumn
+from scrobbles.models import Scrobble
 
 logger = logging.getLogger(__name__)
 
@@ -36,19 +37,33 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
                     extra={"row": row},
                 )
                 continue
-            artist = get_or_create_artist(row[0])
-            album = get_or_create_album(row[1], artist)
 
-            track = get_or_create_track(
-                title=row[2],
-                mbid=row[7],
-                artist=artist,
-                album=album,
-                run_time_seconds=int(row[4]),
+            artist = get_or_create_artist(
+                row[AsTsvColumn["ARTIST_NAME"].value]
+            )
+            album = get_or_create_album(
+                row[AsTsvColumn["ALBUM_NAME"].value], artist
             )
 
+            track = get_or_create_track(
+                title=row[AsTsvColumn["TRACK_NAME"].value],
+                mbid=row[AsTsvColumn["MB_ID"].value],
+                artist=artist,
+                album=album,
+                run_time_seconds=int(
+                    row[AsTsvColumn["RUN_TIME_SECONDS"].value]
+                ),
+            )
+            if row[AsTsvColumn["COMPLETE"].value] == "S":
+                logger.info(
+                    f"Skipping track {track} by {artist} because not finished"
+                )
+                continue
+
             timestamp = (
-                datetime.utcfromtimestamp(int(row[6]))
+                datetime.utcfromtimestamp(
+                    int(row[AsTsvColumn["TIMESTAMP"].value])
+                )
                 .replace(tzinfo=user_tz)
                 .astimezone(pytz.utc)
             )
