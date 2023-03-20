@@ -51,7 +51,7 @@ def get_or_create_album(
 
     logger.debug(f"Looking up album {name} and mbid: {mbid}")
 
-    album = Album.objects.filter(album_artist=artist, name=name).first()
+    album = Album.objects.filter(artists__in=[artist], name=name).first()
 
     if not album and name:
         mbid = mbid or album_dict["mb_id"]
