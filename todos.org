@@ -2,14 +2,10 @@
 
 A fun way to keep track of things in the project to fix or improve.
 
-* TODO [#A] Add django-storage to store files on S3 :improvement:
-* TODO [#B] Adjust cancel/finish task to use javascript to submit :improvement:
-* TODO [#B] Implement a detail view for TV shows :improvement:views:
-* TODO [#B] Implement a detail view for Movies :improvement:views:
-* TODO Add view for long-play content (books, video games) to restart them :views:improvement:
-* TODO [#C] Move to using more robust mopidy-webhooks pacakge form pypi :utility:improvement:
-** Example payloads from mopidy-webhooks
-*** Podcast playback ended
+* Backlog
+** TODO [#C] Move to using more robust mopidy-webhooks pacakge form pypi :utility:improvement:
+*** Example payloads from mopidy-webhooks
+**** Podcast playback ended
 #+begin_src json
 {
     "type": "event",
@@ -43,7 +39,7 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-*** Podcast playback state changes
+**** Podcast playback state changes
 #+begin_src json
 {
     "type": "event",
@@ -65,7 +61,7 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-*** Podcast playback started
+**** Podcast playback started
 #+begin_src json
 {
     "type": "event",
@@ -98,7 +94,7 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-*** Podcast playback paused
+**** Podcast playback paused
 #+begin_src  json
 {
     "type": "status",
@@ -129,7 +125,7 @@ A fun way to keep track of things in the project to fix or improve.
 }
 
 #+end_src
-*** Track playback started
+**** Track playback started
 #+begin_src json
 {
     "type": "event",
@@ -186,7 +182,7 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-*** Track playback in progress
+**** Track playback in progress
 #+begin_src json
 {
     "type": "status",
@@ -240,7 +236,7 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-*** Track event playback paused
+**** Track event playback paused
 #+begin_src json
 {
     "type": "event",
@@ -298,30 +294,60 @@ A fun way to keep track of things in the project to fix or improve.
     }
 }
 #+end_src
-* TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :utililty:improvement:
-* TODO [#C] Figure out how to add to web-scrobbler :improvement:scrobbling:
+** TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :utililty:improvement:
+** TODO What to do with Youtube videos from LastFM and web-scrobbler :bug:source:lastfm:
+* Version 1.0.0
+** TODO [#A] Add django-storage to store files on S3 :improvement:
+** TODO Add a "finished_timestamp" so we don't rely on content length :improvement:scrobbling:
+
+Essentially, we currently have the timestamp as when the content began
+scrobbling and then calculate the finish time from the length of the content.
+This works pretty well because we know how long most things are.
+
+But in some cases, sports events or long podcasts, we may start mid-way through
+an event or finish halfway through but still want to mark it as done. In these
+cases, knowing the finish time could be useful, especially when interfacing with
+other scrobblers which may have different definitions of when a scrobble
+finishes or started.
+
+** TODO Update weekly live chart to be 7-day continuous rather than weekly :views:bug:
+The live view will be blank every Monday, no reason to tie it to a day of the
+week. It should be "the last 7 days"
+** DONE [#B] Implement a detail view for TV shows :improvement:views:
+CLOSED: [2023-03-22 Wed 17:05]
+** DONE [#B] Implement a detail view for Movies :improvement:views:
+CLOSED: [2023-03-22 Wed 17:05]
+** DONE Add "service provider" to TV Series, and use that for source when available :bug:scrobbling:
+CLOSED: [2023-03-22 Wed 17:04]
+** DONE Add view for long-play content (books, video games) to restart them :views:improvement:
+CLOSED: [2023-03-22 Wed 17:01]
+** DONE Add live chart view like Maloja :improvement:views:
+CLOSED: [2023-03-07 Tue 11:13]
+** DONE [#C] Figure out how to add to web-scrobbler :improvement:scrobbling:
+CLOSED: [2023-03-22 Wed 17:06]
 
 An example:
 https://github.com/web-scrobbler/web-scrobbler/blob/master/src/core/background/scrobbler/maloja-scrobbler.js
-* TODO Update weekly live chart to be 7-day continuous rather than weekly :views:bug:
-The live view will be blank every Monday, no reason to tie it to a day of the
-week. It should be "the last 7 days"
-* TODO Add "service provider" to TV Series, and use that for source when available :bug:scrobbling:
-* DONE Add live chart view like Maloja :improvement:views:
-CLOSED: [2023-03-07 Tue 11:13]
-* DONE Add rudimentary video game scrobbling :improvement:content:videogames:
+
+This is actually going to be moot because we can import from LastFM, and
+web-scrobbler integrates well with LastFM. The only thing to think through here
+now is what to do with all the garbage web-scrobbler sometimes pushes to LastFM
+from Youtube (all videos get pushed, sigh).
+
+* Version 0.11.4
+** DONE Add rudimentary video game scrobbling :improvement:content:videogames:
 CLOSED: [2023-03-07 Tue 11:11]
-* DONE Add ability to scrobble from KOReader statistics files :improvement:books:content:
+** DONE Add ability to scrobble from KOReader statistics files :improvement:books:content:
 CLOSED: [2023-03-07 Tue 11:11]
 
-* DONE [#A] Fix fetching artwork without release group :bug:
+** DONE [#A] Fix fetching artwork without release group :bug:
 CLOSED: [2023-01-29 Sun 14:27]
 
 When we get artwork from Musicbrianz, and it's not found, we should check for
 release groups as well. This will stop issues with missing artwork because of
 obscure MB release matches.
 
-* DONE [#A] Fix Jellyfin music scrobbling N+1 past 90 completion percent :bug:
+** DONE [#A] Fix Jellyfin music scrobbling N+1 past 90 completion percent :bug:
 CLOSED: [2023-01-30 Mon 18:31]
 :LOGBOOK:
 CLOCK: [2023-01-30 Mon 18:00]--[2023-01-30 Mon 18:31] =>  0:31
@@ -338,7 +364,7 @@ as complete for the following conditions:
 
 But if we keep listening beyond 90, we should basically ignore updates (or just
 update the existing scrobble)
-* DONE [#A] Add support for Audioscrobbler tab-separated file uploads :improvement:
+** DONE [#A] Add support for Audioscrobbler tab-separated file uploads :improvement:
 CLOSED: [2023-02-03 Fri 16:52]
 
 An example of the format:
@@ -361,22 +387,22 @@ An example of the format:
 311	311	Misdirected Hostility	7	179	S	1740496085	61ff2c1a-fc9c-44c3-8da1-5e50a44245af
 ,
 #+end_src
-* DONE [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
+** DONE [#B] Allow scrobbling music without MB IDs by grabbing them before scrobble :improvement:
 CLOSED: [2023-02-17 Fri 00:10]
 
 This would allow a few nice flows. One, you'd be able to record the play of an
 entire album by just dropping the muscibrainz_id in. This could be helpful for
 offline listening. It would also mean bad metadata from mopidy would not break
 scrobbling.
-* DONE When updating musicbrainz IDs, clear and run fetch artwrok :improvement:
+** DONE When updating musicbrainz IDs, clear and run fetch artwrok :improvement:
 CLOSED: [2023-02-17 Fri 00:11]
-* DONE [#A] Add ability to manually scrobble albums or tracks from MB :improvement:
+** DONE [#A] Add ability to manually scrobble albums or tracks from MB :improvement:
 CLOSED: [2023-03-07 Tue 11:09]
 
 Given a UUID from musicbrainz, we should be able to scrobble an album or
 individual track.
 
-* DONE [#C] Implement keeping track of week/month/year chart-toppers :improvement:
+** DONE [#C] Implement keeping track of week/month/year chart-toppers :improvement:
 CLOSED: [2023-03-07 Tue 11:10]
 :LOGBOOK:
 CLOCK: [2023-01-30 Mon 16:30]--[2023-01-30 Mon 18:00] =>  1:30
