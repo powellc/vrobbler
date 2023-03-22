@@ -390,6 +390,15 @@ class Track(ScrobblableMixin):
     def info_link(self):
         return self.mb_link
 
+    @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.artist.thumbnail:
+            url = self.artist.thumbnail.url
+        if self.album and self.album.cover_image.url:
+            url = self.album.cover_image.url
+        return url
+
     @classmethod
     def find_or_create(
         cls, artist_dict: Dict, album_dict: Dict, track_dict: Dict

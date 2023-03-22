@@ -245,19 +245,9 @@
                             <b>Now playing</b>
                             {% for scrobble in now_playing_list %}
                             <div class="now-playing">
-                                {% if scrobble.media_obj.album.cover_image %}
-                                <div style="float:left;padding-right:10px;padding-bottom:10px;"><img src="{{scrobble.media_obj.album.cover_image.url}}" /></div>
-                                {% endif %}
-                                {% if scrobble.media_obj.cover %}
-                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.cover.url}}" /></div>
-                                {% endif %}
-                                {% if scrobble.media_obj.hltb_cover %}
-                                <div style="float:left;padding-right:5px;"><img src="{{scrobble.media_obj.hltb_cover.url}}" /></div>
-                                {% endif %}
+                                {% if scrobble.media_obj.primary_image_url %}<div style="float:left;padding-right:10px;padding-bottom:10px;"><img src="{{scrobble.media_obj.primary_image_url}}" /></div>{% endif %}
                                 <p><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></p>
-                                {% if scrobble.media_obj.subtitle %}
-                                <p><em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em></p>
-                                {% endif %}
+                                {% if scrobble.media_obj.subtitle %}<p><em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em></p>{% endif %}
                                 <p><small>{{scrobble.timestamp|naturaltime}} from {{scrobble.source}}</small></p>
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>

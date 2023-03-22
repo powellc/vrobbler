@@ -43,6 +43,11 @@ class ScrobblableMixin(TimeStampedModel):
     class Meta:
         abstract = True
 
+    @property
+    def primary_image_url(self) -> str:
+        logger.warn(f"Not implemented yet")
+        return ""
+
     def fix_metadata(self):
         logger.warn("fix_metadata() not implemented yet")
 

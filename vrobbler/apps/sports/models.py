@@ -141,6 +141,13 @@ class SportEvent(ScrobblableMixin):
     def info_link(self):
         return self.sportsdb_link
 
+    @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.round.season.league.logo:
+            url = self.round.season.league.logo.url
+        return url
+
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Event":
         """Given a data dict from Jellyfin, does the heavy lifting of looking up

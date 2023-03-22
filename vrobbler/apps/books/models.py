@@ -82,6 +82,13 @@ class Book(LongPlayScrobblableMixin):
     def subtitle(self):
         return f" by {self.author}"
 
+    @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.cover:
+            url = self.cover.url
+        return url
+
     def get_start_url(self):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
 

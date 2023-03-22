@@ -648,7 +648,10 @@ class Scrobble(TimeStampedModel):
             ).last()
             self.long_play_seconds = self.playback_position_seconds
             if last_scrobble:
-                self.long_play_seconds = last_scrobble.long_play_seconds + self.playback_position_seconds
+                self.long_play_seconds = (
+                    last_scrobble.long_play_seconds
+                    + self.playback_position_seconds
+                )
 
             self.save(
                 update_fields=[

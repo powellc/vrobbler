@@ -92,6 +92,15 @@ class VideoGame(LongPlayScrobblableMixin):
     def subtitle(self):
         return f" On {self.platforms.first()}"
 
+    @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.cover:
+            url = self.cover.url
+        if self.hltb_cover:
+            url = self.hltb_cover.url
+        return url
+
     def get_absolute_url(self):
         return reverse(
             "videogames:videogame_detail", kwargs={"slug": self.uuid}

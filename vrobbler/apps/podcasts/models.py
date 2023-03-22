@@ -29,6 +29,7 @@ class Podcast(TimeStampedModel):
     )
     active = models.BooleanField(default=True)
     url = models.URLField(**BNULL)
+    cover = models.ImageField(upload_to="pdocasts/covers/", **BNULL)
 
     def __str__(self):
         return f"{self.name}"
@@ -52,6 +53,13 @@ class Episode(ScrobblableMixin):
     @property
     def info_link(self):
         return ""
+
+    @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.podcast.cover:
+            url = self.podcast.cover.url
+        return url
 
     @classmethod
     def find_or_create(
