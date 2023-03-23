@@ -14,6 +14,7 @@ expected_desc = (
 )
 
 expected_img_url = "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcT-PqtK-bauo8wm8dBE__SVGArlvfBYY8rqxr2kA5UwjKzEx8c"
+expected_google_url = "https://podcasts.google.com/feed/aHR0cHM6Ly9mZWVkcy5ucHIub3JnLzUxMDMxOC9wb2RjYXN0LnhtbA"
 
 
 def test_get_not_allowed_from_mopidy():
@@ -24,4 +25,4 @@ def test_get_not_allowed_from_mopidy():
     assert result_dict["description"] == expected_desc
     assert result_dict["image_url"] == expected_img_url
     assert result_dict["producer"] == "NPR"
-    assert result_dict["url"] == None
+    assert result_dict["google_url"] == expected_google_url

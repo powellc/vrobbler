@@ -33,7 +33,7 @@ def _get_title_from_soup(soup) -> Optional[int]:
 def _get_url_from_soup(soup) -> Optional[int]:
     url = None
     try:
-        url_tag = soup.find("div", class_="yXo2Qc")
+        url_tag = soup.find("a", class_="yXo2Qc")
         if url_tag:
             url = _build_google_url(url_tag.get("href"))
     except ValueError:
