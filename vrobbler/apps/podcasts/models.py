@@ -44,9 +44,11 @@ class Podcast(TimeStampedModel):
             podcast_dict = scrape_data_from_google_podcasts(self.name)
             if podcast_dict:
                 if not self.producer:
-                    self.producer = podcast_dict.get("producer")
+                    self.producer = Producer.objects.get_or_create(
+                        name=podcast_dict["producer"]
+                    )
                 self.description = podcast_dict.get("description")
-            self.save(update_fields=["producer", "description"])
+                self.save(update_fields=["description", "producer"])
 
         cover_url = podcast_dict.get("image_url")
         if (not self.cover_image or force) and cover_url:
