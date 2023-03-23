@@ -31,14 +31,13 @@ steps:
       username: root
       ssh_key:
         from_secret: ssh_key
-      command_timeout: 5m
+      command_timeout: 3m
       script:
         - pip uninstall -y vrobbler
         - pip install git+https://code.unbl.ink/secstate/vrobbler.git@main
         - vrobbler migrate
         - vrobbler collectstatic --noinput
         - immortalctl restart celery && immortalctl restart vrobbler
-        - service immortaldir restart
 volumes:
   - name: docker
     host:
