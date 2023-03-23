@@ -40,7 +40,7 @@ class Podcast(TimeStampedModel):
 
     def scrape_google_podcasts(self, force=False):
         podcast_dict = {}
-        if not self.cover or force:
+        if not self.cover_image or force:
             podcast_dict = scrape_data_from_google_podcasts(self.name)
             if podcast_dict:
                 if not self.producer:
