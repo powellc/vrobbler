@@ -80,8 +80,8 @@ class Episode(ScrobblableMixin):
     @property
     def primary_image_url(self) -> str:
         url = ""
-        if self.podcast.cover:
-            url = self.podcast.cover.url
+        if self.podcast.cover_image:
+            url = self.podcast.cover_image.url
         return url
 
     @classmethod
