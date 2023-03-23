@@ -31,7 +31,7 @@ steps:
       username: root
       ssh_key:
         from_secret: ssh_key
-      command_timeout: 2m
+      command_timeout: 5m
       script:
         - pip uninstall -y vrobbler
         - pip install git+https://code.unbl.ink/secstate/vrobbler.git@main
