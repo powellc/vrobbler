@@ -23,4 +23,5 @@ def test_get_not_allowed_from_mopidy():
     assert result_dict["title"] == query
     assert result_dict["description"] == expected_desc
     assert result_dict["image_url"] == expected_img_url
-    assert result_dict["publisher"] == "NPR"
+    assert result_dict["producer"] == "NPR"
+    assert result_dict["url"] == None
