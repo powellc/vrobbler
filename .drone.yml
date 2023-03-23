@@ -23,7 +23,7 @@ steps:
       # Mount pip cache from host
       - name: pip_cache
         path: /root/.cache/pip
-  - name: lab deploy
+  - name: deploy
     image: appleboy/drone-ssh
     settings:
       host:
@@ -33,7 +33,11 @@ steps:
         from_secret: ssh_key
       command_timeout: 2m
       script:
-        - ls
+        - pip uninstall -y -r vrobbler
+        - pip install git+https://code.unbl.ink/secstate/vrobbler.git@main
+        - vrobbler migrate
+        - vrobbler collectstatic --noinput
+        - immortalctl restart celery && immortalctl restart vrobbler
 volumes:
   - name: docker
     host:
