@@ -35,7 +35,7 @@ def get_url_from_soup(soup) -> Optional[int]:
     return url
 
 
-def get_publisher_from_soup(soup) -> str:
+def get_producer_from_soup(soup) -> str:
     pub = ""
     try:
         potential_pub = soup.find("div", class_="J3Ov7d")
@@ -79,7 +79,7 @@ def scrape_data_from_google_podcasts(title) -> dict:
         soup = BeautifulSoup(r.text, "html")
         data_dict["title"] = get_title_from_soup(soup)
         data_dict["description"] = get_description_from_soup(soup)
-        data_dict["publisher"] = get_publisher_from_soup(soup)
+        data_dict["producer"] = get_producer_from_soup(soup)
         data_dict["url"] = get_url_from_soup(soup)
         data_dict["image_url"] = get_img_url_from_soup(soup)
     return data_dict

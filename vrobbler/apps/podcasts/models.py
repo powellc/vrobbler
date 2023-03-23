@@ -50,7 +50,7 @@ class Podcast(TimeStampedModel):
             podcast_dict = scrape_data_from_google_podcasts(self.name)
             if podcast_dict:
                 if not self.producer:
-                    self.producer = Producer.objects.get_or_create(
+                    self.producer, created = Producer.objects.get_or_create(
                         name=podcast_dict["producer"]
                     )
                 self.description = podcast_dict.get("description")
