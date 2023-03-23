@@ -2,12 +2,15 @@ import logging
 from typing import Dict, Optional
 from uuid import uuid4
 
+import requests
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-
 from scrobbles.mixins import ScrobblableMixin
+
+from vrobbler.apps.podcasts.scrapers import scrape_data_from_google_podcasts
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -27,12 +30,30 @@ class Podcast(TimeStampedModel):
     producer = models.ForeignKey(
         Producer, on_delete=models.DO_NOTHING, **BNULL
     )
+    description = models.TextField(**BNULL)
     active = models.BooleanField(default=True)
     url = models.URLField(**BNULL)
-    cover = models.ImageField(upload_to="pdocasts/covers/", **BNULL)
+    cover_image = models.ImageField(upload_to="podcasts/covers/", **BNULL)
 
     def __str__(self):
         return f"{self.name}"
+
+    def scrape_google_podcasts(self, force=False):
+        podcast_dict = {}
+        if not self.cover or force:
+            podcast_dict = scrape_data_from_google_podcasts(self.name)
+            if podcast_dict:
+                if not self.producer:
+                    self.producer = podcast_dict.get("producer")
+                self.description = podcast_dict.get("description")
+            self.save(update_fields=["producer", "description"])
+
+        cover_url = podcast_dict.get("image_url")
+        if (not self.cover_image or force) and cover_url:
+            r = requests.get(cover_url)
+            if r.status_code == 200:
+                fname = f"{self.name}_{self.uuid}.jpg"
+                self.cover_image.save(fname, ContentFile(r.content), save=True)
 
 
 class Episode(ScrobblableMixin):
