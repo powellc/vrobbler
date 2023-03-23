@@ -1,0 +1,32 @@
+{% extends "base_list.html" %}
+
+{% block lists %}
+<div class="row">
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Series</th>
+                        <th scope="col">Episode</th>
+                        <th scope="col">Scrobbles</th>
+                        <th scope="col">All time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in object_list %}
+                    {% for episode in obj.episode_set.all %}
+                    <tr>
+                        <td><a href="{{episode.get_absolute_url}}">{{episode}}</a></td>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj}}</a></td>
+                        <td>{{episode.scrobble_set.count}}</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

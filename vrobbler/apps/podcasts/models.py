@@ -7,6 +7,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from podcasts.scrapers import scrape_data_from_google_podcasts
@@ -39,11 +40,14 @@ class Podcast(TimeStampedModel):
     def __str__(self):
         return f"{self.name}"
 
-    def scrobbles(self):
+    def get_absolute_url(self):
+        return reverse("podcasts:podcast_detail", kwargs={"slug": self.uuid})
+
+    def scrobbles(self, user):
         Scrobble = apps.get_model("scrobbles", "Scrobble")
-        return Scrobble.objects.filter(podcast_episode__podcast=self).order_by(
-            "-timestamp"
-        )
+        return Scrobble.objects.filter(
+            user=user, podcast_episode__podcast=self
+        ).order_by("-timestamp")
 
     def scrape_google_podcasts(self, force=False):
         podcast_dict = {}

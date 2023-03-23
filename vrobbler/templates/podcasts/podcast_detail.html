@@ -1,0 +1,57 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}{{object.name}}{% endblock %}
+
+{% block head_extra %}
+<style>
+.cover   {float:left; width:412px; margin-right:10px; padding-bottom:15px;}
+.summary {float:left; width:600px; margin-left:10px;}
+.header  {padding-bottom:15px;}
+.image-wrapper { contain: content; }
+</style>
+{% endblock %}
+
+{% block lists %}
+
+<div class="row header">
+    <div class="cover image-wrapper">
+        <img src="{% if object.cover_image %}{{object.cover_image.url}}{% else %}{% static 'images/no-video-cover.jpg' %}{% endif %}" width="400px" />
+    </div>
+    <div class="summary">
+        {% if object.description %}<p>{{object.description|safe|linebreaks|truncatewords:160}}</p>{% endif %}
+        <hr />
+        {% if object.google_podcast_url %}
+        <p style="float:right;">
+            <a href="{{object.google_podcast_url}}"><img src="{% static " images/google-logo.png" %}" width=35></a>
+        </p>
+        {% endif %}
+
+    </div>
+    <div class="deets">
+    </div>
+</div>
+<div class="row">
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Episode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scrobble in scrobbles.all %}
+                    <tr>
+                        <td>{{scrobble.timestamp}}</td>
+                        <td>{{scrobble.podcast_episode}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
