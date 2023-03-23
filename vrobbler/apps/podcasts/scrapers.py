@@ -29,7 +29,7 @@ def get_url_from_soup(soup) -> Optional[int]:
     try:
         url_tag = soup.find("div", class_="AZqljb JSLBqe")
         if url_tag:
-            url = url_tag["data-feed"]
+            url = url_tag.get("data-feed")
     except ValueError:
         pass
     return url
