@@ -23,6 +23,17 @@ steps:
       # Mount pip cache from host
       - name: pip_cache
         path: /root/.cache/pip
+  - name: lab deploy
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        - vrobbler.service
+      username: root
+      ssh_key:
+        from_secret: ssh_key
+      command_timeout: 2m
+      script:
+        - ls
 volumes:
   - name: docker
     host:
