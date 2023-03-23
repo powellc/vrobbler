@@ -3,14 +3,14 @@ from typing import Dict, Optional
 from uuid import uuid4
 
 import requests
+from django.apps import apps
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
+from podcasts.scrapers import scrape_data_from_google_podcasts
 from scrobbles.mixins import ScrobblableMixin
-
-from vrobbler.apps.podcasts.scrapers import scrape_data_from_google_podcasts
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -38,6 +38,12 @@ class Podcast(TimeStampedModel):
     def __str__(self):
         return f"{self.name}"
 
+    def scrobbles(self):
+        Scrobble = apps.get_model("scrobbles", "Scrobble")
+        return Scrobble.objects.filter(podcast_episode__podcast=self).order_by(
+            "-timestamp"
+        )
+
     def scrape_google_podcasts(self, force=False):
         podcast_dict = {}
         if not self.cover_image or force:
@@ -48,7 +54,8 @@ class Podcast(TimeStampedModel):
                         name=podcast_dict["producer"]
                     )
                 self.description = podcast_dict.get("description")
-                self.save(update_fields=["description", "producer"])
+                self.url = podcast_dict.get("url")
+                self.save(update_fields=["description", "producer", "url"])
 
         cover_url = podcast_dict.get("image_url")
         if (not self.cover_image or force) and cover_url:

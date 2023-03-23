@@ -24,6 +24,17 @@ def get_title_from_soup(soup) -> Optional[int]:
     return title
 
 
+def get_url_from_soup(soup) -> Optional[int]:
+    url = None
+    try:
+        url_tag = soup.find("div", class_="AZqljb JSLBqe")
+        if url_tag:
+            url = url_tag["data-feed"]
+    except ValueError:
+        pass
+    return url
+
+
 def get_publisher_from_soup(soup) -> str:
     pub = ""
     try:
@@ -69,5 +80,6 @@ def scrape_data_from_google_podcasts(title) -> dict:
         data_dict["title"] = get_title_from_soup(soup)
         data_dict["description"] = get_description_from_soup(soup)
         data_dict["publisher"] = get_publisher_from_soup(soup)
+        data_dict["url"] = get_url_from_soup(soup)
         data_dict["image_url"] = get_img_url_from_soup(soup)
     return data_dict
