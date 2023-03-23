@@ -32,7 +32,8 @@ class Podcast(TimeStampedModel):
     )
     description = models.TextField(**BNULL)
     active = models.BooleanField(default=True)
-    url = models.URLField(**BNULL)
+    feed_url = models.URLField(**BNULL)
+    google_podcasts_url = models.URLField(**BNULL)
     cover_image = models.ImageField(upload_to="podcasts/covers/", **BNULL)
 
     def __str__(self):
@@ -54,8 +55,14 @@ class Podcast(TimeStampedModel):
                         name=podcast_dict["producer"]
                     )
                 self.description = podcast_dict.get("description")
-                self.url = podcast_dict.get("url")
-                self.save(update_fields=["description", "producer", "url"])
+                self.google_podcasts_url = podcast_dict.get("google_url")
+                self.save(
+                    update_fields=[
+                        "description",
+                        "producer",
+                        "google_podcasts_url",
+                    ]
+                )
 
         cover_url = podcast_dict.get("image_url")
         if (not self.cover_image or force) and cover_url:
