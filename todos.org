@@ -3,7 +3,14 @@
 A fun way to keep track of things in the project to fix or improve.
 
 * Version 1.0.0
-** TODO [#A] Add django-storage to store files on S3 :improvement:
+** TODO [#A] Add django-storage to store files on S3 :settings:improvement:
+:LOGBOOK:
+CLOCK: [2023-03-24 Fri 10:36]--[2023-03-24 Fri 10:40] =>  0:04
+:END:
+** TODO Fix vrobbler settings not using booleans :settings:bug:
+:LOGBOOK:
+CLOCK: [2023-03-24 Fri 10:40]
+:END:
 ** TODO Add a "finished_timestamp" so we don't rely on content length :improvement:scrobbling:
 
 Essentially, we currently have the timestamp as when the content began
@@ -15,7 +22,9 @@ an event or finish halfway through but still want to mark it as done. In these
 cases, knowing the finish time could be useful, especially when interfacing with
 other scrobblers which may have different definitions of when a scrobble
 finishes or started.
-
+** TODO Fix bug in Jellyfin scrobbles that spam more scrobbles after completion :scrobbling:videos:bug:
+** TODO Fix bug in podcast scrobbling where a second scrobble is created after completion :scrobbling:podcasts:bug:
+** TODO Fix KoReader scrobbling to use pages rather than time of last read :scrobbling:books:improvement:
 ** DONE Update weekly live chart to be 7-day continuous rather than weekly :views:bug:
 CLOSED: [2023-03-24 Fri 00:31]
 The live view will be blank every Monday, no reason to tie it to a day of the
