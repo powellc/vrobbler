@@ -395,7 +395,7 @@ class Track(ScrobblableMixin):
         url = ""
         if self.artist.thumbnail:
             url = self.artist.thumbnail.url
-        if self.album and self.album.cover_image.url:
+        if self.album and self.album.cover_image:
             url = self.album.cover_image.url
         return url
 
