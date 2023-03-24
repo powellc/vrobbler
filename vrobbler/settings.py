@@ -6,6 +6,8 @@ from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
 
+TRUTHY = ("true", "1", "t")
+
 PROJECT_ROOT = Path(__file__).resolve().parent
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "apps"))
@@ -29,7 +31,7 @@ SECRET_KEY = os.getenv("VROBBLER_SECRET_KEY", "not-a-secret-234lkjasdflj132")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("VROBBLER_DEBUG", False)
+DEBUG = os.getenv("VROBBLER_DEBUG", "false").lower() in TRUTHY
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
@@ -47,10 +49,14 @@ ENCRYPTED_FIELD_KEY = os.getenv(
 DJANGO_ENCRYPTED_FIELD_KEY = bytes(ENCRYPTED_FIELD_KEY, "utf-8")
 
 # Should we cull old in-progress scrobbles that are beyond the wait period for resuming?
-DELETE_STALE_SCROBBLES = os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", True)
+DELETE_STALE_SCROBBLES = (
+    os.getenv("VROBBLER_DELETE_STALE_SCROBBLES", "true").lower() in TRUTHY
+)
 
 # Used to dump data coming from srobbling sources, helpful for building new inputs
-DUMP_REQUEST_DATA = os.getenv("VROBBLER_DUMP_REQUEST_DATA", False)
+DUMP_REQUEST_DATA = (
+    os.getenv("VROBBLER_DUMP_REQUEST_DATA", "false").lower() in TRUTHY
+)
 
 THESPORTSDB_API_KEY = os.getenv("VROBBLER_THESPORTSDB_API_KEY", "2")
 THEAUDIODB_API_KEY = os.getenv("VROBBLER_THEAUDIODB_API_KEY", "2")
@@ -76,7 +82,9 @@ if REDIS_URL:
 else:
     print("Eagerly running all tasks")
 
-CELERY_TASK_ALWAYS_EAGER = os.getenv("VROBBLER_SKIP_CELERY", False)
+CELERY_TASK_ALWAYS_EAGER = (
+    os.getenv("VROBBLER_SKIP_CELERY", "false").lower() in TRUTHY
+)
 CELERY_BROKER_URL = REDIS_URL if REDIS_URL else "memory://localhost/"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_TIMEZONE = os.getenv("VROBBLER_TIME_ZONE", "US/Eastern")
@@ -236,6 +244,9 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
+#
+if os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY:
+    STORAGES = {"default": "storages.backends.s3boto3.S3Boto3Storage"}
 
 STATIC_URL = os.getenv("VROBBLER_STATIC_URL", "/static/")
 STATIC_ROOT = os.getenv(
@@ -246,7 +257,7 @@ MEDIA_ROOT = os.getenv(
     "VROBBLER_MEDIA_ROOT", os.path.join(PROJECT_ROOT, "media")
 )
 
-JSON_LOGGING = os.getenv("VROBBLER_JSON_LOGGING", False)
+JSON_LOGGING = os.getenv("VROBBLER_JSON_LOGGING", "false").lower() in TRUTHY
 LOG_TYPE = "json" if JSON_LOGGING else "log"
 
 default_level = "INFO"
@@ -325,7 +336,9 @@ LOGGING = {
     },
 }
 
-LOG_TO_CONSOLE = os.getenv("VROBBLER_LOG_TO_CONSOLE", False)
+LOG_TO_CONSOLE = (
+    os.getenv("VROBBLER_LOG_TO_CONSOLE", "false").lower() in TRUTHY
+)
 if LOG_TO_CONSOLE:
     LOGGING["loggers"]["django"]["handlers"] = ["console"]
     LOGGING["loggers"]["vrobbler"]["handlers"] = ["console"]
