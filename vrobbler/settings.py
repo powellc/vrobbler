@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_filters",
     "django_extensions",
+    "storages",
     "taggit",
     "rest_framework.authtoken",
     "encrypted_field",
@@ -245,17 +246,32 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 #
-if os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY:
-    STORAGES = {"default": "storages.backends.s3boto3.S3Boto3Storage"}
+from storages.backends import s3boto3
 
-STATIC_URL = os.getenv("VROBBLER_STATIC_URL", "/static/")
-STATIC_ROOT = os.getenv(
-    "VROBBLER_STATIC_ROOT", os.path.join(PROJECT_ROOT, "static")
-)
-MEDIA_URL = os.getenv("VROBBLER_MEDIA_URL", "/media/")
-MEDIA_ROOT = os.getenv(
-    "VROBBLER_MEDIA_ROOT", os.path.join(PROJECT_ROOT, "media")
-)
+if os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY:
+    AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL", "")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
+    AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID")
+    AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
+
+    location = "/".join([AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME])
+    print(f"Storing media on S3 at {location}")
+
+    DEFAULT_FILE_storage = "storages.backends.s3boto3.S3Boto3Storage"
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3StaticStorage"
+    STATIC_URL = location + "/static/"
+    MEDIA_URL = location + "/media/"
+
+else:
+    STATIC_ROOT = os.getenv(
+        "VROBBLER_STATIC_ROOT", os.path.join(PROJECT_ROOT, "static")
+    )
+    MEDIA_ROOT = os.getenv(
+        "VROBBLER_MEDIA_ROOT", os.path.join(PROJECT_ROOT, "media")
+    )
+    STATIC_URL = os.getenv("VROBBLER_STATIC_URL", "/static/")
+    MEDIA_URL = os.getenv("VROBBLER_MEDIA_URL", "/media/")
+
 
 JSON_LOGGING = os.getenv("VROBBLER_JSON_LOGGING", "false").lower() in TRUTHY
 LOG_TYPE = "json" if JSON_LOGGING else "log"

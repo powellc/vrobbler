@@ -38,6 +38,8 @@ celery = "^5.2.7"
 honcho = "^1.1.0"
 howlongtobeatpy = "^1.0.5"
 beautifulsoup4 = "^4.11.2"
+django-storages = "^1.13.2"
+boto3 = "^1.26.98"
 
 [tool.poetry.dev-dependencies]
 Werkzeug = "2.0.3"
