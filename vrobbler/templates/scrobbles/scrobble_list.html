@@ -89,20 +89,18 @@
         <div class="row">
             <h2>Top Artist</h2>
             <ul class="nav nav-tabs" id="artistTab" role="tablist">
-                {% for chart_name in current_artist_charts.keys %}
+                {% for key, name in chart_keys.items %}
                 <li class="nav-item" role="presentation">
                     <button class="nav-link {% if forloop.counter == 2 %}active{% endif %}"
-                            id="artist-{{chart_name}}-tab" data-bs-toggle="tab" data-bs-target="#artist-{{chart_name}}"
-                            type="button" role="tab" aria-controls="home" aria-selected="true">
-                        {% if chart_name == "all" %}All Time{% else %}{% if chart_name != "today" %}This {% endif %}{{chart_name|capfirst}}{% endif %}
-                    </button>
+                            id="artist-{{key}}-tab" data-bs-toggle="tab" data-bs-target="#artist-{{key}}"
+                            type="button" role="tab" aria-controls="home" aria-selected="true">{{name}}</button>
                 </li>
                 {% endfor %}
             </ul>
 
             <div class="tab-content" id="artistTabContent" class="maloja-chart">
-                {% for chart_name, artists in current_artist_charts.items %}
-                <div class="tab-pane fade {% if forloop.counter == 2 %}show active{% endif %}" id="artist-{{chart_name}}" role="tabpanel" aria-labelledby="artist-{{chart_name}}-tab">
+                {% for key, artists in current_artist_charts.items %}
+                <div class="tab-pane fade {% if forloop.counter == 2 %}show active{% endif %}" id="artist-{{key}}" role="tabpanel" aria-labelledby="artist-{{key}}-tab">
                     <div style="display:block">
                         <div style="float:left;">
                             <div class="image-wrapper" style="display:flex; flex-wrap: wrap; margin:0">
@@ -263,12 +261,10 @@
         <div class="row">
             <h2>Top Tracks</h2>
             <ul class="nav nav-tabs" id="trackTab" role="tablist">
-                {% for chart_name in current_track_charts.keys %}
+                {% for key, name in chart_keys.items %}
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link {% if forloop.counter == 2 %}active{% endif %}" id="track-{{chart_name}}-tab" data-bs-toggle="tab"
-                            data-bs-target="#track-{{chart_name}}" type="button" role="tab" aria-controls="home" aria-selected="true">
-                        {% if chart_name == "all" %}All Time{% else %}{% if chart_name != "today" %}This {% endif %}{{chart_name|capfirst}}{% endif %}
-                    </button>
+                    <button class="nav-link {% if forloop.counter == 2 %}active{% endif %}" id="track-{{key}}-tab" data-bs-toggle="tab"
+                            data-bs-target="#track-{{key}}" type="button" role="tab" aria-controls="home" aria-selected="true">{{name}}</button>
                 </li>
                 {% endfor %}
             </ul>

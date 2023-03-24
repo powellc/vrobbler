@@ -95,6 +95,8 @@ def live_charts(
         now = now_user_timezone(user.profile)
         tzinfo = now.tzinfo
 
+    seven_days_ago = now - timedelta(days=7)
+    thirty_days_ago = now - timedelta(days=30)
     start_of_today = datetime.combine(now, datetime.min.time(), tzinfo)
     start_day_of_week = now - timedelta(days=now.today().isoweekday() % 7)
     start_day_of_month = now.replace(day=1)
@@ -105,6 +107,8 @@ def live_charts(
     period_queries = {
         "today": {"scrobble__timestamp__gte": start_of_today},
         "week": {"scrobble__timestamp__gte": start_day_of_week},
+        "last7": {"scrobble__timestamp__gte": seven_days_ago},
+        "last30": {"scrobble__timestamp__gte": thirty_days_ago},
         "month": {"scrobble__timestamp__gte": start_day_of_month},
         "year": {"scrobble__timestamp__gte": start_day_of_year},
         "all": {},

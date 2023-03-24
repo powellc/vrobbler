@@ -102,10 +102,17 @@ class RecentScrobbleList(ListView):
             limit = 14
             artist = {"user": user, "media_type": "Artist", "limit": limit}
             # This is weird. They don't display properly as QuerySets, so we cast to lists
+            data["chart_keys"] = {
+                "today": "Today",
+                "last7": "Last 7 days",
+                "last30": "Last 30 days",
+                "year": "This year",
+                "all": "All time",
+            }
             data["current_artist_charts"] = {
                 "today": list(live_charts(**artist, chart_period="today")),
-                "week": list(live_charts(**artist, chart_period="week")),
-                "month": list(live_charts(**artist, chart_period="month")),
+                "last7": list(live_charts(**artist, chart_period="last7")),
+                "last30": list(live_charts(**artist, chart_period="last30")),
                 "year": list(live_charts(**artist, chart_period="year")),
                 "all": list(live_charts(**artist)),
             }
@@ -113,8 +120,8 @@ class RecentScrobbleList(ListView):
             track = {"user": user, "media_type": "Track", "limit": limit}
             data["current_track_charts"] = {
                 "today": list(live_charts(**track, chart_period="today")),
-                "week": list(live_charts(**track, chart_period="week")),
-                "month": list(live_charts(**track, chart_period="month")),
+                "last7": list(live_charts(**track, chart_period="last7")),
+                "last30": list(live_charts(**track, chart_period="last30")),
                 "year": list(live_charts(**track, chart_period="year")),
                 "all": list(live_charts(**track)),
             }
