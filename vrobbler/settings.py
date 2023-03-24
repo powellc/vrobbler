@@ -257,8 +257,8 @@ if os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY:
     location = "/".join([AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME])
     print(f"Storing media on S3 at {location}")
 
-    DEFAULT_FILE_storage = "storages.backends.s3boto3.S3Boto3Storage"
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3StaticStorage"
+    DEFAULT_FILE_storage = "vrobbler.storages.MediaStorage"
+    STATICFILES_STORAGE = "vrobbler.storages.StaticStorage"
     STATIC_URL = location + "/static/"
     MEDIA_URL = location + "/media/"
 
