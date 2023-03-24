@@ -254,13 +254,13 @@ if os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY:
     AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID")
     AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
 
-    location = "/".join([AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME])
-    print(f"Storing media on S3 at {location}")
+    S3_ROOT = "/".join([AWS_S3_ENDPOINT_URL, AWS_STORAGE_BUCKET_NAME])
+    print(f"Storing media on S3 at {S3_ROOT}")
 
-    DEFAULT_FILE_storage = "vrobbler.storages.MediaStorage"
+    DEFAULT_FILE_STORAGE = "vrobbler.storages.MediaStorage"
     STATICFILES_STORAGE = "vrobbler.storages.StaticStorage"
-    STATIC_URL = location + "/static/"
-    MEDIA_URL = location + "/media/"
+    STATIC_URL = S3_ROOT + "/static/"
+    MEDIA_URL = S3_ROOT + "/media/"
 
 else:
     STATIC_ROOT = os.getenv(
