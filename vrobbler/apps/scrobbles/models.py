@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import uuid4
 
 from books.models import Book
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
@@ -193,10 +194,16 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
         self.mark_started()
 
         tz = None
+        user_id = None
         if self.user:
+            user_id = self.user.id
             tz = self.user.profile.tzinfo
+        if getattr(settings, "USE_S3_STORAGE"):
+            tsv_str = self.tsv_file.url
+        else:
+            tsv_str = self.tsv_file.path
         scrobbles = process_audioscrobbler_tsv_file(
-            self.tsv_file.path, self.user.id, user_tz=tz
+            tsv_str, user_id, user_tz=tz
         )
         self.record_log(scrobbles)
         self.mark_finished()

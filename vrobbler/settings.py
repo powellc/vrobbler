@@ -248,7 +248,9 @@ USE_TZ = True
 #
 from storages.backends import s3boto3
 
-if os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY:
+USE_S3_STORAGE = os.getenv("VROBBLER_USE_S3", "False").lower() in TRUTHY
+
+if USE_S3_STORAGE:
     AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL", "")
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
     AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID")
