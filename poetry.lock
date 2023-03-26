@@ -1651,6 +1651,14 @@ python-versions = ">=3.8"
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "stream-sqlite"
+version = "0.0.41"
+description = "Python function to extract all the rows from a SQLite database file concurrently with iterating over its bytes, without needing random access to the file"
+category = "main"
+optional = false
+python-versions = ">=3.5.0"
+
+[[package]]
 name = "tenacity"
 version = "6.3.1"
 description = "Retry code until it succeeds"
@@ -1888,7 +1896,7 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "39b934458b062bcb936d679a51571f6e9375ed27d69dbf996881a9bb8c85daa6"
+content-hash = "a9627b41c9fef600ccee3bf001a7bd87b0cc03ce31777511404f0b19ace302f8"
 
 [metadata.files]
 aiohttp = [
@@ -3209,6 +3217,10 @@ sqlparse = [
 stevedore = [
     {file = "stevedore-5.0.0-py3-none-any.whl", hash = "sha256:bd5a71ff5e5e5f5ea983880e4a1dd1bb47f8feebbb3d95b592398e2f02194771"},
     {file = "stevedore-5.0.0.tar.gz", hash = "sha256:2c428d2338976279e8eb2196f7a94910960d9f7ba2f41f3988511e95ca447021"},
+]
+stream-sqlite = [
+    {file = "stream-sqlite-0.0.41.tar.gz", hash = "sha256:449ed55fb765b79b5a7599855a037dec2e07cdff448a4197d04da103e09499e2"},
+    {file = "stream_sqlite-0.0.41-py3-none-any.whl", hash = "sha256:3aa1bbf4b50eb67df7e5f56b9bbe828b31750c05c9bd883be29d15b8bdc016f5"},
 ]
 tenacity = [
     {file = "tenacity-6.3.1-py2.py3-none-any.whl", hash = "sha256:baed357d9f35ec64264d8a4bbf004c35058fad8795c5b0d8a7dc77ecdcbb8f39"},

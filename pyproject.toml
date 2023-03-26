@@ -40,6 +40,7 @@ howlongtobeatpy = "^1.0.5"
 beautifulsoup4 = "^4.11.2"
 django-storages = "^1.13.2"
 boto3 = "^1.26.98"
+stream-sqlite = "^0.0.41"
 
 [tool.poetry.dev-dependencies]
 Werkzeug = "2.0.3"
