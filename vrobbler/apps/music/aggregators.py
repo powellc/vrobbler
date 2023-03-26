@@ -98,7 +98,9 @@ def live_charts(
     seven_days_ago = now - timedelta(days=7)
     thirty_days_ago = now - timedelta(days=30)
     start_of_today = datetime.combine(now, datetime.min.time(), tzinfo)
-    start_day_of_week = now - timedelta(days=now.today().isoweekday() % 7)
+    start_day_of_week = start_of_today - timedelta(
+        days=now.today().isoweekday() % 7
+    )
     start_day_of_month = now.replace(day=1)
     start_day_of_year = now.replace(month=1, day=1)
 

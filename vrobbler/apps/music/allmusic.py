@@ -40,7 +40,7 @@ def scrape_data_from_allmusic(url) -> dict:
     headers = {"User-Agent": "Vrobbler 0.11.12"}
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
-        soup = BeautifulSoup(r.text, "html")
+        soup = BeautifulSoup(r.text, "html.parser")
         data_dict["rating"] = get_rating_from_soup(soup)
         data_dict["review"] = get_review_from_soup(soup)
     return data_dict
@@ -67,7 +67,7 @@ def get_allmusic_slug(artist_name=None, album_name=None) -> str:
         logger.info(f"Bad http response from Allmusic {r}")
         return slug
 
-    soup = BeautifulSoup(r.text, "html")
+    soup = BeautifulSoup(r.text, "html.parser")
     results = soup.find("ul", class_="search-results")
 
     if not results:

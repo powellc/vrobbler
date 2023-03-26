@@ -28,7 +28,7 @@ def get_bandcamp_slug(artist_name=None, album_name=None) -> str:
         logger.info(f"Bad http response from Bandcamp {r}")
         return slug
 
-    soup = BeautifulSoup(r.text, "html")
+    soup = BeautifulSoup(r.text, "html.parser")
 
     results = soup.find("ul", class_="result-items")
 

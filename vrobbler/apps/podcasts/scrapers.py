@@ -82,7 +82,7 @@ def scrape_data_from_google_podcasts(title) -> dict:
     url = PODCAST_SEARCH_URL.format(query=title)
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
-        soup = BeautifulSoup(r.text, "html")
+        soup = BeautifulSoup(r.text, "html.parser")
         data_dict["title"] = _get_title_from_soup(soup)
         data_dict["description"] = _get_description_from_soup(soup)
         data_dict["producer"] = _get_producer_from_soup(soup)
