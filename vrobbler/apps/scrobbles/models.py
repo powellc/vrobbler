@@ -126,6 +126,9 @@ class BaseFileImportMixin(TimeStampedModel):
         self.process_count = len(scrobbles)
         self.save(update_fields=["process_log", "process_count"])
 
+    def upload_file_path(self):
+        raise NotImplementedError
+
 
 class KoReaderImport(BaseFileImportMixin):
     class Meta:
@@ -144,10 +147,18 @@ class KoReaderImport(BaseFileImportMixin):
         uuid = instance.uuid
         return f"koreader-uploads/{uuid}.{extension}"
 
+    @property
+    def upload_file_path(self) -> str:
+        if getattr(settings, "USE_S3_STORAGE"):
+            path = self.sqlite_file.url
+        else:
+            path = self.sqlite_file.path
+        return path
+
     sqlite_file = models.FileField(upload_to=get_path, **BNULL)
 
     def process(self, force=False):
-        from books.koreader import process_koreader_sqlite_file
+        from books.koreader import process_koreader_sqlite
 
         if self.processed_finished and not force:
             logger.info(
@@ -156,8 +167,8 @@ class KoReaderImport(BaseFileImportMixin):
             return
 
         self.mark_started()
-        scrobbles = process_koreader_sqlite_file(
-            self.sqlite_file.path, self.user.id
+        scrobbles = process_koreader_sqlite(
+            self.upload_file_path, self.user.id
         )
         self.record_log(scrobbles)
         self.mark_finished()
@@ -180,6 +191,13 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
         uuid = instance.uuid
         return f"audioscrobbler-uploads/{uuid}.{extension}"
 
+    def upload_file_path(self):
+        if getattr(settings, "USE_S3_STORAGE"):
+            path = self.tsv_file.url
+        else:
+            path = self.tsv_file.path
+        return path
+
     tsv_file = models.FileField(upload_to=get_path, **BNULL)
 
     def process(self, force=False):
@@ -198,12 +216,8 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
         if self.user:
             user_id = self.user.id
             tz = self.user.profile.tzinfo
-        if getattr(settings, "USE_S3_STORAGE"):
-            tsv_str = self.tsv_file.url
-        else:
-            tsv_str = self.tsv_file.path
         scrobbles = process_audioscrobbler_tsv_file(
-            tsv_str, user_id, user_tz=tz
+            self.upload_file_path, user_id, user_tz=tz
         )
         self.record_log(scrobbles)
         self.mark_finished()
@@ -457,10 +471,18 @@ class Scrobble(TimeStampedModel):
         return is_stale
 
     @property
-    def previous(self):
+    def previous(self) -> "Scrobble":
         return (
             self.media_obj.scrobble_set.order_by("-timestamp")
             .filter(timestamp__lt=self.timestamp)
+            .first()
+        )
+
+    @property
+    def next(self) -> "Scrobble":
+        return (
+            self.media_obj.scrobble_set.order_by("timestamp")
+            .filter(timestamp__gt=self.timestamp)
             .first()
         )
 
