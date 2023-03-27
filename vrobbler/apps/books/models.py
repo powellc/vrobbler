@@ -98,7 +98,10 @@ class Book(LongPlayScrobblableMixin):
 
     def fix_metadata(self, force_update=False):
         if not self.openlibrary_id or force_update:
-            book_dict = lookup_book_from_openlibrary(self.title, self.author)
+            author_name = ""
+            if self.author:
+                author_name = self.author.name
+            book_dict = lookup_book_from_openlibrary(self.title, author_name)
             if not book_dict:
                 logger.warn(f"Book not found in OL {self.title}")
                 return
@@ -115,7 +118,6 @@ class Book(LongPlayScrobblableMixin):
                 logger.warn(
                     f"OL and KoReader disagree on this book title {self.title} != {ol_title}"
                 )
-                return
 
             Book.objects.filter(pk=self.id).update(**book_dict)
             self.refresh_from_db()

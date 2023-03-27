@@ -12,6 +12,7 @@ from books.models import Author, Book, Page
 from pylast import httpx, tempfile
 from scrobbles.models import Scrobble
 from stream_sqlite import stream_sqlite
+from vrobbler.apps.books.openlibrary import get_author_openlibrary_id
 
 logger = logging.getLogger(__name__)
 
@@ -53,39 +54,55 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
     book_id_map = {}
 
     for book_row in rows:
-        authors = book_row[KoReaderBookColumn.AUTHORS.value].split("\n")
-        author_list = []
-        for author_str in authors:
-            logger.debug(f"Looking up author {author_str}")
-            if author_str == "N/A":
-                continue
+        book = Book.objects.filter(
+            koreader_md5=book_row[KoReaderBookColumn.MD5.value]
+        ).first()
 
-            author, created = Author.objects.get_or_create(name=author_str)
+        if not book:
+            book, created = Book.objects.get_or_create(
+                title=book_row[KoReaderBookColumn.TITLE.value]
+            )
+
             if created:
-                author.fix_metadata()
-            author_list.append(author)
-            logger.debug(f"Found author {author}, created: {created}")
+                total_pages = book_row[KoReaderBookColumn.PAGES.value]
+                run_time = total_pages * book.AVG_PAGE_READING_SECONDS
+                ko_authors = book_row[
+                    KoReaderBookColumn.AUTHORS.value
+                ].replace("\n", ", ")
+                book_dict = {
+                    "title": book_row[KoReaderBookColumn.TITLE.value],
+                    "pages": total_pages,
+                    "koreader_md5": book_row[KoReaderBookColumn.MD5.value],
+                    "koreader_id": int(book_row[KoReaderBookColumn.ID.value]),
+                    "koreader_authors": ko_authors,
+                    "run_time_seconds": run_time,
+                }
+                Book.objects.filter(pk=book.id).update(**book_dict)
 
-        book, created = Book.objects.get_or_create(
-            title=book_row[KoReaderBookColumn.TITLE.value]
-        )
+                # Add authors
+                authors = book_row[KoReaderBookColumn.AUTHORS.value].split(
+                    "\n"
+                )
+                author_list = []
+                for author_str in authors:
+                    logger.debug(f"Looking up author {author_str}")
+                    if author_str == "N/A":
+                        continue
 
-        if created:
-            total_pages = book_row[KoReaderBookColumn.PAGES.value]
-            run_time = total_pages * book.AVG_PAGE_READING_SECONDS
-            book_dict = {
-                "title": book_row[KoReaderBookColumn.TITLE.value],
-                "pages": total_pages,
-                "koreader_md5": book_row[KoReaderBookColumn.MD5.value],
-                "koreader_id": int(book_row[KoReaderBookColumn.ID.value]),
-                "koreader_authors": book_row[KoReaderBookColumn.AUTHORS.value],
-                "run_time_seconds": run_time,
-            }
-            Book.objects.filter(pk=book.id).update(**book_dict)
-            book.fix_metadata()
+                    author, created = Author.objects.get_or_create(
+                        name=author_str
+                    )
+                    if created:
+                        author.openlibrary_id = get_author_openlibrary_id(
+                            author_str
+                        )
+                        author.save(update_fields=["openlibrary_id"])
+                        author.fix_metadata()
+                        logger.debug(f"Created author {author}")
+                    book.authors.add(author)
 
-            if author_list:
-                book.authors.add(*[a.id for a in author_list])
+                # This will try to fix metadata by looking it up on OL
+                book.fix_metadata()
 
         playback_position_seconds = 0
         if book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]:
@@ -101,6 +118,7 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
         timestamp = datetime.utcfromtimestamp(
             book_row[KoReaderBookColumn.LAST_OPEN.value]
         ).replace(tzinfo=pytz.utc)
+        book.refresh_from_db()
         book_id_map[book.koreader_id] = book.id
 
     return book_id_map
@@ -130,6 +148,7 @@ def build_scrobbles_from_pages(
             ]
             page.save(update_fields=["start_time", "duration_seconds"])
             page.refresh_from_db()
+
         if page.is_scrobblable:
             # Page number is a placeholder, we'll re-preocess this after creation
             logger.debug(
@@ -155,11 +174,12 @@ def enrich_koreader_scrobbles(scrobbles: list) -> None:
 
     for scrobble in scrobbles:
         if scrobble.next:
+            # Set pages read to the starting page of the next scrobble minus one, if it exists
             scrobble.book_pages_read = scrobble.next.book_pages_read - 1
             scrobble.save(update_fields=["book_pages_read"])
         else:
+            # Set pages read to the last page we have
             scrobble.book_pages_read = scrobble.book.page_set.last().number
-            scrobble.long_play_complete =
 
         scrobble.save(update_fields=["book_pages_read", "long_play_complete"])
 

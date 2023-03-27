@@ -1,14 +1,15 @@
 import json
 import logging
+import re
 import urllib
 
 import requests
 
 logger = logging.getLogger(__name__)
 
-SEARCH_URL = "https://openlibrary.org/search.json?title={title}"
 ISBN_URL = "https://openlibrary.org/isbn/{isbn}.json"
-SEARCH_URL = "https://openlibrary.org/search.json?title={title}"
+SEARCH_URL = "https://openlibrary.org/search.json?q={query}&sort=editions&mode=everything"
+AUTHOR_SEARCH_URL = "https://openlibrary.org/search/authors.json?q={query}"
 COVER_URL = "https://covers.openlibrary.org/b/olid/{id}-L.jpg"
 AUTHOR_URL = "https://openlibrary.org/authors/{id}.json"
 AUTHOR_IMAGE_URL = "https://covers.openlibrary.org/a/olid/{id}-L.jpg"
@@ -19,6 +20,24 @@ def get_first(key: str, result: dict) -> str:
     if obj_list := result.get(key):
         obj = obj_list[0]
     return obj
+
+
+def get_author_openlibrary_id(name: str) -> str:
+    search_url = AUTHOR_SEARCH_URL.format(query=name)
+    response = requests.get(search_url)
+
+    if response.status_code != 200:
+        logger.warn(f"Bad response from OL: {response.status_code}")
+        return ""
+
+    results = json.loads(response.content)
+
+    if not results:
+        logger.warn(f"No author results found from search for {name}")
+        return ""
+
+    result = results.get("docs", [])
+    return result[0].get("key")
 
 
 def lookup_author_from_openlibrary(olid: str) -> dict:
@@ -58,7 +77,14 @@ def lookup_author_from_openlibrary(olid: str) -> dict:
 
 def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
     title_quoted = urllib.parse.quote(title)
-    search_url = SEARCH_URL.format(title=title_quoted)
+    author_quoted = ""
+    if author:
+        # Strip middle initials, OpenLibrary often fails with these
+        author = re.sub(" [A-Z]. ", " ", author)
+        author_quoted = urllib.parse.quote(author)
+    query = f"{title_quoted} {author_quoted}"
+
+    search_url = SEARCH_URL.format(query=query)
     response = requests.get(search_url)
 
     if response.status_code != 200:
@@ -71,7 +97,17 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
         logger.warn(f"No results found from OL for {title}")
         return {}
 
-    top = results.get("docs")[0]
+    top = None
+    for result in results.get("docs"):
+        # These Summary things suck and ruin our one-shot search
+        if "Summary of" not in result.get("title"):
+            top = result
+            break
+
+    if not top:
+        logger.warn(f"No book found for query {query}")
+        return {}
+
     ol_id = top.get("cover_edition_key")
     ol_author_id = get_first("author_key", top)
     first_sentence = ""
