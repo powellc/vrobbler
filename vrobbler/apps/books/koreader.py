@@ -120,7 +120,7 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
             book_row[KoReaderBookColumn.LAST_OPEN.value]
         ).replace(tzinfo=pytz.utc)
         book.refresh_from_db()
-        book_id_map[book.koreader_id] = book.id
+        book_id_map[book_row[KoReaderBookColumn.ID.value]] = book.id
 
     return book_id_map
 
