@@ -130,6 +130,7 @@ def build_scrobbles_from_pages(
     new_scrobbles = []
 
     new_scrobbles = []
+    pages_created = []
     for page_row in rows:
         koreader_id = page_row[KoReaderPageStatColumn.ID_BOOK.value]
         page_number = page_row[KoReaderPageStatColumn.PAGE.value]
@@ -147,8 +148,9 @@ def build_scrobbles_from_pages(
                 KoReaderPageStatColumn.DURATION.value
             ]
             page.save(update_fields=["start_time", "duration_seconds"])
-            page.refresh_from_db()
+            pages_created.append(page)
 
+    for page in pages_created:
         if page.is_scrobblable:
             # Page number is a placeholder, we'll re-preocess this after creation
             logger.debug(
@@ -161,7 +163,7 @@ def build_scrobbles_from_pages(
                 timestamp=page.start_time,
                 played_to_completion=True,
                 in_progress=False,
-                book_pages_read=page_number,
+                book_pages_read=page.number,
                 long_play_complete=False,
             )
             new_scrobbles.append(new_scrobble)

@@ -231,7 +231,7 @@ class Page(TimeStampedModel):
 
     @property
     def seconds_to_next_page(self) -> int:
-        seconds = 0
+        seconds = 999999  # Effectively infnity time as we have no next
         if not self.end_time:
             self._set_end_time()
         if self.next:
@@ -265,7 +265,7 @@ class Page(TimeStampedModel):
 
     def _set_end_time(self) -> None:
         if self.end_time:
-            return self.end_time
+            return
 
         self.end_time = self.start_time + timedelta(
             seconds=self.duration_seconds

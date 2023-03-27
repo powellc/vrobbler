@@ -22,6 +22,7 @@ class AuthorAdmin(admin.ModelAdmin):
 class PageAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_filter = ("book",)
+    ordering = ("book", "number")
 
 
 @admin.register(Book)
