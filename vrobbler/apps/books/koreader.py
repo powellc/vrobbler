@@ -1,3 +1,4 @@
+import re
 import codecs
 import logging
 import os
@@ -69,6 +70,8 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
                 ko_authors = book_row[
                     KoReaderBookColumn.AUTHORS.value
                 ].replace("\n", ", ")
+                # Strip middle initials, OpenLibrary often fails with these
+                ko_authors = re.sub(" [A-Z]. ", " ", ko_authors)
                 book_dict = {
                     "title": book_row[KoReaderBookColumn.TITLE.value],
                     "pages": total_pages,
@@ -80,9 +83,7 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
                 Book.objects.filter(pk=book.id).update(**book_dict)
 
                 # Add authors
-                authors = book_row[KoReaderBookColumn.AUTHORS.value].split(
-                    "\n"
-                )
+                authors = ko_authors.split(", ")
                 author_list = []
                 for author_str in authors:
                     logger.debug(f"Looking up author {author_str}")

@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import urllib
 
 import requests
@@ -79,8 +78,6 @@ def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
     title_quoted = urllib.parse.quote(title)
     author_quoted = ""
     if author:
-        # Strip middle initials, OpenLibrary often fails with these
-        author = re.sub(" [A-Z]. ", " ", author)
         author_quoted = urllib.parse.quote(author)
     query = f"{title_quoted} {author_quoted}"
 
