@@ -2,7 +2,6 @@
 {% load mathfilters %}
 {% load static %}
 {% load naturalduration %}
-{% load thumbnail %}
 
 {% block title %}{{object.title}}{% endblock %}
 
@@ -11,11 +10,9 @@
 <div class="row">
 
     {% if object.cover%}
-    {% thumbnail object.cover "400" as im %}
-    <p style="float:left; width:{{im.width}}px; padding:0; border: 1px solid #ccc">
-        <img src="{{im.url}}" width={{im.width}} height={{im.height}}/>
+    <p style="float:left; width:402px; padding:0; border: 1px solid #ccc">
+        <img src="{{object.cover.url}}" width=400 />
     </p>
-    {% endthumbnail %}
     {% endif %}
     <div style="float:left; width:600px; margin-left:10px; ">
         {% if object.summary %}

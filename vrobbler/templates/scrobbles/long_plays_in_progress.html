@@ -1,5 +1,4 @@
 {% extends "base_list.html" %}
-{% load thumbnail %}
 
 {% block title %}Long Plays{% endblock %}
 
@@ -24,13 +23,9 @@
         <dl>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
             {% if media.hltb_cover %}
-            {% thumbnail media.hltb_cover "200" as im %}
-            <dd><a href="{{media.get_absolute_url}}"><img src="{{im.url}}" width={{im.width}} height={{im.height}} /></a></dd>
-            {% endthumbnail %}
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 height=200 /></a></dd>
             {% else %}
-            {% thumbnail media.cover "200" as im %}
-            <dd><a href="{{media.get_absolute_url}}"><img src="{{im.url}}" width={{im.width}} height={{im.height}} /></a></dd>
-            {% endthumbnail %}
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" style="width: 200px; height: 200px; object-fit:cover; " /></a></dd>
             {% endif %}
             <dd>
                 {% if media.is_long_play_in_progress %}Playing{% else %}<a type="button" class="btn btn-sm btn-primary" href="{{media.get_start_url}}">Resume</a>{% endif %}
@@ -77,16 +72,12 @@
         {% for media in completed %}
         {% if media.hltb_cover %}
         <dl>
-            {% thumbnail media.hltb_cover "200" as im %}
-            <dd><a href="{{media.get_absolute_url}}"><img src="{{im.url}}" width={{im.width}} height={{im.height}} /></a></dd>
-            {% endthumbnail %}
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 /></a></dd>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
         {% elif media.cover %}
         <dl>
-            {% thumbnail media.cover "200" as im %}
-            <dd><a href="{{media.get_absolute_url}}"><img src="{{url}}" width={{im.width}} height={{im.height}} /></a></dd>
-            {% endthumbnail %}
+            <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" width=200 /></a></dd>
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         </dl>
         {% endif %}

@@ -101,7 +101,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_filters",
     "django_extensions",
-    "sorl.thumbnail",
     "storages",
     "taggit",
     "rest_framework.authtoken",
