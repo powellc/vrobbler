@@ -126,6 +126,7 @@ class BaseFileImportMixin(TimeStampedModel):
         self.process_count = len(scrobbles)
         self.save(update_fields=["process_log", "process_count"])
 
+    @property
     def upload_file_path(self):
         raise NotImplementedError
 
@@ -191,6 +192,7 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
         uuid = instance.uuid
         return f"audioscrobbler-uploads/{uuid}.{extension}"
 
+    @property
     def upload_file_path(self):
         if getattr(settings, "USE_S3_STORAGE"):
             path = self.tsv_file.url
