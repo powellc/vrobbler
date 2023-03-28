@@ -1,6 +1,7 @@
 {% extends "base_list.html" %}
 {% load mathfilters %}
 {% load static %}
+{% load thumbnail %}
 
 {% block title %}{{object.name}}{% endblock %}
 
@@ -9,9 +10,11 @@
 <div class="row">
 
     {% if object.cover_image %}
-    <p style="float:left; width:302px; padding:0;">
-        <img src="{{object.cover_image.url}}" width=300 height=300 />
+    {% thumbnail object.cover_image "300x300" as im %}
+    <p style="float:left; width:{{im.width}}px; padding:0;">
+        <img src="{{im.url}}" width={{im.width}} height={{im.height}} />
     </p>
+    {% endthumbnail %}
     {% endif %}
     <div style="float:left; width:600px; margin-left:10px; ">
         {% if object.theaudiodb_description %}

@@ -1,5 +1,6 @@
 {% extends "base_list.html" %}
 {% load static %}
+{% load thumbnail %}
 
 {% block title %}{{object.title}}{% endblock %}
 
@@ -57,7 +58,11 @@ dd {
 <div class="row header">
     <div class="cover image-wrapper">
         {% if object.imdb_rating %}<div class="caption">{{object.imdb_rating}}</div>{% endif %}
-        <img src="{% if object.cover_image %}{{object.cover_image.url}}{% else %}{% static 'images/no-video-cover.jpg' %}{% endif %}" width="400px" />
+        {% if object.cover_image %}
+        {% thumbnail object.cover_image 400 as im %}<img src="{{im.url}}" width="{{im.width}}" height="{{im.height}}" />{% endthumbnail %}
+        {% else %}
+        <img src="{% static 'images/no-video-cover.jpg' %}" width="400px" />
+        {% endif %}
         <div class="caption-footer">{{object.year}}{% if object.tv_series %} | <b>S</b>{{object.season_number}} <b>E</b>{{object.episode_number}}{% endif %}</div>
     </div>
     <div class="summary">

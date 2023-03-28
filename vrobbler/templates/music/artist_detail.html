@@ -1,6 +1,7 @@
 {% extends "base_list.html" %}
 {% load mathfilters %}
 {% load static %}
+{% load thumbnail %}
 
 {% block title %}{{object.name}}{% endblock %}
 
@@ -8,9 +9,11 @@
 <div class="row">
 
     {% if object.thumbnail %}
-    <p style="float:left; width:300px; margin-right:10px;">
-        <img style="border:1px solid #ccc;" src="{{artist.thumbnail.url}}" width=300 height=300 />
+    {% thumbnail object.thumbnail "300x300" as im %}
+    <p style="float:left; width:{{im.width}}; margin-right:10px;">
+        <img style="border:1px solid #ccc;" src="{{im.url}}" width={{im.width}} height={{im.height}} />
     </p>
+    {% endthumbnail %}
     {% else %}
     {% if object.album_set.first.cover_image %}
     <p style="float:left; width:302px; padding:0; border: 1px solid #ccc">

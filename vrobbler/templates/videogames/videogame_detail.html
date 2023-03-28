@@ -2,6 +2,7 @@
 {% load mathfilters %}
 {% load static %}
 {% load naturalduration %}
+{% load thumbnail %}
 
 {% block title %}{{object.title}}{% endblock %}
 
@@ -30,7 +31,9 @@
 
 <div class="row">
     {% if object.hltb_cover%}
-    <div class="cover"><img src="{{object.hltb_cover.url}}" /></div>
+    {% thumbnail object.hltb_cover 400 as im %}
+    <div class="cover"><img src="{{im.url}}" /></div>
+    {% endthumbnail %}
     {% endif %}
     <div class="summary">
         {% if object.summary %}
