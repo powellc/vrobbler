@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -93,13 +94,13 @@ class VideoGame(LongPlayScrobblableMixin):
         return f" On {self.platforms.first()}"
 
     @property
-    def primary_image_url(self) -> str:
-        url = ""
+    def primary_image(self) -> Optional["ImageField"]:
+        img = None
         if self.cover:
-            url = self.cover.url
+            img = self.cover
         if self.hltb_cover:
-            url = self.hltb_cover.url
-        return url
+            img = self.hltb_cover
+        return img
 
     def get_absolute_url(self):
         return reverse(

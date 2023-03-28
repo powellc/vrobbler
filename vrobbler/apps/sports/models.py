@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Dict, Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -142,11 +142,11 @@ class SportEvent(ScrobblableMixin):
         return self.sportsdb_link
 
     @property
-    def primary_image_url(self) -> str:
-        url = ""
+    def primary_image(self) -> Optional["ImageField"]:
+        img = None
         if self.round.season.league.logo:
-            url = self.round.season.league.logo.url
-        return url
+            img = self.round.season.league.logo
+        return img
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "Event":
