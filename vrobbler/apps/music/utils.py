@@ -71,13 +71,14 @@ def get_or_create_album(
                 ]
             )
             album.artists.add(artist)
+            album.fix_album_artist()
             album.fetch_artwork()
             album.scrape_allmusic()
-    album.fix_album_artist()
 
     if not album:
         logger.warn(f"No album found for {name} and {mbid}")
 
+    album.fix_album_artist()
     return album
 
 
