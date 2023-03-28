@@ -197,7 +197,7 @@ def process_koreader_sqlite_url(file_url, user_id) -> list:
         if table_name == "book":
             book_id_map = get_book_map_from_sqlite(rows)
 
-        if table_name == "page":
+        if table_name == "page_stat_data":
             new_scrobbles = build_scrobbles_from_pages(
                 rows, book_id_map, user_id
             )
