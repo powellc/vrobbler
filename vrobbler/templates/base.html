@@ -1,6 +1,5 @@
 {% load static %}
 {% load humanize %}
-{% load thumbnail %}
 <!doctype html>
 <html class="no-js" lang="">
     <head>
@@ -246,11 +245,7 @@
                             <b>Now playing</b>
                             {% for scrobble in now_playing_list %}
                             <div class="now-playing">
-                                {% if scrobble.media_obj.primary_image %}
-                                {% thumbnail scrobble.media_obj.primary_image 75x75 as im %}
-                                <div style="float:left;padding-right:10px;padding-bottom:10px;"><img src="{{im.url}}" width={{im.width}} height={{im.height}} /></div>
-                                {% endthumbnail %}
-                                {% endif %}
+                                {% if scrobble.media_obj.primary_image_url %}<div style="float:left;padding-right:10px;padding-bottom:10px;"><img src="{{scrobble.media_obj.primary_image_url}}" /></div>{% endif %}
                                 <p><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></p>
                                 {% if scrobble.media_obj.subtitle %}<p><em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em></p>{% endif %}
                                 <p><small>{{scrobble.timestamp|naturaltime}} from {{scrobble.source}}</small></p>

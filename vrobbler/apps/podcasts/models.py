@@ -96,11 +96,11 @@ class Episode(ScrobblableMixin):
         return ""
 
     @property
-    def primary_image(self) -> Optional["ImageField"]:
-        img = None
+    def primary_image_url(self) -> str:
+        url = ""
         if self.podcast.cover_image:
-            img = self.podcast.cover_image
-        return img
+            url = self.podcast.cover_image.url
+        return url
 
     @classmethod
     def find_or_create(

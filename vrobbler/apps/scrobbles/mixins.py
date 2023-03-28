@@ -44,7 +44,7 @@ class ScrobblableMixin(TimeStampedModel):
         abstract = True
 
     @property
-    def primary_image(self) -> Optional["ImageField"]:
+    def primary_image_url(self) -> str:
         logger.warn(f"Not implemented yet")
         return ""
 

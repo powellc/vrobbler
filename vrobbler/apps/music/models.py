@@ -389,13 +389,13 @@ class Track(ScrobblableMixin):
         return self.mb_link
 
     @property
-    def primary_image(self) -> Optional["ImageField"]:
-        img = None
+    def primary_image_url(self) -> str:
+        url = ""
         if self.artist.thumbnail:
-            img = self.artist.thumbnail
+            url = self.artist.thumbnail.url
         if self.album and self.album.cover_image:
-            img = self.album.cover_image
-        return img
+            url = self.album.cover_image.url
+        return url
 
     @classmethod
     def find_or_create(

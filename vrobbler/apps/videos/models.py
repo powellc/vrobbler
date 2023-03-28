@@ -155,11 +155,11 @@ class Video(ScrobblableMixin):
         return self.imdb_link
 
     @property
-    def primary_image(self) -> Optional["ImageField"]:
-        img = None
+    def primary_image_url(self) -> str:
+        url = ""
         if self.cover_image:
-            img = self.cover_image
-        return img
+            url = self.cover_image.url
+        return url
 
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.imdb_id)

@@ -1,6 +1,5 @@
 import logging
 from datetime import timedelta
-from typing import Optional
 from uuid import uuid4
 
 import requests
@@ -85,11 +84,11 @@ class Book(LongPlayScrobblableMixin):
         return f" by {self.author}"
 
     @property
-    def primary_image(self) -> Optional["ImageField"]:
-        img = None
+    def primary_image_url(self) -> str:
+        url = ""
         if self.cover:
-            img = self.cover
-        return img
+            url = self.cover.url
+        return url
 
     def get_start_url(self):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
