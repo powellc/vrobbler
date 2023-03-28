@@ -180,13 +180,11 @@ class Album(TimeStampedModel):
         from music.utils import get_or_create_various_artists
 
         multiple_artists = self.artists.count() > 1
-        if not self.album_artist:
-            if multiple_artists:
-                self.album_artist = get_or_create_various_artists()
-            else:
-                self.album_artist = self.artists.first()
-
-            self.save(update_fields=["album_artist"])
+        if multiple_artists:
+            self.album_artist = get_or_create_various_artists()
+        else:
+            self.album_artist = self.artists.first()
+        self.save(update_fields=["album_artist"])
 
     def scrape_allmusic(self, force=False) -> None:
         if not self.allmusic_id or force:

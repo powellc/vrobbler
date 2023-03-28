@@ -55,22 +55,26 @@ def get_or_create_album(
 
     if not album and name:
         mbid = mbid or album_dict["mb_id"]
-        album = Album.objects.create(name=name, musicbrainz_id=mbid)
-        album.year = album_dict["year"]
-        album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
-        album.musicbrainz_albumartist_id = artist.musicbrainz_id
-        album.save(
-            update_fields=[
-                "musicbrainz_id",
-                "year",
-                "musicbrainz_releasegroup_id",
-                "musicbrainz_albumartist_id",
-            ]
+        album, album_created = Album.objects.get_or_create(
+            name=name, musicbrainz_id=mbid
         )
-        album.artists.add(artist)
-        album.fetch_artwork()
-        album.fix_album_artist()
-        album.scrape_allmusic()
+        if album_created:
+            album.year = album_dict["year"]
+            album.musicbrainz_releasegroup_id = album_dict["mb_group_id"]
+            album.musicbrainz_albumartist_id = artist.musicbrainz_id
+            album.save(
+                update_fields=[
+                    "musicbrainz_id",
+                    "year",
+                    "musicbrainz_releasegroup_id",
+                    "musicbrainz_albumartist_id",
+                ]
+            )
+            album.artists.add(artist)
+            album.fetch_artwork()
+            album.scrape_allmusic()
+    album.fix_album_artist()
+
     if not album:
         logger.warn(f"No album found for {name} and {mbid}")
 

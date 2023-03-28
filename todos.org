@@ -16,7 +16,11 @@ other scrobblers which may have different definitions of when a scrobble
 finishes or started.
 ** TODO Fix bug in Jellyfin scrobbles that spam more scrobbles after completion :scrobbling:videos:bug:
 ** TODO Fix bug in podcast scrobbling where a second scrobble is created after completion :scrobbling:podcasts:bug:
-** TODO Fix bug with Various Artist albums being labeled with first artist as album artist :scrobbling:bug:music:
+** DONE Fix bug with Various Artist albums being labeled with first artist as album artist :scrobbling:bug:music:
+CLOSED: [2023-03-27 Mon 20:18]
+:LOGBOOK:
+CLOCK: [2023-03-26 Sun 22:01]--[2023-03-27 Mon 01:07] =>  3:06
+:END:
 ** DONE Fix bug with weekly aggregator being blank on Sundays :aggregators:music:bug:
 CLOSED: [2023-03-26 Sun 13:52]
 ** DONE Fix KoReader scrobbling to use pages rather than time of last read :scrobbling:books:improvement:
