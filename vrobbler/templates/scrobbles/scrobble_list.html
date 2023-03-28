@@ -108,7 +108,7 @@
                                 <div class="caption">#1 {{artists.0.name}}</div>
                                 {% if artists.0 %}
                                 {% if artists.0.thumbnail %}
-                                {% thumbnail artists.0.thumbnail "300" as im %}<a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{im.url}}" width="{{im.width}}" height="{{im.height}}"></a>{% endthumbnail %}
+                                {% thumbnail artists.0.thumbnail "300x" as im %}<a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{im.url}}" width="{{im.width}}" height="{{im.height}}"></a>{% endthumbnail %}
                                 {% else %}
                                 <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{% static "images/not-found.jpg" %}" width="300px"></a>
                                 {% endif %}
