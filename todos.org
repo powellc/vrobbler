@@ -14,8 +14,6 @@ an event or finish halfway through but still want to mark it as done. In these
 cases, knowing the finish time could be useful, especially when interfacing with
 other scrobblers which may have different definitions of when a scrobble
 finishes or started.
-** TODO Fix bug in Jellyfin scrobbles that spam more scrobbles after completion :scrobbling:videos:bug:
-** TODO Fix bug in podcast scrobbling where a second scrobble is created after completion :scrobbling:podcasts:bug:
 ** DONE Fix bug with Various Artist albums being labeled with first artist as album artist :scrobbling:bug:music:
 CLOSED: [2023-03-27 Mon 20:18]
 :LOGBOOK:
@@ -443,3 +441,5 @@ has to re-populate when the server restarts.
 #+end_src
 ** TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :utililty:improvement:
 ** TODO What to do with Youtube videos from LastFM and web-scrobbler :bug:source:lastfm:
+** TODO Fix bug in Jellyfin scrobbles that spam more scrobbles after completion :scrobbling:videos:bug:
+** TODO Fix bug in podcast scrobbling where a second scrobble is created after completion :scrobbling:podcasts:bug:
