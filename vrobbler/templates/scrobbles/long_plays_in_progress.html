@@ -24,7 +24,7 @@
             <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
             {% if media.hltb_cover %}
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=200 height=200 /></a></dd>
-            {% else %}
+            {% elif media.cover %}
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" style="width: 200px; height: 200px; object-fit:cover; " /></a></dd>
             {% endif %}
             <dd>
