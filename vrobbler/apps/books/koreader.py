@@ -1,7 +1,7 @@
-import re
 import codecs
 import logging
 import os
+import re
 import sqlite3
 from datetime import datetime
 from enum import Enum
@@ -10,10 +10,11 @@ from typing import Iterable, List
 import pytz
 import requests
 from books.models import Author, Book, Page
+from books.openlibrary import get_author_openlibrary_id
+from django.db.models import Sum
 from pylast import httpx, tempfile
 from scrobbles.models import Scrobble
 from stream_sqlite import stream_sqlite
-from vrobbler.apps.books.openlibrary import get_author_openlibrary_id
 
 logger = logging.getLogger(__name__)
 
@@ -105,22 +106,15 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
                 # This will try to fix metadata by looking it up on OL
                 book.fix_metadata()
 
-        playback_position_seconds = 0
-        if book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]:
-            playback_position_seconds = book_row[
-                KoReaderBookColumn.TOTAL_READ_TIME.value
-            ]
-
-        pages_read = 0
-        if book_row[KoReaderBookColumn.TOTAL_READ_PAGES.value]:
-            pages_read = int(
-                book_row[KoReaderBookColumn.TOTAL_READ_PAGES.value]
-            )
-        timestamp = datetime.utcfromtimestamp(
-            book_row[KoReaderBookColumn.LAST_OPEN.value]
-        ).replace(tzinfo=pytz.utc)
         book.refresh_from_db()
-        book_id_map[book_row[KoReaderBookColumn.ID.value]] = book.id
+        total_seconds = 0
+        if book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]:
+            total_seconds = book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]
+
+        book_id_map[book_row[KoReaderBookColumn.ID.value]] = (
+            book.id,
+            total_seconds,
+        )
 
     return book_id_map
 
@@ -131,12 +125,14 @@ def build_scrobbles_from_pages(
     new_scrobbles = []
 
     new_scrobbles = []
-    pages_created = []
+    pages_found = []
+    book_read_time_map = {}
     for page_row in rows:
         koreader_id = page_row[KoReaderPageStatColumn.ID_BOOK.value]
         page_number = page_row[KoReaderPageStatColumn.PAGE.value]
         ts = page_row[KoReaderPageStatColumn.START_TIME.value]
-        book_id = book_id_map[koreader_id]
+        book_id = book_id_map[koreader_id][0]
+        book_read_time_map[book_id] = book_id_map[koreader_id][1]
 
         page, page_created = Page.objects.get_or_create(
             book_id=book_id, number=page_number, user_id=user_id
@@ -149,25 +145,39 @@ def build_scrobbles_from_pages(
                 KoReaderPageStatColumn.DURATION.value
             ]
             page.save(update_fields=["start_time", "duration_seconds"])
-            pages_created.append(page)
+        pages_found.append(page)
 
-    for page in pages_created:
+    playback_position_seconds = 0
+    for page in set(pages_found):
+        # Add up page seconds to set the aggregate time of all pages to reading time
+        playback_position_seconds = (
+            playback_position_seconds + page.duration_seconds
+        )
         if page.is_scrobblable:
-            # Page number is a placeholder, we'll re-preocess this after creation
-            logger.debug(
-                f"Queueing scrobble for {page.book}, page {page.number}"
-            )
-            new_scrobble = Scrobble(
+            # Check to see if a scrobble with this timestamp, book and user already exists
+            scrobble = Scrobble.objects.filter(
+                timestamp=page.start_time,
                 book_id=page.book_id,
                 user_id=user_id,
-                source="KOReader",
-                timestamp=page.start_time,
-                played_to_completion=True,
-                in_progress=False,
-                book_pages_read=page.number,
-                long_play_complete=False,
-            )
-            new_scrobbles.append(new_scrobble)
+            ).first()
+            if not scrobble:
+                logger.debug(
+                    f"Queueing scrobble for {page.book}, page {page.number}"
+                )
+                new_scrobble = Scrobble(
+                    book_id=page.book_id,
+                    user_id=user_id,
+                    source="KOReader",
+                    timestamp=page.start_time,
+                    played_to_completion=True,
+                    playback_position_seconds=playback_position_seconds,
+                    in_progress=False,
+                    book_pages_read=page.number,
+                    long_play_complete=False,
+                )
+                new_scrobbles.append(new_scrobble)
+            # After setting a scrobblable page, reset our accumulator
+            playback_position_seconds = 0
     return new_scrobbles
 
 
@@ -176,15 +186,16 @@ def enrich_koreader_scrobbles(scrobbles: list) -> None:
     for media completion"""
 
     for scrobble in scrobbles:
+        scrobble.book_pages_read = scrobble.book.page_set.last().number
+        # But if there's a next scrobble, set pages read to their starting page
+        #
         if scrobble.next:
-            # Set pages read to the starting page of the next scrobble minus one, if it exists
             scrobble.book_pages_read = scrobble.next.book_pages_read - 1
-            scrobble.save(update_fields=["book_pages_read"])
-        else:
-            # Set pages read to the last page we have
-            scrobble.book_pages_read = scrobble.book.page_set.last().number
+        scrobble.long_play_seconds = scrobble.book.page_set.filter(
+            number__lte=scrobble.book_pages_read
+        ).aggregate(Sum("duration_seconds"))["duration_seconds__sum"]
 
-        scrobble.save(update_fields=["book_pages_read", "long_play_complete"])
+        scrobble.save(update_fields=["book_pages_read", "long_play_seconds"])
 
 
 def process_koreader_sqlite_url(file_url, user_id) -> list:
@@ -194,6 +205,7 @@ def process_koreader_sqlite_url(file_url, user_id) -> list:
     for table_name, pragma_table_info, rows in stream_sqlite(
         _sqlite_bytes(file_url), max_buffer_size=1_048_576
     ):
+        logger.debug(f"Found table {table_name} - processing")
         if table_name == "book":
             book_id_map = get_book_map_from_sqlite(rows)
 
@@ -201,6 +213,7 @@ def process_koreader_sqlite_url(file_url, user_id) -> list:
             new_scrobbles = build_scrobbles_from_pages(
                 rows, book_id_map, user_id
             )
+            logger.debug(f"Creating {len(new_scrobbles)} new scrobbles")
 
     created = []
     if new_scrobbles:
