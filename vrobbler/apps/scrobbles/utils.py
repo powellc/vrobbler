@@ -1,6 +1,7 @@
 import logging
 from urllib.parse import unquote
 
+from django.utils import timezone
 from dateutil.parser import ParserError, parse
 from django.apps import apps
 from django.conf import settings
@@ -78,19 +79,12 @@ def check_scrobble_for_finish(
     scrobble: "Scrobble", force_to_100=False, force_finish=False
 ) -> None:
     completion_percent = scrobble.media_obj.COMPLETION_PERCENT
-
+    # scrobble.refresh_from - db()
     if scrobble.percent_played >= completion_percent or force_finish:
-        if (
-            scrobble.playback_position_seconds
-            and scrobble.media_obj.run_time_seconds
-        ):
-            logger.info(f"{scrobble.id} {completion_percent} met, finishing")
-            scrobble.playback_position_seconds = (
-                scrobble.media_obj.run_time_seconds
-            )
-            logger.info(
-                f"{scrobble.playback_position_seconds} set to {scrobble.media_obj.run_time_seconds}"
-            )
+        logger.debug(f"{scrobble} finished, updating")
+        scrobble.playback_position_seconds = (
+            scrobble.media_obj.run_time_seconds
+        )
 
         scrobble.in_progress = False
         scrobble.is_paused = False
@@ -104,6 +98,42 @@ def check_scrobble_for_finish(
                 "playback_position_seconds",
             ]
         )
+    else:
+        logger.debug(f"{scrobble} not played to completion, not completing")
+
+
+def check_long_play_for_finish(scrobble):
+    Scrobble = apps.get_model("scrobbles", "Scrobble")
+    class_name = scrobble.media_obj.__class__.__name__
+    now = timezone.now()
+    scrobble.played_to_completion = True
+    scrobble.playback_position_seconds = (now - scrobble.timestamp).seconds
+
+    media_filter = models.Q(video_game=scrobble.video_game)
+    if class_name == "Book":
+        media_filter = models.Q(book=scrobble.book)
+
+    # Check for last scrobble, and if present, update long play time
+    last_scrobble = Scrobble.objects.filter(
+        media_filter,
+        user_id=scrobble.user,
+        played_to_completion=True,
+        long_play_complete=False,
+    ).last()
+    scrobble.long_play_seconds = scrobble.playback_position_seconds
+    if last_scrobble:
+        scrobble.long_play_seconds = (
+            last_scrobble.long_play_seconds
+            + scrobble.playback_position_seconds
+        )
+
+    scrobble.save(
+        update_fields=[
+            "playback_position_seconds",
+            "played_to_completion",
+            "long_play_seconds",
+        ]
+    )
 
 
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:

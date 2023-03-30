@@ -24,7 +24,10 @@ from profiles.utils import (
 )
 from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.stats import build_charts
-from scrobbles.utils import check_scrobble_for_finish
+from scrobbles.utils import (
+    check_long_play_for_finish,
+    check_scrobble_for_finish,
+)
 from sports.models import SportEvent
 from videogames.models import VideoGame
 from videos.models import Series, Video
@@ -655,6 +658,7 @@ class Scrobble(TimeStampedModel):
 
     def stop(self, force_finish=False) -> None:
         if not self.in_progress:
+            logger.debug(f"Cannot stop scrobble {scrobble.id} not in progress")
             return
         self.in_progress = False
         self.save(update_fields=["in_progress"])
@@ -662,36 +666,9 @@ class Scrobble(TimeStampedModel):
 
         class_name = self.media_obj.__class__.__name__
         if class_name in LONG_PLAY_MEDIA.values():
-            now = timezone.now()
-            self.played_to_completion = True
-            self.playback_position_seconds = (now - self.timestamp).seconds
-
-            media_filter = models.Q(video_game=self.video_game)
-            if class_name == "Book":
-                media_filter = models.Q(book=self.book)
-
-            # Check for last scrobble, and if present, update long play time
-            last_scrobble = Scrobble.objects.filter(
-                media_filter,
-                user_id=self.user,
-                played_to_completion=True,
-                long_play_complete=False,
-            ).last()
-            self.long_play_seconds = self.playback_position_seconds
-            if last_scrobble:
-                self.long_play_seconds = (
-                    last_scrobble.long_play_seconds
-                    + self.playback_position_seconds
-                )
-
-            self.save(
-                update_fields=[
-                    "playback_position_seconds",
-                    "played_to_completion",
-                    "long_play_seconds",
-                ]
-            )
+            check_long_play_for_finish(self)
             return
+
         check_scrobble_for_finish(self, force_finish=force_finish)
 
     def pause(self) -> None:
