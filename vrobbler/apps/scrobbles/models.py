@@ -538,7 +538,7 @@ class Scrobble(TimeStampedModel):
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(f"No - Long play media")
             updatable = False
-        if self.percent_played > 100:
+        if self.percent_played >= 100:
             logger.info(f"No - 100% played - {self.id} - {self.source}")
             updatable = False
         if self.is_stale:

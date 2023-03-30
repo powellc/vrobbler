@@ -17,7 +17,6 @@ from music.models import Album, Artist, Track
 
 def get_or_create_artist(name: str, mbid: str = None) -> Artist:
     artist = None
-    logger.debug(f"Got artist {name} and mbid: {mbid}")
 
     if "feat." in name.lower():
         name = re.split("feat.", name, flags=re.IGNORECASE)[0].strip()
@@ -29,13 +28,9 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
     artist_dict = lookup_artist_from_mb(name)
     mbid = mbid or artist_dict["id"]
 
-    logger.debug(f"Looking up artist {name} and mbid: {mbid}")
     artist = Artist.objects.filter(musicbrainz_id=mbid).first()
     if not artist:
         artist = Artist.objects.create(name=name, musicbrainz_id=mbid)
-        logger.debug(
-            f"Created artist {artist.name} ({artist.musicbrainz_id}) "
-        )
         artist.fix_metadata()
 
     return artist
@@ -48,9 +43,6 @@ def get_or_create_album(
     album_dict = lookup_album_dict_from_mb(name, artist_name=artist.name)
 
     name = name or album_dict["title"]
-
-    logger.debug(f"Looking up album {name} and mbid: {mbid}")
-
     album = Album.objects.filter(artists__in=[artist], name=name).first()
 
     if not album and name:
