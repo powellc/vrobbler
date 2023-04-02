@@ -577,8 +577,8 @@ class Scrobble(TimeStampedModel):
 
         media_class = media.__class__.__name__
 
+        media_query = models.Q(track=media)
         if media_class == "Track":
-            media_query = models.Q(track=media)
             scrobble_data["track_id"] = media.id
         if media_class == "Video":
             media_query = models.Q(video=media)
@@ -604,7 +604,17 @@ class Scrobble(TimeStampedModel):
             .order_by("-modified")
             .first()
         )
-        if scrobble and scrobble.can_be_updated:
+        # We want to finish a video after it's reeached 90%
+        # but we also don't want to create new videos, so in
+        # this special case, we allow jellyfin resumed status
+        # to allow a scrobble to be updated.
+        jellyfin_in_progress = (
+            scrobble_data.pop("jellyfin_status", None) is "resumed"
+        )
+        # We also discard mopidy_status, unused presently
+        scrobble_data.pop("mopidy_status", None)
+
+        if scrobble and (scrobble.can_be_updated or jellyfin_in_progress):
             logger.info(
                 f"Updating {scrobble.id}",
                 {"scrobble_data": scrobble_data, "media": media},
@@ -616,9 +626,6 @@ class Scrobble(TimeStampedModel):
             f"Creating for {media.id} - {source}",
             {"scrobble_data": scrobble_data, "media": media},
         )
-        # If creating a new scrobble, we don't need status
-        scrobble_data.pop("mopidy_status", None)
-        scrobble_data.pop("jellyfin_status", None)
         return cls.create(scrobble_data)
 
     def update(self, scrobble_data: dict) -> "Scrobble":
@@ -643,6 +650,9 @@ class Scrobble(TimeStampedModel):
         for key, value in scrobble_data.items():
             setattr(self, key, value)
         self.save()
+
+        check_scrobble_for_finish(self)
+
         return self
 
     @classmethod
@@ -669,16 +679,13 @@ class Scrobble(TimeStampedModel):
             check_long_play_for_finish(self)
             return
 
-        check_scrobble_for_finish(self, force_finish=force_finish)
-
     def pause(self) -> None:
         if self.is_paused:
             logger.warning(f"{self.id} - already paused - {self.source}")
             return
+        logger.info(f"{self.id} - pausing - {self.source}")
         self.is_paused = True
         self.save(update_fields=["is_paused"])
-        logger.info(f"{self.id} - pausing - {self.source}")
-        check_scrobble_for_finish(self)
 
     def resume(self) -> None:
         if self.is_paused or not self.in_progress:

@@ -81,7 +81,7 @@ def check_scrobble_for_finish(
     completion_percent = scrobble.media_obj.COMPLETION_PERCENT
     # scrobble.refresh_from - db()
     if scrobble.percent_played >= completion_percent or force_finish:
-        logger.debug(f"{scrobble} finished, updating")
+        logger.info(f"{scrobble.id} finished, updating")
         scrobble.playback_position_seconds = (
             scrobble.media_obj.run_time_seconds
         )
@@ -99,7 +99,7 @@ def check_scrobble_for_finish(
             ]
         )
     else:
-        logger.debug(f"{scrobble} not played to completion, not completing")
+        logger.info(f"{scrobble.id} not complete")
 
 
 def check_long_play_for_finish(scrobble):
