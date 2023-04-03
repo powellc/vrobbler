@@ -648,11 +648,11 @@ class Scrobble(TimeStampedModel):
         if scrobble_status == "resumed":
             self.resume()
 
+        check_scrobble_for_finish(self)
+
         for key, value in scrobble_data.items():
             setattr(self, key, value)
         self.save()
-
-        check_scrobble_for_finish(self)
 
         return self
 
@@ -670,7 +670,7 @@ class Scrobble(TimeStampedModel):
     def stop(self, force_finish=False) -> None:
         self.in_progress = False
         self.save(update_fields=["in_progress"])
-        logger.info(f"{self.id} - {self.source}")
+        logger.info(f"stopping {self.id} from {self.source}")
 
         class_name = self.media_obj.__class__.__name__
         if class_name in LONG_PLAY_MEDIA.values():
