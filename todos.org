@@ -3,7 +3,8 @@
 A fun way to keep track of things in the project to fix or improve.
 
 * Version 1.0.0
-** TODO Add a "finished_timestamp" so we don't rely on content length :improvement:scrobbling:
+** DONE Add a "stop_timestamp" so we don't rely on content length :improvement:scrobbling:
+CLOSED: [2023-04-02 Sun 23:58]
 
 Essentially, we currently have the timestamp as when the content began
 scrobbling and then calculate the finish time from the length of the content.
