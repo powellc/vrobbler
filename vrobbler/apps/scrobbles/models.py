@@ -446,6 +446,9 @@ class Scrobble(TimeStampedModel):
 
     # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
+    videogame_save_data = models.FileField(
+        upload_to="scrobbles/videogame_save_data/", **BNULL
+    )
     long_play_seconds = models.BigIntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
 
