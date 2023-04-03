@@ -668,9 +668,6 @@ class Scrobble(TimeStampedModel):
         return scrobble
 
     def stop(self, force_finish=False) -> None:
-        if not self.in_progress:
-            logger.debug(f"Cannot stop scrobble {scrobble.id} not in progress")
-            return
         self.in_progress = False
         self.save(update_fields=["in_progress"])
         logger.info(f"{self.id} - {self.source}")
