@@ -112,7 +112,7 @@ class Book(LongPlayScrobblableMixin):
             if book_dict.get("pages") == None:
                 book_dict.pop("pages")
 
-            ol_title = book_dict.get("title")
+            ol_title = book_dict.get("title", "")
 
             if ol_title.lower() != self.title.lower():
                 logger.warn(
@@ -121,21 +121,6 @@ class Book(LongPlayScrobblableMixin):
 
             Book.objects.filter(pk=self.id).update(**book_dict)
             self.refresh_from_db()
-
-            # Process authors
-            author = None
-            author_created = False
-            if ol_author_id:
-                author, author_created = Author.objects.get_or_create(
-                    openlibrary_id=ol_author_id
-                )
-                if author_created or force_update:
-                    author.fix_metadata()
-            if not author and ol_author_name:
-                author, author_created = Author.objects.get_or_create(
-                    name=ol_author_name
-                )
-            self.authors.add(author)
 
             if cover_url:
                 r = requests.get(cover_url)
