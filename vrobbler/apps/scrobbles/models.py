@@ -608,12 +608,7 @@ class Scrobble(TimeStampedModel):
         # but we also don't want to create new videos, so in
         # this special case, we allow jellyfin resumed status
         # to allow a scrobble to be updated.
-        jellyfin_in_progress = (
-            scrobble_data.pop("jellyfin_status", None) is "resumed"
-        )
-        # We also discard mopidy_status, unused presently
-        scrobble_data.pop("mopidy_status", None)
-
+        jellyfin_in_progress = scrobble_data.get("jellyfin_status", None)
         if scrobble and (scrobble.can_be_updated or jellyfin_in_progress):
             logger.info(
                 f"Updating {scrobble.id}",
@@ -621,6 +616,9 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble.update(scrobble_data)
 
+        # Discard status before creating
+        scrobble_data.pop("mopidy_status", None)
+        scrobble_data.pop("jellyfin_status", None)
         source = scrobble_data["source"]
         logger.info(
             f"Creating for {media.id} - {source}",
