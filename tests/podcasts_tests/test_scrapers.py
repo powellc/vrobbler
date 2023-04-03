@@ -4,7 +4,7 @@ expected_desc = (
     "NPR's Up First is the news you need to start your day. "
     "The three biggest stories of the day, with reporting and analysis "
     "from NPR News — in 10 minutes. Available weekdays by 6 a.m. ET, "
-    "with hosts Leila Fadel, Steve Inskeep, Rachel Martin and A Martinez. "
+    "with hosts Leila Fadel, Steve Inskeep, Michel Martin and A Martinez. "
     "Also available on Saturdays by 8 a.m. ET, with Ayesha Rascoe and "
     "Scott Simon. On Sundays, hear a longer exploration behind the "
     "headlines with Rachel Martin, available by 8 a.m. ET. Subscribe "
