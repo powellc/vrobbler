@@ -430,6 +430,7 @@ class Scrobble(TimeStampedModel):
 
     # Time keeping
     timestamp = models.DateTimeField(**BNULL)
+    stop_timestamp = models.DateTimeField(**BNULL)
     playback_position_ticks = models.PositiveBigIntegerField(**BNULL)
     playback_position_seconds = models.IntegerField(**BNULL)
 
@@ -650,9 +651,16 @@ class Scrobble(TimeStampedModel):
 
         check_scrobble_for_finish(self)
 
+        if scrobble_status != "resumed":
+            scrobble_data["stop_timestamp"] = (
+                scrobble_data.pop("timestamp", None) or timezone.now()
+            )
+
+        update_fields = []
         for key, value in scrobble_data.items():
             setattr(self, key, value)
-        self.save()
+            update_fields.append(key)
+        self.save(update_fields=update_fields)
 
         return self
 
