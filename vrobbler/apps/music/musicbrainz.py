@@ -1,4 +1,5 @@
 import logging
+from typing import Iterable
 
 import musicbrainzngs
 from dateutil.parser import parse
@@ -74,19 +75,22 @@ def lookup_album_dict_from_mb(release_name: str, artist_name: str) -> dict:
     }
 
 
-def lookup_artist_from_mb(artist_name: str) -> str:
+def lookup_artist_from_mb(artist_name: str) -> dict:
     musicbrainzngs.set_useragent("vrobbler", "0.3.0")
 
-    top_result = musicbrainzngs.search_artists(artist=artist_name)[
-        "artist-list"
-    ][0]
+    try:
+        top_result = musicbrainzngs.search_artists(artist=artist_name)[
+            "artist-list"
+        ][0]
+    except IndexError:
+        return {}
     score = int(top_result.get("ext:score"))
     if score < 85:
         logger.debug(
             "Artist lookup score below 85 threshold",
             extra={"result": top_result},
         )
-        return ""
+        return {}
 
     return top_result
 

@@ -26,9 +26,10 @@ def get_or_create_artist(name: str, mbid: str = None) -> Artist:
         name = re.split("&", name, flags=re.IGNORECASE)[0].strip()
 
     artist_dict = lookup_artist_from_mb(name)
-    mbid = mbid or artist_dict["id"]
+    mbid = mbid or artist_dict.get("id", None)
 
-    artist = Artist.objects.filter(musicbrainz_id=mbid).first()
+    if mbid:
+        artist = Artist.objects.filter(musicbrainz_id=mbid).first()
     if not artist:
         artist = Artist.objects.create(name=name, musicbrainz_id=mbid)
         artist.fix_metadata()
