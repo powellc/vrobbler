@@ -1,15 +1,16 @@
 import logging
 from urllib.parse import unquote
 
-from django.utils import timezone
 from dateutil.parser import ParserError, parse
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from vrobbler.apps.profiles.utils import now_user_timezone
-
-from vrobbler.apps.scrobbles.constants import LONG_PLAY_MEDIA
+from django.utils import timezone
+from profiles.models import UserProfile
+from profiles.utils import now_user_timezone
+from scrobbles.constants import LONG_PLAY_MEDIA
+from scrobbles.tasks import process_lastfm_import
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -190,3 +191,22 @@ def get_long_plays_completed(user: User) -> list:
             ):
                 media_list.append(media)
     return media_list
+
+
+def import_lastfm_for_all_users():
+    """Grab a list of all users with LastFM enabled and kickoff imports for them"""
+    LastFmImport = apps.get_model("scrobbles", "LastFMImport")
+    lastfm_enabled_user_ids = UserProfile.objects.filter(
+        lastfm_username__isnull=False, lastfm_password__isnull=False
+    ).values_list("user_id", flat=True)
+
+    for user_id in lastfm_enabled_user_ids:
+        lfm_import, created = LastFmImport.objects.get_or_create(
+            user_id=user_id, processed_finished__isnull=True
+        )
+        if not created:
+            logger.info(
+                f"Not resuming failed LastFM import {lfm_import.id} for user {user_id}"
+            )
+            continue
+        process_lastfm_import.delay(lfm_import.id)
