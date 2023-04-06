@@ -107,6 +107,7 @@ class LastFM:
         # TOOD spin this out into a celery task over certain threshold of found scrobbles?
 
         for scrobble in found_scrobbles:
+            logger.debug(f"Processing {scrobble}")
             run_time = None
             mbid = None
             artist = None
@@ -118,6 +119,10 @@ class LastFM:
             except pylast.MalformedResponseError as e:
                 logger.warn(e)
             except pylast.WSError as e:
+                logger.warn(
+                    "LastFM barfed trying to get the track for {scrobble.track}"
+                )
+            except pylast.NetworkError as e:
                 logger.warn(
                     "LastFM barfed trying to get the track for {scrobble.track}"
                 )

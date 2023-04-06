@@ -43,7 +43,13 @@ def get_or_create_album(
     album = None
     album_dict = lookup_album_dict_from_mb(name, artist_name=artist.name)
 
-    name = name or album_dict["title"]
+    name = name or album_dict.get("title", None)
+    if not name:
+        logger.debug(
+            f"Cannot get or create album by {artist} with no name ({name})"
+        )
+        return
+
     album = Album.objects.filter(artists__in=[artist], name=name).first()
 
     if not album and name:
@@ -78,12 +84,12 @@ def get_or_create_album(
 def get_or_create_track(
     title: str,
     artist: Artist,
-    album: Album,
+    album: Album = None,
     mbid: str = None,
     run_time_seconds=None,
 ) -> Track:
     track = None
-    if not mbid:
+    if not mbid and album:
         mbid = lookup_track_from_mb(
             title,
             artist.musicbrainz_id,

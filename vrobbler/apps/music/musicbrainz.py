@@ -53,10 +53,18 @@ def lookup_album_from_mb(musicbrainz_id: str) -> dict:
 def lookup_album_dict_from_mb(release_name: str, artist_name: str) -> dict:
     musicbrainzngs.set_useragent("vrobbler", "0.3.0")
 
-    top_result = musicbrainzngs.search_releases(
-        release_name, artist=artist_name
-    )["release-list"][0]
-    score = int(top_result.get("ext:score"))
+    top_result = {}
+
+    try:
+        top_result = musicbrainzngs.search_releases(
+            release_name, artist=artist_name
+        )["release-list"][0]
+    except IndexError:
+        logger.info(
+            f"No release found on MB for {artist_name} and {release_name}"
+        )
+
+    score = int(top_result.get("ext:score", 0))
     if score < 85:
         logger.debug(
             "Album lookup score below 85 threshold",
