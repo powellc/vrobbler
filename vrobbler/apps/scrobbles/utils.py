@@ -197,7 +197,9 @@ def import_lastfm_for_all_users():
     """Grab a list of all users with LastFM enabled and kickoff imports for them"""
     LastFmImport = apps.get_model("scrobbles", "LastFMImport")
     lastfm_enabled_user_ids = UserProfile.objects.filter(
-        lastfm_username__isnull=False, lastfm_password__isnull=False
+        lastfm_username__isnull=False,
+        lastfm_password__isnull=False,
+        lastfm_auto_import=True,
     ).values_list("user_id", flat=True)
 
     for user_id in lastfm_enabled_user_ids:

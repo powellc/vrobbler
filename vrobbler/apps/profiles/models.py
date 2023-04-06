@@ -23,6 +23,7 @@ class UserProfile(TimeStampedModel):
     )
     lastfm_username = models.CharField(max_length=255, **BNULL)
     lastfm_password = EncryptedField(**BNULL)
+    lastfm_auto_import = models.BooleanField(default=False)
 
     def __str__(self):
         return f"User profile for {self.user}"
