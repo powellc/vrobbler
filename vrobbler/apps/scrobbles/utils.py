@@ -194,7 +194,7 @@ def get_long_plays_completed(user: User) -> list:
     return media_list
 
 
-def import_lastfm_for_all_users():
+def import_lastfm_for_all_users(restart=False):
     """Grab a list of all users with LastFM enabled and kickoff imports for them"""
     LastFmImport = apps.get_model("scrobbles", "LastFMImport")
     lastfm_enabled_user_ids = UserProfile.objects.filter(
@@ -203,16 +203,20 @@ def import_lastfm_for_all_users():
         lastfm_auto_import=True,
     ).values_list("user_id", flat=True)
 
+    lastfm_import_count = 0
+
     for user_id in lastfm_enabled_user_ids:
         lfm_import, created = LastFmImport.objects.get_or_create(
             user_id=user_id, processed_finished__isnull=True
         )
-        if not created:
+        if not created and not restart:
             logger.info(
-                f"Not resuming failed LastFM import {lfm_import.id} for user {user_id}"
+                f"Not resuming failed LastFM import {lfm_import.id} for user {user_id}, use restart=True to restart"
             )
             continue
         process_lastfm_import.delay(lfm_import.id)
+        lastfm_import_count += 1
+    return lastfm_import_count
 
 
 def delete_zombie_scrobbles(dry_run=True):
