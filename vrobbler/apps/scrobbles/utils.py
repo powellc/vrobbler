@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from urllib.parse import unquote
 
 from dateutil.parser import ParserError, parse
@@ -212,3 +213,29 @@ def import_lastfm_for_all_users():
             )
             continue
         process_lastfm_import.delay(lfm_import.id)
+
+
+def delete_zombie_scrobbles(dry_run=True):
+    """Look for any scrobble over a day old that is not paused and still in progress and delete it"""
+    Scrobble = apps.get_model("scrobbles", "Scrobble")
+    now = timezone.now()
+    three_days_ago = now - timedelta(days=3)
+
+    # TODO This should be part of a custom manager
+    zombie_scrobbles = Scrobble.objects.filter(
+        timestamp__lte=three_days_ago,
+        is_paused=False,
+        played_to_completion=False,
+    )
+
+    zombies_found = zombie_scrobbles.count()
+
+    if not dry_run:
+        logger.info(f"Deleted {zombies_found} zombie scrobbles")
+        zombie_scrobbles.delete()
+        return zombies_found
+
+    logger.info(
+        f"Found {zombies_found} zombie scrobbles to delete, use dry_run=False to proceed"
+    )
+    return zombies_found
