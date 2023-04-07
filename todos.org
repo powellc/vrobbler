@@ -3,6 +3,10 @@
 A fun way to keep track of things in the project to fix or improve.
 
 * Version 1.0.0
+** TODO What to do with Youtube videos from LastFM and web-scrobbler :bug:source:lastfm:
+** TODO Add a user profile page with ability to change settings :profiles:improvement:
+** DONE [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :utililty:improvement:
+CLOSED: [2023-04-06 Thu 14:09]
 ** DONE Add a "stop_timestamp" so we don't rely on content length :improvement:scrobbling:
 CLOSED: [2023-04-02 Sun 23:58]
 
@@ -149,6 +153,7 @@ Of course, it could also be a data model without a table, where it runs some fun
 calculations, stores it's values in Redis as a long-term lookup table and just
 has to re-populate when the server restarts.
 * Backlog
+** TODO Add Amazon scraper to look up books when OL fails :books:improvement:
 ** TODO [#C] Move to using more robust mopidy-webhooks pacakge form pypi :utility:improvement:
 *** Example payloads from mopidy-webhooks
 **** Podcast playback ended
@@ -440,7 +445,5 @@ has to re-populate when the server restarts.
     }
 }
 #+end_src
-** TODO [#C] Consider a purge command for duplicated and stuck in-progress scrobbles :utililty:improvement:
-** TODO What to do with Youtube videos from LastFM and web-scrobbler :bug:source:lastfm:
 ** TODO Fix bug in Jellyfin scrobbles that spam more scrobbles after completion :scrobbling:videos:bug:
 ** TODO Fix bug in podcast scrobbling where a second scrobble is created after completion :scrobbling:podcasts:bug:
