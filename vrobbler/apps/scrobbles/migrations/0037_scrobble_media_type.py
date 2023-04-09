@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 choices=[
                     ("Video", "Video"),
                     ("Track", "Track"),
-                    ("PodcastEpisode", "Podcast episode"),
+                    ("Episode", "Podcast episode"),
                     ("SportEvent", "Sport event"),
                     ("Book", "Book"),
                     ("VideoGame", "Video game"),
