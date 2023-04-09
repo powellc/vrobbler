@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from scrobbles.models import (
     AudioScrobblerTSVImport,
     ChartRecord,
@@ -109,9 +110,6 @@ class ScrobbleAdmin(admin.ModelAdmin):
 
     def media_name(self, obj):
         return obj.media_obj
-
-    def media_type(self, obj):
-        return obj.media_obj.__class__.__name__
 
     def playback_percent(self, obj):
         return obj.percent_played

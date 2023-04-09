@@ -411,6 +411,16 @@ class ChartRecord(TimeStampedModel):
 class Scrobble(TimeStampedModel):
     """A scrobble tracks played media items by a user."""
 
+    class MediaType(models.TextChoices):
+        """Enum mapping a media model type to a string"""
+
+        VIDEO = "Video", "Video"
+        TRACK = "Track", "Track"
+        PODCAST_EPISODE = "PodcastEpisode", "Podcast episode"
+        SPORT_EVENT = "SportEvent", "Sport event"
+        BOOK = "Book", "Book"
+        VIDEO_GAME = "VideoGame", "Video game"
+
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
@@ -423,6 +433,9 @@ class Scrobble(TimeStampedModel):
     book = models.ForeignKey(Book, on_delete=models.DO_NOTHING, **BNULL)
     video_game = models.ForeignKey(
         VideoGame, on_delete=models.DO_NOTHING, **BNULL
+    )
+    media_type = models.CharField(
+        max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
     user = models.ForeignKey(
         User, blank=True, null=True, on_delete=models.DO_NOTHING
@@ -456,6 +469,8 @@ class Scrobble(TimeStampedModel):
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid4()
+
+        self.media_type = self.MediaType(self.media_obj.__class__.__name__)
 
         return super(Scrobble, self).save(*args, **kwargs)
 
