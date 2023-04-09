@@ -101,6 +101,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
     list_filter = (
         "is_paused",
         "in_progress",
+        "media_type",
         "long_play_complete",
         "source",
     )
