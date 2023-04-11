@@ -639,9 +639,9 @@ class Scrobble(TimeStampedModel):
         scrobble_data.pop("mopidy_status", None)
         scrobble_data.pop("jellyfin_status", None)
         source = scrobble_data["source"]
+        mtype = media.__class__.__name__
         logger.info(
-            f"Creating for {media.id} - {source}",
-            {"scrobble_data": scrobble_data, "media": media},
+            f"[scrobbling] creating for {mtype} {media.id} from {source}"
         )
         return cls.create(scrobble_data)
 

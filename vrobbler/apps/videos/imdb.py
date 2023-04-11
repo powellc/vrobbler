@@ -10,7 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 def lookup_video_from_imdb(name_or_id: str, kind: str = "movie") -> dict:
-    name_or_id = name_or_id.strip("tt")
+
+    # Very few video titles start with tt, but IMDB IDs often come in with it
+    if name_or_id.startswith("tt"):
+        name_or_id = name_or_id[2:]
+
     video_dict = {}
     imdb_id = None
 

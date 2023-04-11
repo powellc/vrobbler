@@ -8,6 +8,13 @@ LONG_PLAY_MEDIA = {
     "books": "Book",
 }
 
+MANUAL_SCROBBLE_FNS = {
+    "-v": "manual_scrobble_video_game",
+    "-b": "manual_scrobble_book",
+    "-s": "manual_scrobble_sport_event",
+    "-i": "manual_scrobble_video",
+}
+
 
 class AsTsvColumn(Enum):
     ARTIST_NAME = 0

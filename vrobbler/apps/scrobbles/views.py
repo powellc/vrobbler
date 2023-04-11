@@ -33,6 +33,7 @@ from scrobbles.constants import (
     JELLYFIN_AUDIO_ITEM_TYPES,
     JELLYFIN_VIDEO_ITEM_TYPES,
     LONG_PLAY_MEDIA,
+    MANUAL_SCROBBLE_FNS,
 )
 from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
@@ -47,9 +48,6 @@ from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
     manual_scrobble_book,
-    manual_scrobble_event,
-    manual_scrobble_video,
-    manual_scrobble_video_game,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
@@ -58,10 +56,6 @@ from scrobbles.tasks import (
     process_lastfm_import,
     process_tsv_import,
 )
-from sports.thesportsdb import lookup_event_from_thesportsdb
-from videogames.howlongtobeat import lookup_game_from_hltb
-
-from books.openlibrary import lookup_book_from_openlibrary
 from scrobbles.utils import (
     get_long_plays_completed,
     get_long_plays_in_progress,
@@ -209,32 +203,12 @@ class ManualScrobbleView(FormView):
     template_name = "scrobbles/manual_form.html"
 
     def form_valid(self, form):
-
         item_str = form.cleaned_data.get("item_id")
-        key = item_str[:2]
-        item_id = item_str[3:]
-        data_dict = None
+        logger.debug(f"Looking for scrobblable media with input {item_str}")
 
-        if key == "-v":
-            logger.debug(f"Looking for video game with ID {item_id}")
-            data_dict = lookup_game_from_hltb(item_id.replace("-v", ""))
-            if data_dict:
-                manual_scrobble_video_game(data_dict, self.request.user.id)
-
-        if key == "-b":
-            logger.debug(f"Looking for book with ID {item_id}")
-            data_dict = lookup_book_from_openlibrary(item_id.replace("-b", ""))
-            if data_dict:
-                manual_scrobble_book(data_dict, self.request.user.id)
-
-        if key == "-s":
-            logger.debug(f"Looking for sport event with ID {item_id}")
-            data_dict = lookup_event_from_thesportsdb(item_id)
-            if data_dict:
-                manual_scrobble_event(data_dict, self.request.user.id)
-
-        if key == "-i":
-            manual_scrobble_video(item_id, self.request.user.id)
+        key, item_id = item_str[:2], item_str[3:]
+        scrobble_fn = MANUAL_SCROBBLE_FNS[key]
+        eval(scrobble_fn)(item_id, self.request.user.id)
 
         return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
@@ -349,7 +323,6 @@ def mopidy_webhook(request):
     try:
         data_dict = json.loads(request.data)
     except TypeError:
-        logger.warning("Received Mopidy data as dict, rather than a string")
         data_dict = request.data
 
     # For making things easier to build new input processors

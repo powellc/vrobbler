@@ -17,6 +17,9 @@ from sports.models import SportEvent
 from videos.models import Video
 from videogames.models import VideoGame
 from books.models import Book
+from vrobbler.apps.books.openlibrary import lookup_book_from_openlibrary
+from vrobbler.apps.sports.thesportsdb import lookup_event_from_thesportsdb
+from vrobbler.apps.videogames.howlongtobeat import lookup_game_from_hltb
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +169,7 @@ def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
 
 
 def manual_scrobble_video(imdb_id: str, user_id: int):
-    video = Video.find_or_create({"imdb_id": imdb_id})
+    video = Video.find_or_create(imdb_id)
 
     # When manually scrobbling, try finding a source from the series
     if video.tv_series:
@@ -182,15 +185,16 @@ def manual_scrobble_video(imdb_id: str, user_id: int):
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
-def manual_scrobble_event(data_dict: dict, user_id: Optional[int]):
+def manual_scrobble_event(thesportsdb_id: str, user_id: int):
+    data_dict = lookup_event_from_thesportsdb(thesportsdb_id)
+
     event = SportEvent.find_or_create(data_dict)
-
     scrobble_dict = build_scrobble_dict(data_dict, user_id)
-
     return Scrobble.create_or_update(event, user_id, scrobble_dict)
 
 
-def manual_scrobble_video_game(data_dict: dict, user_id: Optional[int]):
+def manual_scrobble_video_game(hltb_id: str, user_id: int):
+    data_dict = lookup_game_from_hltb(hltb_id)
     game = VideoGame.find_or_create(data_dict)
 
     scrobble_dict = {
@@ -205,7 +209,8 @@ def manual_scrobble_video_game(data_dict: dict, user_id: Optional[int]):
     return Scrobble.create_or_update(game, user_id, scrobble_dict)
 
 
-def manual_scrobble_book(data_dict: dict, user_id: Optional[int]):
+def manual_scrobble_book(openlibrary_id: str, user_id: int):
+    data_dict = lookup_book_from_openlibrary(openlibrary_id)
     book = Book.find_or_create(data_dict)
 
     scrobble_dict = {
