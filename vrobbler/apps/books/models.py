@@ -161,12 +161,10 @@ class Book(LongPlayScrobblableMixin):
         return progress
 
     @classmethod
-    def find_or_create(cls, data_dict: dict) -> "Game":
+    def find_or_create(cls, lookup_id: str, author: str = "") -> "Game":
         from books.utils import update_or_create_book
 
-        return update_or_create_book(
-            data_dict.get("title"), data_dict.get("author")
-        )
+        return update_or_create_book(lookup_id, author)
 
 
 class Page(TimeStampedModel):

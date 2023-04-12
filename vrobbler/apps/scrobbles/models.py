@@ -629,8 +629,10 @@ class Scrobble(TimeStampedModel):
         # to allow a scrobble to be updated.
         jellyfin_in_progress = scrobble_data.get("jellyfin_status", None)
         if scrobble and (scrobble.can_be_updated or jellyfin_in_progress):
+            source = scrobble_data["source"]
+            mtype = media.__class__.__name__
             logger.info(
-                f"Updating {scrobble.id}",
+                f"[scrobbling] updating {scrobble.id} for {mtype} {media.id} from {source}",
                 {"scrobble_data": scrobble_data, "media": media},
             )
             return scrobble.update(scrobble_data)
