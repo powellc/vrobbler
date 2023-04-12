@@ -13,7 +13,7 @@ expected_desc = (
     "sponsor-free listening. Learn more at plus.npr.org/UpFirst"
 )
 
-expected_img_url = "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcT-PqtK-bauo8wm8dBE__SVGArlvfBYY8rqxr2kA5UwjKzEx8c"
+expected_img_url = "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcR1F0CfR24RR6sme531yIkCrnK4zzmo97jeualO5drVPKG6oCk"
 expected_google_url = "https://podcasts.google.com/feed/aHR0cHM6Ly9mZWVkcy5ucHIub3JnLzUxMDMxOC9wb2RjYXN0LnhtbA"
 
 
