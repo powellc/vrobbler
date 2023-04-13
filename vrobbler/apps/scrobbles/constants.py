@@ -11,7 +11,7 @@ LONG_PLAY_MEDIA = {
 MANUAL_SCROBBLE_FNS = {
     "-v": "manual_scrobble_video_game",
     "-b": "manual_scrobble_book",
-    "-s": "manual_scrobble_sport_event",
+    "-s": "manual_scrobble_event",
     "-i": "manual_scrobble_video",
 }
 

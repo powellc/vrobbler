@@ -50,7 +50,9 @@ def get_or_create_album(
         )
         return
 
-    album = Album.objects.filter(artists__in=[artist], name=name).first()
+    album = Album.objects.filter(
+        musicbrainz_id=mbid, name=name, artists__in=[artist]
+    ).first()
 
     if not album and name:
         mbid = mbid or album_dict["mb_id"]

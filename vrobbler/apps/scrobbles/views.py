@@ -48,6 +48,9 @@ from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
     manual_scrobble_book,
+    manual_scrobble_event,
+    manual_scrobble_video,
+    manual_scrobble_video_game,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )

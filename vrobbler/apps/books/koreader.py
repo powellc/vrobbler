@@ -129,6 +129,8 @@ def build_scrobbles_from_pages(
     book_read_time_map = {}
     for page_row in rows:
         koreader_id = page_row[KoReaderPageStatColumn.ID_BOOK.value]
+        if koreader_id not in book_id_map.keys():
+            continue
         page_number = page_row[KoReaderPageStatColumn.PAGE.value]
         ts = page_row[KoReaderPageStatColumn.START_TIME.value]
         book_id = book_id_map[koreader_id][0]
