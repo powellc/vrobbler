@@ -106,29 +106,18 @@ def check_scrobble_for_finish(
 
 
 def check_long_play_for_finish(scrobble):
-    Scrobble = apps.get_model("scrobbles", "Scrobble")
-    class_name = scrobble.media_obj.__class__.__name__
-    now = timezone.now()
+    seconds_elapsed = (timezone.now() - scrobble.timestamp).seconds
+    past_seconds = 0
+
+    # Set our playback seconds, and calc long play seconds
+    scrobble.playback_position_seconds = seconds_elapsed
+    if scrobble.previous:
+        past_seconds = scrobble.previous.long_play_seconds
+
+    scrobble.long_play_seconds = past_seconds + seconds_elapsed
+
+    # Long play scrobbles are always finished when we say they are
     scrobble.played_to_completion = True
-    scrobble.playback_position_seconds = (now - scrobble.timestamp).seconds
-
-    media_filter = models.Q(video_game=scrobble.video_game)
-    if class_name == "Book":
-        media_filter = models.Q(book=scrobble.book)
-
-    # Check for last scrobble, and if present, update long play time
-    last_scrobble = Scrobble.objects.filter(
-        media_filter,
-        user_id=scrobble.user,
-        played_to_completion=True,
-        long_play_complete=False,
-    ).last()
-    scrobble.long_play_seconds = scrobble.playback_position_seconds
-    if last_scrobble:
-        scrobble.long_play_seconds = (
-            last_scrobble.long_play_seconds
-            + scrobble.playback_position_seconds
-        )
 
     scrobble.save(
         update_fields=[
