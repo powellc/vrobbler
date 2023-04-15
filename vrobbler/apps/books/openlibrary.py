@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Optional
 import urllib
 
 import requests
@@ -74,7 +75,9 @@ def lookup_author_from_openlibrary(olid: str) -> dict:
     }
 
 
-def lookup_book_from_openlibrary(title: str, author: str = None) -> dict:
+def lookup_book_from_openlibrary(
+    title: str, author: Optional[str] = None
+) -> dict:
     title_quoted = urllib.parse.quote(title)
     author_quoted = ""
     if author:

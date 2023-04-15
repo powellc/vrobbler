@@ -96,30 +96,42 @@ class Book(LongPlayScrobblableMixin):
     def get_absolute_url(self):
         return reverse("books:book_detail", kwargs={"slug": self.uuid})
 
-    def fix_metadata(self, force_update=False):
+    def fix_metadata(self, data: dict = {}, force_update=False):
         if not self.openlibrary_id or force_update:
             author_name = ""
             if self.author:
                 author_name = self.author.name
-            book_dict = lookup_book_from_openlibrary(self.title, author_name)
-            if not book_dict:
+
+            if not data:
+                data = lookup_book_from_openlibrary(
+                    str(self.title), author_name
+                )
+
+            if not data:
                 logger.warn(f"Book not found in OL {self.title}")
                 return
 
-            cover_url = book_dict.pop("cover_url", "")
-            ol_author_id = book_dict.pop("ol_author_id", "")
-            ol_author_name = book_dict.pop("ol_author_name", "")
-            if book_dict.get("pages") == None:
-                book_dict.pop("pages")
+            # We can discard the author name from OL for now, we'll lookup details below
+            data.pop("ol_author_name", "")
+            self.fix_authors_metadata(data.pop("ol_author_id", ""))
 
-            ol_title = book_dict.get("title", "")
+            ol_title = data.get("title", "")
 
-            if ol_title.lower() != self.title.lower():
+            # Kick out a little warning if we're about to change KoReader's title
+            if ol_title.lower() != str(self.title).lower():
                 logger.warn(
                     f"OL and KoReader disagree on this book title {self.title} != {ol_title}"
                 )
 
-            Book.objects.filter(pk=self.id).update(**book_dict)
+            # If we don't know pages, don't overwrite existing with None
+            if data.get("pages") == None:
+                data.pop("pages")
+
+            # Pop this, so we can look it up later
+            cover_url = data.pop("cover_url", "")
+
+            # Fun trick for updating all fields at once
+            Book.objects.filter(pk=self.id).update(**data)
             self.refresh_from_db()
 
             if cover_url:
@@ -129,11 +141,30 @@ class Book(LongPlayScrobblableMixin):
                     self.cover.save(fname, ContentFile(r.content), save=True)
 
             if self.pages:
-                self.run_time_seconds = self.pages * int(
+                self.run_time_seconds = int(self.pages) * int(
                     self.AVG_PAGE_READING_SECONDS
                 )
 
             self.save()
+
+    def fix_authors_metadata(self, openlibrary_author_id):
+        author = Author.objects.filter(
+            openlibrary_id=openlibrary_author_id
+        ).first()
+        if not author:
+            data = lookup_author_from_openlibrary(openlibrary_author_id)
+            author_image_url = data.pop("author_headshot_url", None)
+
+            author = Author.objects.create(**data)
+
+            if author_image_url:
+                r = requests.get(author_image_url)
+                if r.status_code == 200:
+                    fname = f"{author.name}_{author.uuid}.jpg"
+                    author.headshot.save(
+                        fname, ContentFile(r.content), save=True
+                    )
+        self.authors.add(author)
 
     @property
     def author(self):
@@ -161,10 +192,14 @@ class Book(LongPlayScrobblableMixin):
         return progress
 
     @classmethod
-    def find_or_create(cls, lookup_id: str, author: str = "") -> "Game":
-        from books.utils import update_or_create_book
+    def find_or_create(cls, lookup_id: str, author: str = "") -> "Book":
+        data = lookup_book_from_openlibrary(lookup_id, author)
 
-        return update_or_create_book(lookup_id, author)
+        book, book_created = cls.objects.get_or_create(isbn=data["isbn"])
+        if book_created:
+            book.fix_metadata(data=data)
+
+        return book
 
 
 class Page(TimeStampedModel):
