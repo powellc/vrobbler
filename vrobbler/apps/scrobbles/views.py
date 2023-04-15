@@ -392,14 +392,9 @@ def scrobble_start(request, uuid):
     scrobble = None
     user_id = request.user.id
     if media_obj and media_obj.__class__.__name__ == "Book":
-        data_dict = {
-            "title": media_obj.title,
-            "author": media_obj.author.name,
-        }
-        scrobble = manual_scrobble_book(data_dict, user_id)
+        scrobble = manual_scrobble_book(media_obj.openlibrary_id, user_id)
     if media_obj and media_obj.__class__.__name__ == "VideoGame":
-        data_dict = {"hltb_id": media_obj.hltb_id}
-        scrobble = manual_scrobble_video_game(data_dict, user_id)
+        scrobble = manual_scrobble_video_game(media_obj.hltb_id, user_id)
 
     if scrobble:
         messages.add_message(
