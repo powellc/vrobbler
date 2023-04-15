@@ -693,10 +693,17 @@ class Scrobble(TimeStampedModel):
         return scrobble
 
     def stop(self, force_finish=False) -> None:
+        self.stop_timestamp = timezone.now()
         if force_finish:
             self.played_to_completion = True
         self.in_progress = False
-        self.save(update_fields=["in_progress", "played_to_completion"])
+        self.save(
+            update_fields=[
+                "in_progress",
+                "played_to_completion",
+                "stop_timestamp",
+            ]
+        )
         logger.info(f"stopping {self.id} from {self.source}")
 
         class_name = self.media_obj.__class__.__name__
