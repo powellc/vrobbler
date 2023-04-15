@@ -21,8 +21,6 @@ def lookup_event_from_thesportsdb(event_id: str) -> dict:
 
     if not event or type(event) != dict:
         return {}
-    league = {}  # client.lookup_league(league_id=event.get('idLeague'))
-    event_type = "Game"
     sport, _created = Sport.objects.get_or_create(
         thesportsdb_id=event.get("strSport")
     )

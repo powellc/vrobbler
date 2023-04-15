@@ -238,9 +238,9 @@ class SportEvent(ScrobblableMixin):
             "away_team": away_team,
             "player_one": player_one,
             "player_two": player_two,
-            "start": data_dict["Start"],
+            "start": data_dict.get("Start"),
             "round": round,
-            "run_time_seconds": data_dict.get("RunTime", 0),
+            "run_time_seconds": data_dict.get("RunTime"),
         }
         event, _created = cls.objects.get_or_create(**event_dict)
 
