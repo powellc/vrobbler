@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     "podcasts",
     "sports",
     "books",
+    "boardgames",
     "videogames",
     "mathfilters",
     "rest_framework",

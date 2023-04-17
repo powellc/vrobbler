@@ -4,6 +4,7 @@ import logging
 from typing import Optional
 from uuid import uuid4
 
+from boardgames.models import BoardGame
 from books.models import Book
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -434,6 +435,9 @@ class Scrobble(TimeStampedModel):
     video_game = models.ForeignKey(
         VideoGame, on_delete=models.DO_NOTHING, **BNULL
     )
+    board_game = models.ForeignKey(
+        BoardGame, on_delete=models.DO_NOTHING, **BNULL
+    )
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -583,6 +587,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.book
         if self.video_game:
             media_obj = self.video_game
+        if self.board_game:
+            media_obj = self.board_game
         return media_obj
 
     def __str__(self):
@@ -614,6 +620,9 @@ class Scrobble(TimeStampedModel):
         if media_class == "VideoGame":
             media_query = models.Q(video_game=media)
             scrobble_data["video_game_id"] = media.id
+        if media_class == "BoardGame":
+            media_query = models.Q(board_game=media)
+            scrobble_data["board_game_id"] = media.id
 
         scrobble = (
             cls.objects.filter(

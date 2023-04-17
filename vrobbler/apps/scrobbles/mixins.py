@@ -27,6 +27,7 @@ class ObjectWithGenres(GenericTaggedItemBase):
         Genre,
         on_delete=models.CASCADE,
         related_name="%(app_label)s_%(class)s_items",
+        **BNULL,
     )
 
 
