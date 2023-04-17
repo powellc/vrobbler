@@ -421,6 +421,7 @@ class Scrobble(TimeStampedModel):
         SPORT_EVENT = "SportEvent", "Sport event"
         BOOK = "Book", "Book"
         VIDEO_GAME = "VideoGame", "Video game"
+        BOARD_GAME = "BoardGame", "Board game"
 
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
