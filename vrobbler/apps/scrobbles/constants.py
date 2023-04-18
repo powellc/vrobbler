@@ -13,6 +13,7 @@ MANUAL_SCROBBLE_FNS = {
     "-b": "manual_scrobble_book",
     "-s": "manual_scrobble_event",
     "-i": "manual_scrobble_video",
+    "-g": "manual_scrobble_board_game",
 }
 
 

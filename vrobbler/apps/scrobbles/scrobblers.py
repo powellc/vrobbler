@@ -1,6 +1,10 @@
 import logging
 from typing import Optional
 
+from boardgames.bgg import lookup_boardgame_from_bgg
+from boardgames.models import BoardGame
+from books.models import Book
+from books.openlibrary import lookup_book_from_openlibrary
 from dateutil.parser import parse
 from django.utils import timezone
 from music.constants import JELLYFIN_POST_KEYS
@@ -14,12 +18,10 @@ from podcasts.models import Episode
 from scrobbles.models import Scrobble
 from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
 from sports.models import SportEvent
-from videos.models import Video
+from sports.thesportsdb import lookup_event_from_thesportsdb
+from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
-from books.models import Book
-from vrobbler.apps.books.openlibrary import lookup_book_from_openlibrary
-from vrobbler.apps.sports.thesportsdb import lookup_event_from_thesportsdb
-from vrobbler.apps.videogames.howlongtobeat import lookup_game_from_hltb
+from videos.models import Video
 
 logger = logging.getLogger(__name__)
 
@@ -221,3 +223,17 @@ def manual_scrobble_book(openlibrary_id: str, user_id: int):
     }
 
     return Scrobble.create_or_update(book, user_id, scrobble_dict)
+
+
+def manual_scrobble_board_game(bggeek_id: str, user_id: int):
+    boardgame = BoardGame.find_or_create(bggeek_id)
+
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_seconds": 0,
+        "source": "Vrobbler",
+        "source_id": "Manually scrobbled from Vrobbler and looked up via boardgamegeek.com",
+    }
+
+    return Scrobble.create_or_update(boardgame, user_id, scrobble_dict)

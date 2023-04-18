@@ -51,6 +51,7 @@ from scrobbles.scrobblers import (
     manual_scrobble_event,
     manual_scrobble_video,
     manual_scrobble_video_game,
+    manual_scrobble_board_game,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
