@@ -39,7 +39,7 @@ class ScrobblableMixin(TimeStampedModel):
     run_time_seconds = models.IntegerField(**BNULL)
     run_time_ticks = models.PositiveBigIntegerField(**BNULL)
 
-    genre = TaggableManager(through=ObjectWithGenres)
+    genre = TaggableManager(through=ObjectWithGenres, blank=True)
 
     class Meta:
         abstract = True
