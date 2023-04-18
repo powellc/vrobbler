@@ -34,7 +34,7 @@
         {% for artist in object_list %}
         {% if artist.thumbnail %}
         <dl style="width: 130px; float: left; margin-right:10px;">
-            <dd><img src="{{artist.thumbnail.url}}" width=120 height=120 /></dd>
+            <dd><img src="{{artist.primary_image_url}}" width=120 height=120 /></dd>
         </dl>
         {% endif %}
         {% endfor %}

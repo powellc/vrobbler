@@ -169,6 +169,15 @@ class Album(TimeStampedModel):
         ).order_by("-timestamp")
 
     @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.thumbnail:
+            url = self.thumbnail.url
+        if not url and self.album_set.first().cover_image:
+            url = self.album_set.first().cover_image.url
+        return url
+
+    @property
     def tracks(self):
         return (
             self.track_set.all()

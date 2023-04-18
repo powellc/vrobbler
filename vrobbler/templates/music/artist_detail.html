@@ -9,7 +9,7 @@
 
     {% if object.thumbnail %}
     <p style="float:left; width:300px; margin-right:10px;">
-        <img style="border:1px solid #ccc;" src="{{artist.thumbnail.url}}" width=300 height=300 />
+        <img style="border:1px solid #ccc;" src="{{artist.primary_image_url}}" width=300 height=300 />
     </p>
     {% else %}
     {% if object.album_set.first.cover_image %}
