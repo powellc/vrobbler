@@ -707,11 +707,17 @@ class Scrobble(TimeStampedModel):
         if force_finish:
             self.played_to_completion = True
         self.in_progress = False
+        if not self.playback_position_seconds:
+            self.playback_position_seconds = int(
+                (self.stop_timestamp - self.timestamp).total_seconds()
+            )
+
         self.save(
             update_fields=[
                 "in_progress",
                 "played_to_completion",
                 "stop_timestamp",
+                "playback_position_seconds",
             ]
         )
         logger.info(f"stopping {self.id} from {self.source}")
@@ -719,7 +725,6 @@ class Scrobble(TimeStampedModel):
         class_name = self.media_obj.__class__.__name__
         if class_name in LONG_PLAY_MEDIA.values():
             check_long_play_for_finish(self)
-            return
 
     def pause(self) -> None:
         if self.is_paused:
