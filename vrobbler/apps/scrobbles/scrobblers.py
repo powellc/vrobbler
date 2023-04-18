@@ -228,6 +228,10 @@ def manual_scrobble_book(openlibrary_id: str, user_id: int):
 def manual_scrobble_board_game(bggeek_id: str, user_id: int):
     boardgame = BoardGame.find_or_create(bggeek_id)
 
+    if not boardgame:
+        logger.error(f"No board game found for ID {bggeek_id}")
+        return
+
     scrobble_dict = {
         "user_id": user_id,
         "timestamp": timezone.now(),

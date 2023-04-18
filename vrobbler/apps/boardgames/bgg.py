@@ -1,7 +1,10 @@
+import logging
 from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 SEARCH_ID_URL = (
     "https://boardgamegeek.com/xmlapi/search?search={query}&exact=1"
@@ -51,11 +54,14 @@ def lookup_boardgame_from_bgg(lookup_id: str) -> dict:
 
     try:
         bgg_id = int(lookup_id)
+        logger.debug(f"Using BGG ID {bgg_id} to find board game")
     except ValueError:
         title = lookup_id
+        logger.debug(f"Using title {title} to find board game")
 
     if not bgg_id:
         bgg_id = lookup_boardgame_id_from_bgg(title)
+
     url = GAME_ID_URL.format(id=bgg_id)
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
@@ -68,6 +74,7 @@ def lookup_boardgame_from_bgg(lookup_id: str) -> dict:
             seconds_to_play = int(minutes) * 60
 
         game_dict = {
+            "bggeek_id": bgg_id,
             "title": take_first(soup.findAll("name", primary="true")),
             "description": take_first(soup.findAll("description")),
             "year_published": take_first(soup.findAll("yearpublished")),

@@ -11,6 +11,7 @@ from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from scrobbles.mixins import ScrobblableMixin
+from vrobbler.apps.boardgames.bgg import lookup_boardgame_id_from_bgg
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -83,10 +84,10 @@ class BoardGame(ScrobblableMixin):
 
     def fix_metadata(self, data: dict = {}, force_update=False) -> None:
 
-        if not self.bggeek_id or force_update:
+        if not self.published_date or force_update:
 
             if not data:
-                data = get_game_by_id_from_bgg(self.bggeek_id)
+                data = lookup_boardgame_from_bgg(str(self.bggeek_id))
 
             cover_url = data.pop("cover_url")
             year = data.pop("year_published")

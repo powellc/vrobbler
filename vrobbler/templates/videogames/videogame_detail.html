@@ -45,7 +45,9 @@
 </div>
 <div class="row">
     <p>{{object.scrobble_set.count}} scrobbles</p>
+    {% if object.scrobble_set.last.long_play_seconds %}
     <p>{{object.scrobble_set.last.long_play_seconds|natural_duration}}{% if object.scrobble_set.last.long_play_complete %} and completed{% else %} spent playing{% endif %}</p>
+    {% endif  %}
     <p>
         {% if object.scrobble_set.last.long_play_complete == True %}
         <a href="">Play again</a>
