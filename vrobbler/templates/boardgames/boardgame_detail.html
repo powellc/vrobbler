@@ -1,0 +1,82 @@
+{% extends "base_list.html" %}
+{% load mathfilters %}
+{% load static %}
+{% load naturalduration %}
+
+{% block title %}{{object.title}}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .cover img {
+        width: 250px;
+    }
+
+    .cover {
+        float: left;
+        width: 252px;
+        padding: 0;
+    }
+
+    .summary {
+        float: left;
+        width: 600px;
+        margin-left: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block lists %}
+
+<div class="row">
+    {% if object.cover %}
+    <div class="cover"><img src="{{object.cover.url}}" /></div>
+    {% endif %}
+    <div class="summary">
+        {% if object.description%}
+        <p>{{object.description|safe|linebreaks|truncatewords:160}}</p>
+        <hr />
+        {% endif %}
+        <p style="float:right;">
+            <a href="{{object.bggeek_link}}"><img src="{% static "images/bgg-logo.png" %}" width=35></a>
+        </p>
+    </div>
+</div>
+<div class="row">
+    <p>{{object.scrobble_set.count}} scrobbles</p>
+    <p>{{object.scrobble_set.last.long_play_seconds|natural_duration}}{% if object.scrobble_set.last.long_play_complete %} and completed{% else %} spent playing{% endif %}</p>
+    <p>
+        {% if object.scrobble_set.last.long_play_complete == True %}
+        <a href="">Play again</a>
+        {% else %}
+        <a href="{{object.get_start_url}}">Resume playing</a>
+        {% endif %}
+    </p>
+</div>
+<div class="row">
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Completed</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Platforms</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
+                    <tr>
+                        <td>{{scrobble.timestamp}}</td>
+                        <td>{% if scrobble.long_play_complete == True %}Yes{% endif %}</td>
+                        <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.playback_position_seconds|natural_duration}}{% endif %}</td>
+                        <td>{% for platform in scrobble.video_game.platforms.all %}<a href="{{platform.get_absolute_url}}">{{platform}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

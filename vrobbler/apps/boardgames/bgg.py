@@ -3,7 +3,9 @@ from typing import Optional
 import requests
 from bs4 import BeautifulSoup
 
-SEARCH_ID_URL = "https://boardgamegeek.com/xmlapi/search?search={query}"
+SEARCH_ID_URL = (
+    "https://boardgamegeek.com/xmlapi/search?search={query}&exact=1"
+)
 GAME_ID_URL = "https://boardgamegeek.com/xmlapi/boardgame/{id}"
 
 
@@ -20,21 +22,41 @@ def take_first(thing: Optional[list]) -> str:
     return first
 
 
-def get_id_from_bgg(title):
-    soup = ""
+def lookup_boardgame_id_from_bgg(title: str) -> Optional[int]:
+    soup = None
     headers = {"User-Agent": "Vrobbler 0.11.12"}
+    game_id = None
     url = SEARCH_ID_URL.format(query=title)
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         soup = BeautifulSoup(r.text, "xml")
-    return soup
+
+    if soup:
+        result = soup.findAll("boardgame")
+        if not result:
+            return game_id
+
+        game_id = result[0].get("objectid", None)
+
+    return game_id
 
 
-def get_game_by_id_from_bgg(game_id):
+def lookup_boardgame_from_bgg(lookup_id: str) -> dict:
     soup = None
     game_dict = {}
     headers = {"User-Agent": "Vrobbler 0.11.12"}
-    url = GAME_ID_URL.format(id=game_id)
+
+    title = ""
+    bgg_id = None
+
+    try:
+        bgg_id = int(lookup_id)
+    except ValueError:
+        title = lookup_id
+
+    if not bgg_id:
+        bgg_id = lookup_boardgame_id_from_bgg(title)
+    url = GAME_ID_URL.format(id=bgg_id)
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         soup = BeautifulSoup(r.text, "xml")

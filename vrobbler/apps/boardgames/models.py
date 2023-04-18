@@ -4,7 +4,7 @@ from typing import Optional
 from uuid import uuid4
 
 import requests
-from boardgames.bgg import get_game_by_id_from_bgg
+from boardgames.bgg import lookup_boardgame_from_bgg
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
@@ -69,6 +69,12 @@ class BoardGame(ScrobblableMixin):
             "boardgames:boardgame_detail", kwargs={"slug": self.uuid}
         )
 
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.cover:
+            url = self.cover.url
+        return url
+
     def bggeek_link(self):
         link = ""
         if self.bggeek_id:
@@ -111,12 +117,14 @@ class BoardGame(ScrobblableMixin):
                     logger.debug("Loaded cover image from BGGeek")
 
     @classmethod
-    def find_or_create(cls, lookup_id: str) -> Optional["BoardGame"]:
+    def find_or_create(
+        cls, lookup_id: str, data: Optional[dict] = {}
+    ) -> Optional["BoardGame"]:
         """Given a Lookup ID (either BGG or BGA ID), return a board game object"""
-        data = {}
         boardgame = None
 
-        data = get_game_by_id_from_bgg(lookup_id)
+        if not data:
+            data = lookup_boardgame_from_bgg(lookup_id)
 
         if data:
             boardgame, created = cls.objects.get_or_create(
