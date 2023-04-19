@@ -170,6 +170,7 @@ def build_scrobbles_from_pages(
                     book_id=page.book_id,
                     user_id=user_id,
                     source="KOReader",
+                    media_type=Scrobble.MediaType.BOOK,
                     timestamp=page.start_time,
                     played_to_completion=True,
                     playback_position_seconds=playback_position_seconds,
