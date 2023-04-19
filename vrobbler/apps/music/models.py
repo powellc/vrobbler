@@ -40,6 +40,14 @@ class Artist(TimeStampedModel):
         return self.name
 
     @property
+    def primary_image_url(self) -> str:
+        if self.thumbnail:
+            return self.thumbnail.url
+        if self.album_set.first().cover_image:
+            return self.album_set.first().cover_image.url
+        return ""
+
+    @property
     def mb_link(self):
         return f"https://musicbrainz.org/artist/{self.musicbrainz_id}"
 
@@ -170,12 +178,9 @@ class Album(TimeStampedModel):
 
     @property
     def primary_image_url(self) -> str:
-        url = ""
-        if self.thumbnail:
-            url = self.thumbnail.url
-        if not url and self.album_set.first().cover_image:
-            url = self.album_set.first().cover_image.url
-        return url
+        if self.cover_image.url:
+            return self.cover_image.url
+        return ""
 
     @property
     def tracks(self):
