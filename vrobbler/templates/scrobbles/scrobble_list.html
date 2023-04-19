@@ -52,7 +52,7 @@
         <div class="btn-toolbar mb-2 mb-md-0">
             {% if user.is_authenticated %}
             <div class="btn-group me-2">
-                {% if user.profile.lastfm_username %}
+                {% if user.profile.lastfm_username and not user.profile.lastfm_auto_import %}
 
                 <form action="{% url 'scrobbles:lastfm-import' %}" method="get">
                     <button type="submit" class="btn btn-sm btn-outline-secondary">Last.fm Sync</button>
