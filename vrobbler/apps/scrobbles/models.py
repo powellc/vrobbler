@@ -61,14 +61,7 @@ class BaseFileImportMixin(TimeStampedModel):
 
     @property
     def import_type(self) -> str:
-        class_name = self.__class__.__name__
-        if class_name == "AudioscrobblerTSVImport":
-            return "Audioscrobbler"
-        if class_name == "KoReaderImport":
-            return "KoReader"
-        if self.__class__.__name__ == "LastFMImport":
-            return "LastFM"
-        return "Generic"
+        return "Unknown Import Source"
 
     def process(self, force=False):
         logger.warning("Process not implemented")
@@ -139,6 +132,10 @@ class KoReaderImport(BaseFileImportMixin):
     class Meta:
         verbose_name = "KOReader Import"
 
+    @property
+    def import_type(self) -> str:
+        return "KOReader"
+
     def __str__(self):
         return f"KoReader import on {self.human_start}"
 
@@ -182,6 +179,10 @@ class KoReaderImport(BaseFileImportMixin):
 class AudioScrobblerTSVImport(BaseFileImportMixin):
     class Meta:
         verbose_name = "AudioScrobbler TSV Import"
+
+    @property
+    def import_type(self) -> str:
+        return "AudiosScrobbler"
 
     def __str__(self):
         return f"Audioscrobbler import on {self.human_start}"
@@ -232,6 +233,10 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
 class LastFmImport(BaseFileImportMixin):
     class Meta:
         verbose_name = "Last.FM Import"
+
+    @property
+    def import_type(self) -> str:
+        return "LastFM"
 
     def __str__(self):
         return f"LastFM import on {self.human_start}"
