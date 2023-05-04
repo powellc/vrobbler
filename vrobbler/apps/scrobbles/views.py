@@ -160,13 +160,13 @@ class ScrobbleImportListView(TemplateView):
 
         context_data["tsv_imports"] = AudioScrobblerTSVImport.objects.filter(
             user=self.request.user,
-        ).order_by("-processing_started")
+        ).order_by("-processing_started")[:10]
         context_data["koreader_imports"] = KoReaderImport.objects.filter(
             user=self.request.user,
-        ).order_by("-processing_started")
+        ).order_by("-processing_started")[:10]
         context_data["lastfm_imports"] = LastFmImport.objects.filter(
             user=self.request.user,
-        ).order_by("-processing_started")
+        ).order_by("-processing_started")[:10]
         return context_data
 
 
