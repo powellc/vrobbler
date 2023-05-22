@@ -79,6 +79,7 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
             track=track,
             played_to_completion=True,
             in_progress=False,
+            media_type=Scrobble.MediaType.TRACK,
         )
         existing = Scrobble.objects.filter(
             timestamp=timestamp, track=track
