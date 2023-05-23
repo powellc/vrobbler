@@ -103,9 +103,14 @@ class Book(LongPlayScrobblableMixin):
                 author_name = self.author.name
 
             if not data:
-                data = lookup_book_from_openlibrary(
-                    str(self.title), author_name
-                )
+                if self.openlibrary_id:
+                    data = lookup_book_from_openlibrary(
+                        str(self.openlibrary_id)
+                    )
+                else:
+                    data = lookup_book_from_openlibrary(
+                        str(self.title), author_name
+                    )
 
             if not data:
                 logger.warn(f"Book not found in OL {self.title}")
