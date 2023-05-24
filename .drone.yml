@@ -9,7 +9,7 @@ name: run_tests
 steps:
   # Run tests against Python/Flask engine backend (with pytest)
   - name: pytest with coverage
-    image: python:3.10.4
+    image: python:3.11.1
     commands:
       # Install dependencies
       - cp vrobbler.conf.test vrobbler.conf
