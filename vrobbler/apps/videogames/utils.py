@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_or_create_videogame(
-    name_or_id: str, force_update=False
+    name_or_id: str,
+    force_update: bool = False,
 ) -> Optional[VideoGame]:
     """Look up game by name or ID from HowLongToBeat"""
 
@@ -21,8 +22,9 @@ def get_or_create_videogame(
     if not game_dict:
         return
 
+    # Create missing platforms and prep for loading after create
     platform_ids = []
-    for platform in game_dict.get("platforms"):
+    for platform in game_dict.get("platforms", []):
         p, _created = VideoGamePlatform.objects.get_or_create(name=platform)
         platform_ids.append(p.id)
     game_dict.pop("platforms")
@@ -86,7 +88,7 @@ def load_game_data_from_igdb(
 
     game.genre.add(*genres)
 
-    if not game.screenshot:
+    if not game.screenshot and screenshot_url:
         r = requests.get(screenshot_url)
         if r.status_code == 200:
             fname = f"{game.title}_{game.uuid}.jpg"

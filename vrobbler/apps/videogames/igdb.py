@@ -42,6 +42,8 @@ def lookup_game_id_from_gdb(name: str) -> str:
         "Authorization": f"Bearer {get_igdb_token()}",
         "Client-ID": IGDB_CLIENT_ID,
     }
+    if "(" in name:
+        name = name.split(" (")[0]
 
     body = f'fields name,game,published_at; search "{name}"; limit 20;'
     response = requests.post(SEARCH_URL, data=body, headers=headers)

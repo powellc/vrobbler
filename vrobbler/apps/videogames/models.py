@@ -84,6 +84,7 @@ class VideoGame(LongPlayScrobblableMixin):
     completionist_time = models.IntegerField(**BNULL)
     hltb_score = models.FloatField(**BNULL)
     platforms = models.ManyToManyField(VideoGamePlatform)
+    retroarch_name = models.CharField(max_length=255, **BNULL)
 
     def __str__(self):
         return self.title
@@ -143,10 +144,11 @@ class VideoGame(LongPlayScrobblableMixin):
         if self.hltb_id and force_update:
             get_or_create_videogame(str(self.hltb_id), force_update)
 
-        if self.igdb_id:
+        if not self.igdb_id:
             # This almost never works without intervention
-            # self.igdb_id = lookup_game_id_from_gdb(self.title)
-            # self.save(update_fields=["igdb_id"])
+            self.igdb_id = lookup_game_id_from_gdb(self.title)
+
+        if self.igdb_id:
             load_game_data_from_igdb(self.id, self.igdb_id)
 
         if (not self.run_time_ticks or force_update) and self.main_story_time:
