@@ -8,6 +8,28 @@
         <p>Import started: {{object.processing_started}}</p>
         <p>Import finished: {{object.processed_finished}}</p>
         <p>Imported {{object.process_count}} scrobbles</p>
+
+        <h3>Scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Media Type</th>
+                        <th scope="col">Media</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scrobble in object.scrobbles %}
+                    <tr>
+                        <td><a href="{{scrobble.get_absolute_url}}">{{scrobble.timestamp}}</a></td>
+                        <td>{{scrobble.media_type}}</td>
+                        <td>{{scrobble.media_obj}}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
