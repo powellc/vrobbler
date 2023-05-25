@@ -6,6 +6,7 @@ from typing import List
 
 import pytz
 from dateutil.parser import ParserError, parse
+from django.apps import apps
 
 from vrobbler.apps.scrobbles.utils import convert_to_seconds
 from vrobbler.apps.videogames.utils import get_or_create_videogame
@@ -71,6 +72,7 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
         3. Create new scrobble if last_played != last_scrobble.timestamp
         4. Calculate scrobble time from runtime - last_scrobble.long_play_time
     """
+    Scrobble = apps.get_model("scrobbles", "Scrobble")
 
     game_logs = load_game_data(playlog_path)
     found_game = None
@@ -104,18 +106,23 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
             stop_timestamp = game_data["last_played"] + timedelta(
                 seconds=playback_position_seconds
             )
+            if playback_position_seconds < 30:
+                logger.info(
+                    f"Video game {found_game.id} played for less than 30 seconds, skipping"
+                )
             new_scrobbles.append(
-                {
-                    "video_game_id": found_game.id,
-                    "timestamp": game_data["last_played"],
-                    "stop_timestamp": stop_timestamp,
-                    "playback_position_seconds": playback_position_seconds,
-                    "played_to_completion": True,
-                    "in_progress": False,
-                    "long_play_seconds": game_data["runtime"],
-                    "user_id": user_id,
-                    "source_id": "Retroarch",
-                    "source": "Imported from Retroarch play log file",
-                }
+                Scrobble(
+                    video_game_id=found_game.id,
+                    timestamp=game_data["last_played"],
+                    stop_timestamp=stop_timestamp,
+                    playback_position_seconds=playback_position_seconds,
+                    played_to_completion=True,
+                    in_progress=False,
+                    long_play_seconds=game_data["runtime"],
+                    user_id=user_id,
+                    source="Retroarch",
+                    source_id="Imported from Retroarch play log file",
+                )
             )
+    created_scrobbles = Scrobble.objects.bulk_create(new_scrobbles)
     return new_scrobbles

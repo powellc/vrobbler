@@ -66,6 +66,11 @@ urlpatterns = [
         name="koreader-import-detail",
     ),
     path(
+        "imports/retroarch/<slug:slug>/",
+        views.ScrobbleRetroarchImportDetailView.as_view(),
+        name="retroarch-import-detail",
+    ),
+    path(
         "charts/",
         views.ChartRecordView.as_view(),
         name="charts-home",

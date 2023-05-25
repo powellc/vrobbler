@@ -5,6 +5,7 @@ from scrobbles.models import (
     ChartRecord,
     KoReaderImport,
     LastFmImport,
+    RetroarchImport,
     Scrobble,
 )
 from scrobbles.mixins import Genre
@@ -38,17 +39,22 @@ class ImportBaseAdmin(admin.ModelAdmin):
 
 @admin.register(AudioScrobblerTSVImport)
 class AudioScrobblerTSVImportAdmin(ImportBaseAdmin):
-    """"""
+    ...
 
 
 @admin.register(LastFmImport)
 class LastFmImportAdmin(ImportBaseAdmin):
-    """"""
+    ...
 
 
 @admin.register(KoReaderImport)
 class KoReaderImportAdmin(ImportBaseAdmin):
-    """"""
+    ...
+
+
+@admin.register(RetroarchImport)
+class RetroarchImportAdmin(ImportBaseAdmin):
+    ...
 
 
 @admin.register(Genre)

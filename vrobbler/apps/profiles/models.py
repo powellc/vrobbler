@@ -25,6 +25,9 @@ class UserProfile(TimeStampedModel):
     lastfm_password = EncryptedField(**BNULL)
     lastfm_auto_import = models.BooleanField(default=False)
 
+    retroarch_path = models.CharField(max_length=255, **BNULL)
+    retroarch_auto_import = models.BooleanField(default=False)
+
     def __str__(self):
         return f"User profile for {self.user}"
 

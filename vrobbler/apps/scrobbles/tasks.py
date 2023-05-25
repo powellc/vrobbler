@@ -10,6 +10,16 @@ User = get_user_model()
 
 
 @shared_task
+def process_retroarch_import(import_id):
+    RetroarchImport = apps.get_model("scrobbles", "RetroarchImport")
+    retroarch_import = RetroarchImport.objects.filter(id=import_id).first()
+    if not retroarch_import:
+        logger.warn(f"RetroarchImport not found with id {import_id}")
+
+    retroarch_import.process()
+
+
+@shared_task
 def process_lastfm_import(import_id):
     LastFmImport = apps.get_model("scrobbles", "LastFMImport")
     lastfm_import = LastFmImport.objects.filter(id=import_id).first()

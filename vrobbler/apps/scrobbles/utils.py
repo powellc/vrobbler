@@ -11,7 +11,7 @@ from django.utils import timezone
 from profiles.models import UserProfile
 from profiles.utils import now_user_timezone
 from scrobbles.constants import LONG_PLAY_MEDIA
-from scrobbles.tasks import process_lastfm_import
+from scrobbles.tasks import process_lastfm_import, process_retroarch_import
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -206,6 +206,30 @@ def import_lastfm_for_all_users(restart=False):
         process_lastfm_import.delay(lfm_import.id)
         lastfm_import_count += 1
     return lastfm_import_count
+
+
+def import_retroarch_for_all_users(restart=False):
+    """Grab a list of all users with Retroarch enabled and kickoff imports for them"""
+    RetroarchImport = apps.get_model("scrobbles", "RetroarchImport")
+    retroarch_enabled_user_ids = UserProfile.objects.filter(
+        retroarch_path__isnull=False,
+        retroarch_auto_import=True,
+    ).values_list("user_id", flat=True)
+
+    retroarch_import_count = 0
+
+    for user_id in retroarch_enabled_user_ids:
+        retroarch_import, created = RetroarchImport.objects.get_or_create(
+            user_id=user_id, processed_finished__isnull=True
+        )
+        if not created and not restart:
+            logger.info(
+                f"Not resuming failed LastFM import {retroarch_import.id} for user {user_id}, use restart=True to restart"
+            )
+            continue
+        process_retroarch_import.delay(retroarch_import.id)
+        retroarch_import_count += 1
+    return retroarch_import_count
 
 
 def delete_zombie_scrobbles(dry_run=True):

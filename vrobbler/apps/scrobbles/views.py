@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.db.models.fields import timezone
 from django.db.models.query import QuerySet
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse, reverse_lazy
@@ -42,16 +41,17 @@ from scrobbles.models import (
     ChartRecord,
     KoReaderImport,
     LastFmImport,
+    RetroarchImport,
     Scrobble,
 )
 from scrobbles.scrobblers import (
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
+    manual_scrobble_board_game,
     manual_scrobble_book,
     manual_scrobble_event,
     manual_scrobble_video,
     manual_scrobble_video_game,
-    manual_scrobble_board_game,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
@@ -200,6 +200,10 @@ class ScrobbleTSVImportDetailView(BaseScrobbleImportDetailView):
 
 class ScrobbleLastFMImportDetailView(BaseScrobbleImportDetailView):
     model = LastFmImport
+
+
+class ScrobbleRetroarchImportDetailView(BaseScrobbleImportDetailView):
+    model = RetroarchImport
 
 
 class ManualScrobbleView(FormView):

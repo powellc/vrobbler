@@ -30,6 +30,7 @@ from scrobbles.utils import (
     check_scrobble_for_finish,
 )
 from sports.models import SportEvent
+from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
 
@@ -50,7 +51,7 @@ class BaseFileImportMixin(TimeStampedModel):
         abstract = True
 
     def __str__(self):
-        return f"Scrobble import {self.id}"
+        return f"{self.import_type} import on {self.human_start}"
 
     @property
     def human_start(self):
@@ -144,9 +145,6 @@ class KoReaderImport(BaseFileImportMixin):
     def import_type(self) -> str:
         return "KOReader"
 
-    def __str__(self):
-        return f"KoReader import on {self.human_start}"
-
     def get_absolute_url(self):
         return reverse(
             "scrobbles:koreader-import-detail", kwargs={"slug": self.uuid}
@@ -191,9 +189,6 @@ class AudioScrobblerTSVImport(BaseFileImportMixin):
     @property
     def import_type(self) -> str:
         return "AudiosScrobbler"
-
-    def __str__(self):
-        return f"Audioscrobbler import on {self.human_start}"
 
     def get_absolute_url(self):
         return reverse(
@@ -246,9 +241,6 @@ class LastFmImport(BaseFileImportMixin):
     def import_type(self) -> str:
         return "LastFM"
 
-    def __str__(self):
-        return f"LastFM import on {self.human_start}"
-
     def get_absolute_url(self):
         return reverse(
             "scrobbles:lastfm-import-detail", kwargs={"slug": self.uuid}
@@ -283,6 +275,46 @@ class LastFmImport(BaseFileImportMixin):
         self.mark_started()
 
         scrobbles = lastfm.import_from_lastfm(last_processed)
+
+        self.record_log(scrobbles)
+        self.mark_finished()
+
+
+class RetroarchImport(BaseFileImportMixin):
+    class Meta:
+        verbose_name = "Retroarch Import"
+
+    @property
+    def import_type(self) -> str:
+        return "Retroarch"
+
+    def get_absolute_url(self):
+        return reverse(
+            "scrobbles:retroarch-import-detail", kwargs={"slug": self.uuid}
+        )
+
+    def process(self, import_all=False, force=False):
+        """Import scrobbles found on Retroarch"""
+        if self.processed_finished and not force:
+            logger.info(
+                f"{self} already processed on {self.processed_finished}"
+            )
+            return
+
+        if force:
+            logger.info(f"You told me to force import from Retroarch")
+
+        if not self.user.profile.retroarch_path:
+            logger.info(
+                "Tying to import Retroarch logs, but user has no retroarch_path configured"
+            )
+
+        self.mark_started()
+
+        scrobbles = retroarch.import_retroarch_lrtl_files(
+            self.user.profile.retroarch_path,
+            self.user.id,
+        )
 
         self.record_log(scrobbles)
         self.mark_finished()
