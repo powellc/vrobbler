@@ -9,6 +9,7 @@ from dateutil.parser import ParserError, parse
 from django.apps import apps
 
 from vrobbler.apps.scrobbles.utils import convert_to_seconds
+from vrobbler.apps.videogames.scrapers import scrape_game_name_from_adb
 from vrobbler.apps.videogames.utils import get_or_create_videogame
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
             )
             continue
 
-        game_name = filename.split(" (")[0]
+        game_name = filename.split(".lrtl")[0].split(" (")[0]
         with open("".join([directory_path, filename])) as f:
             games[game_name] = json.load(f)
             # Convert runtime to seconds
@@ -81,6 +82,10 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
     for game_name, game_data in game_logs.items():
         # Use the retroarch name, because we can't change those but may want to
         # tweak the found game
+        mame_name = scrape_game_name_from_adb(game_name)
+        if mame_name:
+            game_name = mame_name
+
         found_game = VideoGame.objects.filter(retroarch_name=game_name).first()
 
         if not found_game:

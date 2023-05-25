@@ -55,11 +55,16 @@ def lookup_game_id_from_gdb(name: str) -> str:
     return results[0]["game"]
 
 
-def lookup_game_from_igdb(igdb_id: str) -> Dict:
+def lookup_game_from_igdb(name_or_igdb_id: str) -> Dict:
     """Given credsa and an IGDB game ID, lookup the game metadata and return it
     in a dictionary mapped to our internal game fields
 
     """
+    try:
+        igdb_id = int(name_or_igdb_id)
+    except ValueError:
+        igdb_id = lookup_game_id_from_gdb(name_or_igdb_id)
+
     headers = {
         "Authorization": f"Bearer {get_igdb_token()}",
         "Client-ID": IGDB_CLIENT_ID,
