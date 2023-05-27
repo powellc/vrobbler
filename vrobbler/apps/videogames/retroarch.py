@@ -53,12 +53,10 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
             games[game_name]["runtime"] = convert_to_seconds(
                 games[game_name]["runtime"]
             )
-            # Convert last_played to datetime in UTC
-            games[game_name]["last_played"] = (
-                parse(games[game_name]["last_played"])
-                .replace(tzinfo=user_tz)
-                .astimezone(pytz.utc)
-            )
+            # Convert last_played to datetime in user timezone
+            games[game_name]["last_played"] = parse(
+                games[game_name]["last_played"]
+            ).replace(tzinfo=user_tz)
 
     return games
 
@@ -127,6 +125,7 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                     user_id=user_id,
                     source="Retroarch",
                     source_id="Imported from Retroarch play log file",
+                    media_type=Scrobble.MediaType.VIDEO_GAME,
                 )
             )
     created_scrobbles = Scrobble.objects.bulk_create(new_scrobbles)
