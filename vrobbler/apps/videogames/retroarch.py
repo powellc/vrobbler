@@ -48,7 +48,12 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
 
         game_name = filename.split(".lrtl")[0].split(" (")[0]
         with open("".join([directory_path, filename])) as f:
-            games[game_name] = json.load(f)
+            try:
+                games[game_name] = json.load(f)
+            except json.JSONDecodeError:
+                logger.warn(
+                    f"Could not decode JSOn for {game_name} and file {filename}"
+                )
             # Convert runtime to seconds
             games[game_name]["runtime"] = convert_to_seconds(
                 games[game_name]["runtime"]
