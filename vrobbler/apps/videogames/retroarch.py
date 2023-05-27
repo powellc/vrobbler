@@ -94,21 +94,25 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
 
         if found_game:
             found_scrobble = found_game.scrobble_set.filter(
-                timestamp=game_data["last_played"]
+                stop_timestamp=game_data["last_played"]
             )
             if found_scrobble:
                 logger.info(
-                    f"Found scrobble for {game_name} with timestamp {game_data['last_played']}, not scrobbling"
+                    f"Found scrobble for {game_name} with stop_timestamp {game_data['last_played']}, not scrobbling"
                 )
                 continue
             last_scrobble = found_game.scrobble_set.last()
+
             delta_runtime = 0
             if last_scrobble:
                 delta_runtime = last_scrobble.long_play_seconds
+
             playback_position_seconds = game_data["runtime"] - delta_runtime
-            stop_timestamp = game_data["last_played"] + timedelta(
+
+            timestamp = game_data["last_played"] + timedelta(
                 seconds=playback_position_seconds
             )
+
             if playback_position_seconds < 30:
                 logger.info(
                     f"Video game {found_game.id} played for less than 30 seconds, skipping"
@@ -116,8 +120,8 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
             new_scrobbles.append(
                 Scrobble(
                     video_game_id=found_game.id,
-                    timestamp=game_data["last_played"],
-                    stop_timestamp=stop_timestamp,
+                    timestamp=timestamp,
+                    stop_timestamp=game_data["last_played"],
                     playback_position_seconds=playback_position_seconds,
                     played_to_completion=True,
                     in_progress=False,
