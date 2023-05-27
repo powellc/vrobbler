@@ -10,7 +10,7 @@ expected_desc = (
     "headlines with Rachel Martin, available by 8 a.m. ET. Subscribe "
     "and listen, then support your local NPR station at donate.npr.org.  "
     "Support NPR's reporting by subscribing to Up First+ and unlock "
-    "sponsor-free listening. Learn more at plus.npr.org/UpFirst"
+    "sponsor-free listening. Learn more at plus.npr.org/upfirst"
 )
 
 expected_img_url = "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcR1F0CfR24RR6sme531yIkCrnK4zzmo97jeualO5drVPKG6oCk"
