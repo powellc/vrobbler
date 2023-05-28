@@ -45,9 +45,16 @@ def get_or_create_videogame(
     if "genres" in game_dict.keys():
         genres = game_dict.pop("genres")
 
-    game, game_created = VideoGame.objects.get_or_create(
-        hltb_id=game_dict.get("hltb_id")
-    )
+    hltb_id = game_dict.get("hltb_id")
+    igdb_id = game_dict.get("igdb_id")
+    if hltb_id:
+        game, game_created = VideoGame.objects.get_or_create(hltb_id=hltb_id)
+    elif igdb_id:
+        game, game_created = VideoGame.objects.get_or_create(igdb_id=igdb_id)
+    else:
+        game, game_created = VideoGame.objects.get_or_create(
+            title=game_dict.get("title")
+        )
 
     if game_created or force_update:
         VideoGame.objects.filter(pk=game.id).update(**game_dict)
