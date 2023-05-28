@@ -85,7 +85,9 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
         logger.warning(f"User ID {user_id} is not valid, cannot scrobble")
         raise UserNotFound
 
-    game_logs = load_game_data(playlog_path, user.profile.timezone)
+    game_logs = load_game_data(
+        playlog_path, pytz.timezone(user.profile.timezone)
+    )
     found_game = None
     new_scrobbles = []
 
