@@ -124,7 +124,7 @@ def load_game_data_from_igdb(
             fname = f"{game.title}_{game.uuid}.jpg"
             game.screenshot.save(fname, ContentFile(r.content), save=True)
 
-    if not game.cover:
+    if not game.cover and cover_url:
         r = requests.get(cover_url)
         if r.status_code == 200:
             fname = f"{game.title}_{game.uuid}.jpg"
