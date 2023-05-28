@@ -125,7 +125,9 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
             if found_scrobble:
                 logger.info(f"Skipping scrobble for game {found_game.id}")
                 continue
+
             last_scrobble = found_game.scrobble_set.last()
+            long_play_complete = last_scrobble.long_play_complete
 
             # Default to 0 for delta, but if there's an past scrobble, use that
             delta_runtime = 0
@@ -150,6 +152,7 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                     played_to_completion=True,
                     in_progress=False,
                     long_play_seconds=game_data["runtime"],
+                    long_play_complete=long_play_complete,
                     user_id=user_id,
                     source="Retroarch",
                     source_id="Imported from Retroarch play log file",
