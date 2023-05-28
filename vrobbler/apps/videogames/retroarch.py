@@ -14,6 +14,7 @@ from videogames.models import VideoGame
 from videogames.scrapers import scrape_game_name_from_adb
 from videogames.utils import get_or_create_videogame
 from vrobbler.apps.scrobbles.exceptions import UserNotFound
+from vrobbler.apps.videogames.exceptions import GameNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +45,7 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
         if not filename.endswith("lrtl"):
-            logger.info(
-                f"Found non-gamelog file extension, skipping {filename}"
-            )
+            logger.info(f'Skipping "{filename}", not lrtl file')
             continue
 
         game_name = filename.split(".lrtl")[0].split(" (")[0]
@@ -94,14 +93,26 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
     for game_name, game_data in game_logs.items():
         # Use the retroarch name, because we can't change those but may want to
         # tweak the found game
-        mame_name = scrape_game_name_from_adb(game_name)
+        logger.info(f"Received name {game_name}")
+        try:
+            mame_name = scrape_game_name_from_adb(game_name)
+        except GameNotFound as e:
+            logger.warning(e)
+            continue
+
         if mame_name:
+            logger.info(f"Found name {game_name}")
             game_name = mame_name
 
         found_game = VideoGame.objects.filter(retroarch_name=game_name).first()
 
         if not found_game:
-            found_game = get_or_create_videogame(game_name)
+            try:
+                found_game = get_or_create_videogame(game_name)
+            except GameNotFound as e:
+                logger.warning(f"Game not found for: {e}")
+                continue
+
             if found_game:
                 found_game.retroarch_name = game_name
                 found_game.save(update_fields=["retroarch_name"])
@@ -112,9 +123,7 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                 stop_timestamp=end_datetime
             )
             if found_scrobble:
-                logger.info(
-                    f"Found scrobble for {game_name} with stop_timestamp {end_datetime}, not scrobbling"
-                )
+                logger.info(f"Skipping scrobble for game {found_game.id}")
                 continue
             last_scrobble = found_game.scrobble_set.last()
 
@@ -148,4 +157,5 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                 )
             )
     created_scrobbles = Scrobble.objects.bulk_create(new_scrobbles)
+    logger.info(f"Created {len(created_scrobbles)} scrobbles")
     return new_scrobbles

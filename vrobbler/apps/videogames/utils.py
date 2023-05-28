@@ -3,10 +3,11 @@ from typing import Optional
 
 import requests
 from django.core.files.base import ContentFile
-from videogames.models import VideoGame, VideoGamePlatform
-
 from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.igdb import lookup_game_from_igdb
+from videogames.models import VideoGame, VideoGamePlatform
+
+from vrobbler.apps.videogames.exceptions import GameNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -45,16 +46,24 @@ def get_or_create_videogame(
     if "genres" in game_dict.keys():
         genres = game_dict.pop("genres")
 
+    title = game_dict.get("title")
+    if not title:
+        raise GameNotFound(name_or_id)
+
     hltb_id = game_dict.get("hltb_id")
     igdb_id = game_dict.get("igdb_id")
     if hltb_id:
-        game, game_created = VideoGame.objects.get_or_create(hltb_id=hltb_id)
-    elif igdb_id:
-        game, game_created = VideoGame.objects.get_or_create(igdb_id=igdb_id)
-    else:
         game, game_created = VideoGame.objects.get_or_create(
-            title=game_dict.get("title")
+            hltb_id=hltb_id,
+            title=title,
         )
+    elif igdb_id:
+        game, game_created = VideoGame.objects.get_or_create(
+            igdb_id=igdb_id,
+            title=title,
+        )
+    else:
+        game, game_created = VideoGame.objects.get_or_create(title=title)
 
     if game_created or force_update:
         VideoGame.objects.filter(pk=game.id).update(**game_dict)
