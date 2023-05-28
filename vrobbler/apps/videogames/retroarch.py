@@ -7,14 +7,17 @@ from typing import List
 import pytz
 from dateutil.parser import ParserError, parse
 from django.apps import apps
-
-from vrobbler.apps.scrobbles.utils import convert_to_seconds
-from vrobbler.apps.videogames.scrapers import scrape_game_name_from_adb
-from vrobbler.apps.videogames.utils import get_or_create_videogame
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from scrobbles.utils import convert_to_seconds
+from videogames.models import VideoGame
+from videogames.scrapers import scrape_game_name_from_adb
+from videogames.utils import get_or_create_videogame
+from vrobbler.apps.scrobbles.exceptions import UserNotFound
 
 logger = logging.getLogger(__name__)
 
-from videogames.models import VideoGame
+User = get_user_model()
 
 
 def load_game_data(directory_path: str, user_tz=None) -> dict:
@@ -36,7 +39,7 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
     directory = os.fsencode(directory_path)
     games = {}
     if not user_tz:
-        user_tz = pytz.utc
+        user_tz = settings.TIME_ZONE
 
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
@@ -77,8 +80,12 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
         4. Calculate scrobble time from runtime - last_scrobble.long_play_time
     """
     Scrobble = apps.get_model("scrobbles", "Scrobble")
+    user = User.objects.filter(pk=user_id).first()
+    if not user:
+        logger.warning(f"User ID {user_id} is not valid, cannot scrobble")
+        raise UserNotFound
 
-    game_logs = load_game_data(playlog_path)
+    game_logs = load_game_data(playlog_path, user.profile.timezone)
     found_game = None
     new_scrobbles = []
 
@@ -97,24 +104,25 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                 found_game.retroarch_name = game_name
                 found_game.save(update_fields=["retroarch_name"])
 
+        end_datetime = game_data.get("last_played")
         if found_game:
             found_scrobble = found_game.scrobble_set.filter(
-                stop_timestamp=game_data["last_played"]
+                stop_timestamp=end_datetime
             )
             if found_scrobble:
                 logger.info(
-                    f"Found scrobble for {game_name} with stop_timestamp {game_data['last_played']}, not scrobbling"
+                    f"Found scrobble for {game_name} with stop_timestamp {end_datetime}, not scrobbling"
                 )
                 continue
             last_scrobble = found_game.scrobble_set.last()
 
+            # Default to 0 for delta, but if there's an past scrobble, use that
             delta_runtime = 0
             if last_scrobble:
                 delta_runtime = last_scrobble.long_play_seconds
-
             playback_position_seconds = game_data["runtime"] - delta_runtime
 
-            timestamp = game_data["last_played"] + timedelta(
+            timestamp = end_datetime - timedelta(
                 seconds=playback_position_seconds
             )
 
