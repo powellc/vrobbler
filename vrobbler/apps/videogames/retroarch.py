@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
 import pytz
 from dateutil.parser import ParserError, parse
@@ -68,6 +68,21 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
     return games
 
 
+def lookup_from_short_mame_name(game_name: str) -> Optional[VideoGame]:
+    logger.info(f"Received name {game_name}")
+    try:
+        mame_name = scrape_game_name_from_adb(game_name)
+    except GameNotFound as e:
+        logger.warning(e)
+        return
+
+    if mame_name:
+        logger.info(f"Found name {game_name}")
+        game_name = mame_name
+
+    return VideoGame.objects.filter(retroarch_name=game_name).first()
+
+
 def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
     """Given a path to Retroarch lrtl game log file data,
     gather
@@ -91,22 +106,15 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
     new_scrobbles = []
 
     for game_name, game_data in game_logs.items():
-        # Use the retroarch name, because we can't change those but may want to
-        # tweak the found game
-        logger.info(f"Received name {game_name}")
-        try:
-            mame_name = scrape_game_name_from_adb(game_name)
-        except GameNotFound as e:
-            logger.warning(e)
-            continue
-
-        if mame_name:
-            logger.info(f"Found name {game_name}")
-            game_name = mame_name
-
         found_game = VideoGame.objects.filter(retroarch_name=game_name).first()
 
+        # If we didn't find by Retroarch name, check ArcadeDB
+        found_game_from_adb = None
         if not found_game:
+            found_game_from_adb = lookup_from_short_mame_name(game_name)
+
+        # If we didn't find it on ADB, go to get_or_create
+        if not found_game and not found_game_from_adb:
             try:
                 found_game = get_or_create_videogame(game_name)
             except GameNotFound as e:
@@ -117,48 +125,55 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                 found_game.retroarch_name = game_name
                 found_game.save(update_fields=["retroarch_name"])
 
-        end_datetime = game_data.get("last_played")
-        if found_game:
-            found_scrobble = found_game.scrobble_set.filter(
-                stop_timestamp=end_datetime
-            )
-            if found_scrobble:
-                logger.info(f"Skipping scrobble for game {found_game.id}")
-                continue
+        if not found_game:
+            logger.warning(f"No game found or created for {game_name}")
+            continue
 
-            last_scrobble = found_game.scrobble_set.last()
+        # Found a game, check if scrobble exists
+        end_datetime = game_data.get("last_played")
+        found_scrobble = found_game.scrobble_set.filter(
+            stop_timestamp=end_datetime
+        )
+        if found_scrobble:
+            logger.info(f"Skipping scrobble for game {found_game.id}")
+            continue
+
+        last_scrobble = found_game.scrobble_set.last()
+
+        long_play_complete = None
+        if last_scrobble:
             long_play_complete = last_scrobble.long_play_complete
 
-            # Default to 0 for delta, but if there's an past scrobble, use that
-            delta_runtime = 0
-            if last_scrobble:
-                delta_runtime = last_scrobble.long_play_seconds
-            playback_position_seconds = game_data["runtime"] - delta_runtime
+        # Default to 0 for delta, but if there's an past scrobble, use that
+        delta_runtime = 0
+        if last_scrobble:
+            delta_runtime = last_scrobble.long_play_seconds
 
-            timestamp = end_datetime - timedelta(
-                seconds=playback_position_seconds
+        playback_position_seconds = game_data["runtime"] - delta_runtime
+        timestamp = end_datetime - timedelta(seconds=playback_position_seconds)
+        if playback_position_seconds < 30:
+            logger.info(
+                f"Video game {found_game.id} played for less than 30 seconds, skipping"
             )
+            continue
 
-            if playback_position_seconds < 30:
-                logger.info(
-                    f"Video game {found_game.id} played for less than 30 seconds, skipping"
-                )
-            new_scrobbles.append(
-                Scrobble(
-                    video_game_id=found_game.id,
-                    timestamp=timestamp,
-                    stop_timestamp=game_data["last_played"],
-                    playback_position_seconds=playback_position_seconds,
-                    played_to_completion=True,
-                    in_progress=False,
-                    long_play_seconds=game_data["runtime"],
-                    long_play_complete=long_play_complete,
-                    user_id=user_id,
-                    source="Retroarch",
-                    source_id="Imported from Retroarch play log file",
-                    media_type=Scrobble.MediaType.VIDEO_GAME,
-                )
+        logger.info(f"Queued scrobble for game {found_game.id}")
+        new_scrobbles.append(
+            Scrobble(
+                video_game_id=found_game.id,
+                timestamp=timestamp,
+                stop_timestamp=end_datetime,
+                playback_position_seconds=playback_position_seconds,
+                played_to_completion=True,
+                in_progress=False,
+                long_play_seconds=game_data["runtime"],
+                long_play_complete=long_play_complete,
+                user_id=user_id,
+                source="Retroarch",
+                source_id="Imported from Retroarch play log file",
+                media_type=Scrobble.MediaType.VIDEO_GAME,
             )
+        )
     created_scrobbles = Scrobble.objects.bulk_create(new_scrobbles)
     logger.info(f"Created {len(created_scrobbles)} scrobbles")
     return new_scrobbles
