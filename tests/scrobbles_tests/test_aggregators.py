@@ -42,69 +42,31 @@ def test_scrobble_counts_data(client, mopidy_track_request_data):
 
 
 @pytest.mark.django_db
-def test_week_of_scrobbles_data(client, mopidy_track_request_data):
+@time_machine.travel(datetime(2022, 3, 4, 1, 24))
+def test_live_charts(client, mopidy_track_request_data):
     build_scrobbles(client, mopidy_track_request_data, 7, 1)
     user = get_user_model().objects.first()
+
     week = week_of_scrobbles(user)
     assert list(week.values()) == [1, 1, 1, 1, 1, 1, 1]
 
-
-@pytest.mark.django_db
-@time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_top_tracks_by_day(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.first()
     tops = live_charts(user)
     assert tops[0].title == "Same in the End"
 
-
-@pytest.mark.django_db
-@time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_top_tracks_by_week(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.first()
     tops = live_charts(user, chart_period="week")
     assert tops[0].title == "Same in the End"
 
-
-@pytest.mark.django_db
-@time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_top_tracks_by_month(client, mopidy_track_request_data, mocker):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.get(id=1)
     tops = live_charts(user, chart_period="month")
     assert tops[0].title == "Same in the End"
 
-
-@pytest.mark.django_db
-@time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_top_tracks_by_year(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.first()
     tops = live_charts(user, chart_period="year")
     assert tops[0].title == "Same in the End"
 
-
-@pytest.mark.django_db
-@time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_top_artists_by_week(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.first()
     tops = live_charts(user, chart_period="week", media_type="Artist")
     assert tops[0].name == "Sublime"
 
-
-@pytest.mark.django_db
-def test_top__artists_by_month(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.first()
     tops = live_charts(user, chart_period="month", media_type="Artist")
     assert tops[0].name == "Sublime"
 
-
-@pytest.mark.django_db
-def test_top__artists_by_year(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
-    user = get_user_model().objects.first()
     tops = live_charts(user, chart_period="year", media_type="Artist")
     assert tops[0].name == "Sublime"
