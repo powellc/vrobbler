@@ -189,6 +189,8 @@ class BaseScrobbleImportDetailView(DetailView):
             title = "Audioscrobbler TSV Import"
         if self.model == LastFmImport:
             title = "LastFM Import"
+        if self.model == RetroarchImport:
+            title = "Retroarch Import"
         context_data["title"] = title
         return context_data
 
