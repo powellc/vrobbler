@@ -20,7 +20,10 @@ def take_first(thing: Optional[list]) -> str:
         pass
 
     if first:
-        first = first.get_text()
+        try:
+            first = first.get_text()
+        except:
+            pass
 
     return first
 
