@@ -167,6 +167,9 @@ class ScrobbleImportListView(TemplateView):
         context_data["lastfm_imports"] = LastFmImport.objects.filter(
             user=self.request.user,
         ).order_by("-processing_started")[:10]
+        context_data["retroarch_imports"] = RetroarchImport.objects.filter(
+            user=self.request.user,
+        ).order_by("-processing_started")[:10]
         return context_data
 
 
