@@ -1,10 +1,10 @@
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, tzinfo
 from urllib.parse import unquote
 
+import pytz
 from dateutil.parser import ParserError, parse
 from django.apps import apps
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
@@ -15,6 +15,12 @@ from scrobbles.tasks import process_lastfm_import, process_retroarch_import
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
+
+def timestamp_user_tz_to_utc(timestamp: int, user_tz: tzinfo) -> datetime:
+    return user_tz.localize(datetime.utcfromtimestamp(timestamp)).astimezone(
+        pytz.utc
+    )
 
 
 def convert_to_seconds(run_time: str) -> int:

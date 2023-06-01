@@ -13,6 +13,8 @@ from music.utils import (
 from scrobbles.constants import AsTsvColumn
 from scrobbles.models import Scrobble
 
+from vrobbler.apps.scrobbles.utils import timestamp_user_tz_to_utc
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,9 +67,9 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
             )
             continue
 
-        timestamp = datetime.utcfromtimestamp(
-            int(row[AsTsvColumn["TIMESTAMP"].value])
-        ).replace(tzinfo=user_tz)
+        timestamp = timestamp_user_tz_to_utc(
+            int(row[AsTsvColumn["TIMESTAMP"].value]), user_tz
+        )
 
         new_scrobble = Scrobble(
             user_id=user_id,
