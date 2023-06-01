@@ -65,11 +65,9 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
             )
             continue
 
-        timestamp = (
-            datetime.utcfromtimestamp(int(row[AsTsvColumn["TIMESTAMP"].value]))
-            .replace(tzinfo=user_tz)
-            .astimezone(pytz.utc)
-        )
+        timestamp = datetime.utcfromtimestamp(
+            int(row[AsTsvColumn["TIMESTAMP"].value])
+        ).replace(tzinfo=user_tz)
 
         new_scrobble = Scrobble(
             user_id=user_id,
