@@ -61,9 +61,8 @@ def load_game_data(directory_path: str, user_tz=None) -> dict:
                 games[game_name]["runtime"]
             )
             # Convert last_played to datetime in user timezone
-            games[game_name]["last_played"] = parse(
-                games[game_name]["last_played"]
-            ).replace(tzinfo=user_tz)
+            last_played_dt = parse(games.get(game_name).get("last_played"))
+            games[game_name]["last_played"] = user_tz.localize(last_played_dt)
 
     return games
 
