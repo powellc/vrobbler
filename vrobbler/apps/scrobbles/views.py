@@ -303,10 +303,8 @@ def lastfm_import(request):
 def jellyfin_webhook(request):
     data_dict = request.data
 
-    if (
-        data_dict["NotificationType"] == "PlaybackProgress"
-        and data_dict["ItemType"] == "Audio"
-    ):
+    # Disregard progress updates
+    if data_dict["NotificationType"] == "PlaybackProgress":
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
     # For making things easier to build new input processors
