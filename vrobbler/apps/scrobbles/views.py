@@ -303,14 +303,18 @@ def lastfm_import(request):
 def jellyfin_webhook(request):
     data_dict = request.data
 
-    # Disregard progress updates
-    if data_dict["NotificationType"] == "PlaybackProgress":
-        return Response({}, status=status.HTTP_304_NOT_MODIFIED)
-
     # For making things easier to build new input processors
     if getattr(settings, "DUMP_REQUEST_DATA", False):
         json_data = json.dumps(data_dict, indent=4)
-        logger.debug(f"{json_data}")
+        logger.info(f"{json_data}")
+
+    in_progress = data_dict.get("NotificationType", "") == "PlaybackProgress"
+    is_music = data_dict.get("ItemType", "") == "Audio"
+
+    # Disregard progress updates
+    if in_progress and is_music:
+        logger.debug("Disregarding playback update from Jellyfin")
+        return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
     scrobble = None
     media_type = data_dict.get("ItemType", "")
