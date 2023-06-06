@@ -726,6 +726,7 @@ class Scrobble(TimeStampedModel):
                 scrobble_data.pop("timestamp", None) or timezone.now()
             )
 
+        scrobble_data.pop("timestamp")
         update_fields = []
         for key, value in scrobble_data.items():
             setattr(self, key, value)
