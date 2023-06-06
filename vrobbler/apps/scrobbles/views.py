@@ -91,6 +91,14 @@ class RecentScrobbleList(ListView):
                 sport_event__isnull=False
             ).order_by("-timestamp")[:15]
 
+            data["videogame_scrobble_list"] = completed_for_user.filter(
+                video_game__isnull=False
+            ).order_by("-timestamp")[:15]
+
+            data["boardgame_scrobble_list"] = completed_for_user.filter(
+                board_game__isnull=False
+            ).order_by("-timestamp")[:15]
+
             data["active_imports"] = AudioScrobblerTSVImport.objects.filter(
                 processing_started__isnull=False,
                 processed_finished__isnull=True,
