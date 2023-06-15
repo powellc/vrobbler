@@ -7,17 +7,28 @@
 
 {% block head_extra %}
 <style>
-    .cover img {
-        width: 250px;
+    .cover   {float:left; width:412px; margin-right:10px; padding-bottom:15px;}
+    .image-wrapper { contain: content; }
+    .caption {
+        position: fixed;
+        top: 15px;
+        left: 30px;
+        padding: 5px;
+        font-size: 110%;
+        font-weight: bold;
+        color:white;
+        background:rgba(0,0,0,0.4);
     }
-
-    .cover {
-        float: left;
-        width: 252px;
-        padding: 0;
-        border: 1px solid #ccc;
+    .caption-footer {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        padding: 5px;
+        font-size: 110%;
+        font-weight: bold;
+        color:white;
+        background:rgba(0,0,0,0.4);
     }
-
     .summary {
         float: left;
         width: 600px;
@@ -29,8 +40,12 @@
 {% block lists %}
 
 <div class="row">
-    {% if object.hltb_cover%}
-    <div class="cover"><img src="{{object.hltb_cover.url}}" /></div>
+    {% if object.primary_image_url %}
+    <div class="cover image-wrapper">
+        {% if object.rating %}<div class="caption">{{object.rating}}</div>{% endif %}
+        <img src="{{object.primary_image_url}}" />
+        <div class="caption-footer">{{object.release_year}}</div>
+    </div>
     {% endif %}
     <div class="summary">
         {% if object.summary %}
