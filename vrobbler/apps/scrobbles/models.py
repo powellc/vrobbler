@@ -102,10 +102,11 @@ class BaseFileImportMixin(TimeStampedModel):
 
     def scrobbles(self) -> models.QuerySet:
         scrobble_ids = []
-        for line in self.process_log.split("\n"):
-            sid = line.split("\t")[0]
-            if sid:
-                scrobble_ids.append(sid)
+        if self.process_log:
+            for line in self.process_log.split("\n"):
+                sid = line.split("\t")[0]
+                if sid:
+                    scrobble_ids.append(sid)
         return Scrobble.objects.filter(id__in=scrobble_ids)
 
     def mark_started(self):
