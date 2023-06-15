@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load static %}
+{% load naturalduration %}
 
 {% block head_extra  %}
 <style>
@@ -579,7 +580,8 @@
                                     <th scope="col">Date</th>
                                     <th scope="col">Cover</th>
                                     <th scope="col">Title</th>
-                                    <th scope="col">Score</th>
+                                    <th scope="col">Time played (mins)</th>
+                                    <th scope="col">Percent complete</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -587,12 +589,13 @@
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
                                     {% if scrobble.videogame_screenshot %}
-                                    <td><a href="{{scrobble.media_obj.get_absolute_url}}"><img src="{{scrobble.videogame_screenshot.url}}" width=25 height=25 style="border:1px solid black;" /></aa></td>
+                                    <td><img src="{{scrobble.videogame_screenshot.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     {% else %}
-                                    <td><a href="{{scrobble.media_obj.get_absolute_url}}"><img src="{{scrobble.media_obj.primary_image_url}}" width=25 height=25 style="border:1px solid black;" /></aa></td>
+                                    <td><img src="{{scrobble.media_obj.primary_image_url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     {% endif %}
-                                    <td>{{scrobble.media_obj.title}}</td>
-                                    <td>{{scrobble.media_obj.hltb_score}}</td>
+                                    <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
+                                    <td>{{scrobble.playback_position_seconds|natural_duration}}</td>
+                                    <td>{{scrobble.percent_played}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -611,16 +614,16 @@
                                     <th scope="col">Date</th>
                                     <th scope="col">Cover</th>
                                     <th scope="col">Title</th>
-                                    <th scope="col">Rating</th>
+                                    <th scope="col">Time played (mins)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for scrobble in boardgame_scrobble_list %}
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
-                                    <td><a href="{{scrobble.media_obj.get_absolute_url}}"><img src="{{scrobble.media_obj.primary_image_url}}" width=25 height=25 style="border:1px solid black;" /></aa></td>
-                                    <td>{{scrobble.media_obj.title}}</td>
-                                    <td>{{scrobble.media_obj.rating}}</td>
+                                    <td><img src="{{scrobble.media_obj.primary_image_url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                                    <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
+                                    <td>{{scrobble.playback_position_seconds|natural_duration}}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
