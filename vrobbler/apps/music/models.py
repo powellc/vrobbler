@@ -104,10 +104,18 @@ class Artist(TimeStampedModel):
             self.bandcamp_id = slug
             self.save(update_fields=["bandcamp_id"])
 
-    def fix_metadata(self):
-        tadb_info = lookup_artist_from_tadb(self.name)
+    def fix_metadata(self, force_update=False):
+        tadb_info = {}
+        if self.theaudiodb_id and force_update:
+            tadb_info = lookup_artist_from_tadb(self.theaudiodb_id)
+
+        if not self.theaudiodb_id or (force_update and not tadb_info):
+            tadb_info = lookup_artist_from_tadb(self.name)
+
         if not tadb_info:
-            logger.warn(f"No response from TADB for artist {self.name}")
+            logger.warn(
+                f"No response from TADB for artist {self.name}, try force_update=True"
+            )
             return
 
         self.biography = tadb_info["biography"]

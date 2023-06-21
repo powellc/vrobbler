@@ -7,23 +7,33 @@ from django.conf import settings
 
 THEAUDIODB_API_KEY = getattr(settings, "THEAUDIODB_API_KEY")
 ARTIST_SEARCH_URL = f"https://www.theaudiodb.com/api/v1/json/{THEAUDIODB_API_KEY}/search.php?s="
+ARTIST_FETCH_URL = f"https://www.theaudiodb.com/api/v1/json/{THEAUDIODB_API_KEY}/artist.php?i="
 ALBUM_SEARCH_URL = f"https://www.theaudiodb.com/api/v1/json/{THEAUDIODB_API_KEY}/searchalbum.php?s="
 
 logger = logging.getLogger(__name__)
 
 
-def lookup_artist_from_tadb(name: str) -> dict:
+def lookup_artist_from_tadb(name_or_id: str) -> dict:
     artist_info = {}
-    name = urllib.parse.quote(name)
+    name = urllib.parse.quote(name_or_id)
     response = requests.get(ARTIST_SEARCH_URL + name)
 
+    found_by_name = True
     if response.status_code != 200:
         logger.warn(f"Bad response from TADB: {response.status_code}")
-        return {}
+        found_by_name = False
 
     if not response.content:
         logger.warn(f"Bad content from TADB: {response.content}")
-        return {}
+        found_by_name = False
+
+    if "null" in str(response.content):
+        logger.warn(f"Bad content from TADB: {response.content}")
+        found_by_name = False
+
+    if not found_by_name:
+        # Try using an TABD ID
+        response = requests.get(ARTIST_FETCH_URL + name_or_id)
 
     results = json.loads(response.content)
     if results["artists"]:
