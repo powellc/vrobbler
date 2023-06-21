@@ -15,31 +15,38 @@ logger = logging.getLogger(__name__)
 
 def lookup_artist_from_tadb(name_or_id: str) -> dict:
     artist_info = {}
-    name = urllib.parse.quote(name_or_id)
-    response = requests.get(ARTIST_SEARCH_URL + name)
+    response = None
 
-    found_by_name = True
-    if response.status_code != 200:
-        logger.warn(f"Bad response from TADB: {response.status_code}")
-        found_by_name = False
+    # Look for an ID as an integer
+    try:
+        tadb_id = int(name_or_id)
+    except ValueError:
+        tadb_id = None
 
-    if not response.content:
-        logger.warn(f"Bad content from TADB: {response.content}")
-        found_by_name = False
+    if tadb_id:
+        response = requests.get(ARTIST_FETCH_URL + str(tadb_id))
 
-    if "null" in str(response.content):
-        logger.warn(f"Bad content from TADB: {response.content}")
-        found_by_name = False
+        if response.status_code != 200:
+            logger.warn(f"Bad response from TADB: {response.status_code}")
+            return artist_info
 
-    if not found_by_name:
-        # Try using an TABD ID
-        response = requests.get(ARTIST_FETCH_URL + name_or_id)
+        if not response.content:
+            logger.warn(f"Bad content from TADB: {response.content}")
+            return artist_info
+
+    if not response:
+        name = urllib.parse.quote(name_or_id)
+        response = requests.get(ARTIST_SEARCH_URL + name)
 
     if response.status_code != 200:
         logger.warn(f"Bad response from TADB: {response.status_code}")
         return artist_info
 
     if not response.content:
+        logger.warn(f"Bad content from TADB: {response.content}")
+        return artist_info
+
+    if '{"artists": null}' in str(response.content):
         logger.warn(f"Bad content from TADB: {response.content}")
         return artist_info
 
