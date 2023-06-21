@@ -35,6 +35,14 @@ def lookup_artist_from_tadb(name_or_id: str) -> dict:
         # Try using an TABD ID
         response = requests.get(ARTIST_FETCH_URL + name_or_id)
 
+    if response.status_code != 200:
+        logger.warn(f"Bad response from TADB: {response.status_code}")
+        return artist_info
+
+    if not response.content:
+        logger.warn(f"Bad content from TADB: {response.content}")
+        return artist_info
+
     results = json.loads(response.content)
     if results["artists"]:
         artist = results["artists"][0]
