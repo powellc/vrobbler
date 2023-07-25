@@ -13,8 +13,13 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
-from scrobbles.mixins import LongPlayScrobblableMixin, ScrobblableMixin
+from scrobbles.mixins import (
+    LongPlayScrobblableMixin,
+    ObjectWithGenres,
+    ScrobblableMixin,
+)
 from scrobbles.utils import get_scrobbles_for_media
+from taggit.managers import TaggableManager
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -76,6 +81,8 @@ class Book(LongPlayScrobblableMixin):
     openlibrary_id = models.CharField(max_length=255, **BNULL)
     cover = models.ImageField(upload_to="books/covers/", **BNULL)
 
+    genre = TaggableManager(through=ObjectWithGenres)
+
     def __str__(self):
         return f"{self.title} by {self.author}"
 
@@ -135,9 +142,14 @@ class Book(LongPlayScrobblableMixin):
             # Pop this, so we can look it up later
             cover_url = data.pop("cover_url", "")
 
+            subject_key_list = data.pop("subject_key_list", "")
+
             # Fun trick for updating all fields at once
             Book.objects.filter(pk=self.id).update(**data)
             self.refresh_from_db()
+
+            if subject_key_list:
+                self.genre.add(*subject_key_list)
 
             if cover_url:
                 r = requests.get(cover_url)

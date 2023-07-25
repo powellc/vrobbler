@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 from music.lastfm import LastFM
 from music.models import Artist, Track
@@ -727,7 +728,7 @@ class Scrobble(TimeStampedModel):
                 scrobble_data.pop("timestamp", None) or timezone.now()
             )
 
-        scrobble_data.pop("timestamp")
+        scrobble_data.pop("timestamp", None)
         update_fields = []
         for key, value in scrobble_data.items():
             setattr(self, key, value)
@@ -796,3 +797,96 @@ class Scrobble(TimeStampedModel):
             f"{self.id} - {self.playback_position_seconds} - {self.source}"
         )
         self.save(update_fields=["playback_position_seconds"])
+
+
+class ScrobbledPage(TimeStampedModel):
+    scrobble = models.ForeignKey(Scrobble, on_delete=models.DO_NOTHING)
+    number = models.IntegerField()
+    start_time = models.DateTimeField(**BNULL)
+    end_time = models.DateTimeField(**BNULL)
+    duration_seconds = models.IntegerField(**BNULL)
+    notes = models.CharField(max_length=255, **BNULL)
+
+    def __str__(self):
+        return f"Page {self.number} of {self.book.pages} in {self.book.title}"
+
+    def save(self, *args, **kwargs):
+        if not self.end_time and self.duration_seconds:
+            self._set_end_time()
+
+        return super(ScrobbledPage, self).save(*args, **kwargs)
+
+    @cached_property
+    def book(self):
+        return self.scrobble.book
+
+    @property
+    def next(self):
+        user_pages_qs = self.book.scrobbledpage_set.filter(
+            user=self.scrobble.user
+        )
+        page = user_pages_qs.filter(number=self.number + 1).first()
+        if not page:
+            page = (
+                user_pages_qs.filter(created__gt=self.created)
+                .order_by("created")
+                .first()
+            )
+        return page
+
+    @property
+    def previous(self):
+        user_pages_qs = self.book.scrobbledpage_set.filter(
+            user=self.scrobble.user
+        )
+        page = user_pages_qs.filter(number=self.number - 1).first()
+        if not page:
+            page = (
+                user_pages_qs.filter(created__lt=self.created)
+                .order_by("-created")
+                .first()
+            )
+        return page
+
+    @property
+    def seconds_to_next_page(self) -> int:
+        seconds = 999999  # Effectively infnity time as we have no next
+        if not self.end_time:
+            self._set_end_time()
+        if self.next:
+            seconds = (self.next.start_time - self.end_time).seconds
+        return seconds
+
+    @property
+    def is_scrobblable(self) -> bool:
+        """A page defines the start of a scrobble if the seconds to next page
+        are greater than an hour, or 3600 seconds, and it's not a single page,
+        so the next seconds to next_page is less than an hour as well.
+
+        As a special case, the first recorded page is a scrobble, so we establish
+        when the book was started.
+
+        """
+        is_scrobblable = False
+        over_an_hour_since_last_page = False
+        if not self.previous:
+            is_scrobblable = True
+
+        if self.previous:
+            over_an_hour_since_last_page = (
+                self.previous.seconds_to_next_page >= 3600
+            )
+        blip = self.seconds_to_next_page >= 3600
+
+        if over_an_hour_since_last_page and not blip:
+            is_scrobblable = True
+        return is_scrobblable
+
+    def _set_end_time(self) -> None:
+        if self.end_time:
+            return
+
+        self.end_time = self.start_time + datetime.timedelta(
+            seconds=self.duration_seconds
+        )
+        self.save(update_fields=["end_time"])

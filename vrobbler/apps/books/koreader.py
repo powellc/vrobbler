@@ -91,14 +91,14 @@ def get_book_map_from_sqlite(rows: Iterable) -> dict:
                     if author_str == "N/A":
                         continue
 
-                    author, created = Author.objects.get_or_create(
-                        name=author_str
-                    )
-                    if created:
-                        author.openlibrary_id = get_author_openlibrary_id(
-                            author_str
+                    author = Author.objects.filter(name=author_str).first()
+                    if not author:
+                        author = Author.objects.create(
+                            name=author_str,
+                            openlibrary_id=get_author_openlibrary_id(
+                                author_str
+                            ),
                         )
-                        author.save(update_fields=["openlibrary_id"])
                         author.fix_metadata()
                         logger.debug(f"Created author {author}")
                     book.authors.add(author)

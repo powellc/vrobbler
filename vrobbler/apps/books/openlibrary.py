@@ -129,4 +129,5 @@ def lookup_book_from_openlibrary(
         "pages": top.get("number_of_pages_median", None),
         "cover_url": COVER_URL.format(id=ol_id),
         "ol_author_id": ol_author_id,
+        "subject_key_list": top.get("subject_key", []),
     }
