@@ -77,7 +77,7 @@ class Book(LongPlayScrobblableMixin):
     pages = models.IntegerField(**BNULL)
     language = models.CharField(max_length=4, **BNULL)
     first_publish_year = models.IntegerField(**BNULL)
-    first_sentence = models.CharField(max_length=255, **BNULL)
+    first_sentence = models.TextField(**BNULL)
     openlibrary_id = models.CharField(max_length=255, **BNULL)
     cover = models.ImageField(upload_to="books/covers/", **BNULL)
 
