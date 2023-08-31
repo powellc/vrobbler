@@ -21,6 +21,12 @@ from scrobbles.mixins import (
 from scrobbles.utils import get_scrobbles_for_media
 from taggit.managers import TaggableManager
 
+from vrobbler.apps.books.locg import (
+    lookup_comic_by_locg_slug,
+    lookup_comic_from_locg,
+    lookup_comic_writer_by_locg_slug,
+)
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 BNULL = {"blank": True, "null": True}
@@ -34,6 +40,7 @@ class Author(TimeStampedModel):
     bio = models.TextField(**BNULL)
     wikipedia_url = models.CharField(max_length=255, **BNULL)
     isni = models.CharField(max_length=255, **BNULL)
+    locg_slug = models.CharField(max_length=255, **BNULL)
     wikidata_id = models.CharField(max_length=255, **BNULL)
     goodreads_id = models.CharField(max_length=255, **BNULL)
     librarything_id = models.CharField(max_length=255, **BNULL)
@@ -68,7 +75,7 @@ class Book(LongPlayScrobblableMixin):
     )
 
     title = models.CharField(max_length=255)
-    authors = models.ManyToManyField(Author)
+    authors = models.ManyToManyField(Author, blank=True)
     goodreads_id = models.CharField(max_length=255, **BNULL)
     koreader_id = models.IntegerField(**BNULL)
     koreader_authors = models.CharField(max_length=255, **BNULL)
@@ -79,12 +86,14 @@ class Book(LongPlayScrobblableMixin):
     first_publish_year = models.IntegerField(**BNULL)
     first_sentence = models.TextField(**BNULL)
     openlibrary_id = models.CharField(max_length=255, **BNULL)
+    locg_slug = models.CharField(max_length=255, **BNULL)
     cover = models.ImageField(upload_to="books/covers/", **BNULL)
+    summary = models.TextField(**BNULL)
 
     genre = TaggableManager(through=ObjectWithGenres)
 
     def __str__(self):
-        return f"{self.title} by {self.author}"
+        return f"{self.title}"
 
     @property
     def subtitle(self):
@@ -104,28 +113,39 @@ class Book(LongPlayScrobblableMixin):
         return reverse("books:book_detail", kwargs={"slug": self.uuid})
 
     def fix_metadata(self, data: dict = {}, force_update=False):
-        if not self.openlibrary_id or force_update:
+        if (not self.openlibrary_id or not self.locg_slug) or force_update:
             author_name = ""
             if self.author:
                 author_name = self.author.name
 
             if not data:
-                if self.openlibrary_id:
-                    data = lookup_book_from_openlibrary(
-                        str(self.openlibrary_id)
-                    )
+                if self.locg_slug:
+                    data = lookup_comic_by_locg_slug(str(self.locg_slug))
                 else:
-                    data = lookup_book_from_openlibrary(
-                        str(self.title), author_name
-                    )
+                    data = lookup_comic_from_locg(str(self.title))
 
-            if not data:
-                logger.warn(f"Book not found in OL {self.title}")
-                return
+                if not data:
+                    logger.warn(
+                        f"Book not found on LOCG, checking OL {self.title}"
+                    )
+                    if self.openlibrary_id and force_update:
+                        data = lookup_book_from_openlibrary(
+                            str(self.openlibrary_id)
+                        )
+                    else:
+                        data = lookup_book_from_openlibrary(
+                            str(self.title), author_name
+                        )
+                if not data:
+                    logger.warn(f"Book not found in OL {self.title}")
+                    return
 
             # We can discard the author name from OL for now, we'll lookup details below
             data.pop("ol_author_name", "")
-            self.fix_authors_metadata(data.pop("ol_author_id", ""))
+            if data.get("ol_author_id"):
+                self.fix_authors_metadata(data.pop("ol_author_id", ""))
+            if data.get("locg_writer_slug"):
+                self.get_author_from_locg(data.pop("locg_writer_slug", ""))
 
             ol_title = data.get("title", "")
 
@@ -183,6 +203,19 @@ class Book(LongPlayScrobblableMixin):
                     )
         self.authors.add(author)
 
+    def get_author_from_locg(self, locg_slug):
+        writer = lookup_comic_writer_by_locg_slug(locg_slug)
+
+        author, created = Author.objects.get_or_create(
+            name=writer["name"], locg_slug=writer["locg_slug"]
+        )
+        if (created or not author.headshot) and writer["photo_url"]:
+            r = requests.get(writer["photo_url"])
+            if r.status_code == 200:
+                fname = f"{author.name}_{author.uuid}.jpg"
+                author.headshot.save(fname, ContentFile(r.content), save=True)
+        self.authors.add(author)
+
     @property
     def author(self):
         return self.authors.first()
@@ -217,6 +250,16 @@ class Book(LongPlayScrobblableMixin):
             book.fix_metadata(data=data)
 
         return book
+
+    def save(self, *args, **kwargs):
+        if (
+            (not self.isbn and not self.cover)
+            and (self.locg_slug or self.openlibrary_id)
+            and self.id
+        ):
+            self.fix_metadata(force_update=True)
+
+        return super(Book, self).save(*args, **kwargs)
 
 
 class Page(TimeStampedModel):
