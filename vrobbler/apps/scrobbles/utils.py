@@ -150,6 +150,10 @@ def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     return Scrobble.objects.filter(media_query, user=user)
 
 
+def get_recently_played_board_games(user: User) -> dict:
+    ...
+
+
 def get_long_plays_in_progress(user: User) -> dict:
     """Find all books where the last scrobble is not marked complete"""
     media_dict = {
