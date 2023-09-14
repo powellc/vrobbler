@@ -1,0 +1,14 @@
+<div class="col-sm">
+    <dl>
+        <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
+        {% if media.hltb_cover %}
+        <dd><a href="{{media.get_absolute_url}}"><img src="{{media.hltb_cover.url}}" width=300 height=300 /></a></dd>
+        {% elif media.cover %}
+        <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover.url}}" style="width: 200px; height: 200px; object-fit:cover; " /></a></dd>
+        {% endif %}
+        <dd>
+            {% if media.is_long_play_in_progress %}Playing{% else %}<a type="button" class="btn btn-sm btn-primary" href="{{media.get_start_url}}">Resume</a>{% endif %}
+            <a type="button" class="right btn btn-sm " href="{{media.get_longplay_finish_url}}">Finish</a>
+        </dd>
+    </dl>
+</div>

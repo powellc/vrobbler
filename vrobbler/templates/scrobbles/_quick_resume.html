@@ -1,0 +1,4 @@
+<h2>Quick resume</h2>
+{% for media in long_play_in_progress.active %}
+    {% include "scrobbles/_media_box.html" with media=media%}
+{% endfor %}

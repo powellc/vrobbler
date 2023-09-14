@@ -63,6 +63,7 @@ from scrobbles.tasks import (
 from scrobbles.utils import (
     get_long_plays_completed,
     get_long_plays_in_progress,
+    get_recently_played_board_games,
 )
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,7 @@ class RecentScrobbleList(ListView):
                 played_to_completion=True, user=user
             )
             data["long_play_in_progress"] = get_long_plays_in_progress(user)
+            data["play_again"] = get_recently_played_board_games(user)
             data["video_scrobble_list"] = completed_for_user.filter(
                 video__isnull=False
             ).order_by("-timestamp")[:15]
@@ -105,32 +107,32 @@ class RecentScrobbleList(ListView):
                 user=self.request.user,
             )
 
-            limit = 14
-            artist = {"user": user, "media_type": "Artist", "limit": limit}
+            # limit = 14
+            # artist = {"user": user, "media_type": "Artist", "limit": limit}
             # This is weird. They don't display properly as QuerySets, so we cast to lists
-            data["chart_keys"] = {
-                "today": "Today",
-                "last7": "Last 7 days",
-                "last30": "Last 30 days",
-                "year": "This year",
-                "all": "All time",
-            }
-            data["current_artist_charts"] = {
-                "today": list(live_charts(**artist, chart_period="today")),
-                "last7": list(live_charts(**artist, chart_period="last7")),
-                "last30": list(live_charts(**artist, chart_period="last30")),
-                "year": list(live_charts(**artist, chart_period="year")),
-                "all": list(live_charts(**artist)),
-            }
+            # data["chart_keys"] = {
+            #    "today": "Today",
+            #    "last7": "Last 7 days",
+            #    "last30": "Last 30 days",
+            #    "year": "This year",
+            #    "all": "All time",
+            # }
+            # data["current_artist_charts"] = {
+            #    "today": list(live_charts(**artist, chart_period="today")),
+            #    "last7": list(live_charts(**artist, chart_period="last7")),
+            #    "last30": list(live_charts(**artist, chart_period="last30")),
+            #    "year": list(live_charts(**artist, chart_period="year")),
+            #    "all": list(live_charts(**artist)),
+            # }
 
-            track = {"user": user, "media_type": "Track", "limit": limit}
-            data["current_track_charts"] = {
-                "today": list(live_charts(**track, chart_period="today")),
-                "last7": list(live_charts(**track, chart_period="last7")),
-                "last30": list(live_charts(**track, chart_period="last30")),
-                "year": list(live_charts(**track, chart_period="year")),
-                "all": list(live_charts(**track)),
-            }
+            # track = {"user": user, "media_type": "Track", "limit": limit}
+            # data["current_track_charts"] = {
+            #    "today": list(live_charts(**track, chart_period="today")),
+            #    "last7": list(live_charts(**track, chart_period="last7")),
+            #    "last30": list(live_charts(**track, chart_period="last30")),
+            #    "year": list(live_charts(**track, chart_period="year")),
+            #    "all": list(live_charts(**track)),
+            # }
             data["counts"] = scrobble_counts(user)
         else:
             data["weekly_data"] = week_of_scrobbles()
@@ -396,7 +398,6 @@ def scrobble_start(request, uuid):
     success_url = request.META.get("HTTP_REFERER")
 
     if not user.is_authenticated:
-
         return HttpResponseRedirect(success_url)
 
     media_obj = None
