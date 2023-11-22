@@ -45,6 +45,7 @@ from scrobbles.models import (
     Scrobble,
 )
 from scrobbles.scrobblers import (
+    gpslogger_scrobble_location,
     jellyfin_scrobble_track,
     jellyfin_scrobble_video,
     manual_scrobble_board_game,
@@ -359,6 +360,28 @@ def mopidy_webhook(request):
         scrobble = mopidy_scrobble_podcast(data_dict, request.user.id)
     else:
         scrobble = mopidy_scrobble_track(data_dict, request.user.id)
+
+    if not scrobble:
+        return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)
+
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+def gps_webhook(request):
+    try:
+        data_dict = json.loads(request.data)
+    except TypeError:
+        data_dict = request.data
+
+    # For making things easier to build new input processors
+    if getattr(settings, "DUMP_REQUEST_DATA", False):
+        json_data = json.dumps(data_dict, indent=4)
+        logger.debug(f"{json_data}")
+
+    scrobble = gpslogger_scrobble_location(data_dict, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)

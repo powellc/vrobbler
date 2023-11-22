@@ -1,4 +1,5 @@
 import logging
+import pendulum
 from typing import Optional
 
 from boardgames.bgg import lookup_boardgame_from_bgg
@@ -22,6 +23,7 @@ from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
 from videos.models import Video
+from locations.models import GeoLocation, RawGeoLocation
 
 logger = logging.getLogger(__name__)
 
@@ -242,3 +244,40 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
     }
 
     return Scrobble.create_or_update(boardgame, user_id, scrobble_dict)
+
+
+def gpslogger_scrobble_location(
+    data_dict: dict, user_id: Optional[int]
+) -> Optional[Scrobble]:
+    # Save the data coming in
+    if not user_id:
+        user_id = 1  # TODO fix authing the end point to get user
+    raw_location = RawGeoLocation.objects.create(
+        user_id=user_id,
+        lat=data_dict.get("lat"),
+        lon=data_dict.get("lon"),
+        altitude=data_dict.get("alt"),
+        speed=data_dict.get("spd"),
+        timestamp=pendulum.parse(data_dict.get("time", timezone.now())),
+    )
+
+    location = GeoLocation.find_or_create(data_dict)
+
+    # Now we run off a scrobble
+    playback_seconds = 1
+    extra_data = {
+        "user_id": user_id,
+        "timestamp": pendulum.parse(data_dict.get("time", timezone.now())),
+        "playback_position_seconds": playback_seconds,
+        "source": "GPSLogger",
+    }
+
+    scrobble = Scrobble.create_or_update(location, user_id, extra_data)
+    provider = f"gps source - {data_dict.get('prov')}"
+    if scrobble.notes:
+        scrobble.notes = scrobble.notes + f"\n{provider}"
+    else:
+        scrobble.notes = provider
+    scrobble.save(update_fields=["notes"])
+
+    return scrobble

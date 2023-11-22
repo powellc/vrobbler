@@ -34,6 +34,7 @@ from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
+from locations.models import GeoLocation
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -469,6 +470,7 @@ class Scrobble(TimeStampedModel):
         BOOK = "Book", "Book"
         VIDEO_GAME = "VideoGame", "Video game"
         BOARD_GAME = "BoardGame", "Board game"
+        GEO_LOCATION = "GeoLocation", "GeoLocation"
 
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
@@ -485,6 +487,9 @@ class Scrobble(TimeStampedModel):
     )
     board_game = models.ForeignKey(
         BoardGame, on_delete=models.DO_NOTHING, **BNULL
+    )
+    geo_location = models.ForeignKey(
+        GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
@@ -612,6 +617,7 @@ class Scrobble(TimeStampedModel):
     @property
     def can_be_updated(self) -> bool:
         updatable = True
+
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(f"No - Long play media")
             updatable = False
@@ -621,6 +627,17 @@ class Scrobble(TimeStampedModel):
         if self.is_stale:
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
+        if self.media_obj.__class__.__name__ in ["GeoLocation"]:
+            logger.info(f"Calculate proximity to last scrobble")
+            if self.previous:
+                same_lat = self.previous.media_obj.lat == self.media_obj.lat
+                same_lon = self.previous.media_obj.lon == self.media_obj.lon
+                if same_lat and same_lon:  # We have moved
+                    logger.info("Yes - We're in the same place!")
+                    updatable = True
+                else:
+                    logger.info("No - We've moved, start a new scrobble")
+                    updatable = False
         return updatable
 
     @property
@@ -640,6 +657,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.video_game
         if self.board_game:
             media_obj = self.board_game
+        if self.geo_location:
+            media_obj = self.geo_location
         return media_obj
 
     def __str__(self):
@@ -648,7 +667,7 @@ class Scrobble(TimeStampedModel):
 
     @classmethod
     def create_or_update(
-        cls, media, user_id: int, scrobble_data: dict
+        cls, media, user_id: int, scrobble_data: dict, **kwargs
     ) -> "Scrobble":
 
         media_class = media.__class__.__name__
@@ -674,6 +693,9 @@ class Scrobble(TimeStampedModel):
         if media_class == "BoardGame":
             media_query = models.Q(board_game=media)
             scrobble_data["board_game_id"] = media.id
+        if media_class == "GeoLocation":
+            media_query = models.Q(geo_location=media)
+            scrobble_data["geo_location_id"] = media.id
 
         scrobble = (
             cls.objects.filter(
@@ -683,6 +705,7 @@ class Scrobble(TimeStampedModel):
             .order_by("-modified")
             .first()
         )
+
         if scrobble and scrobble.can_be_updated:
             source = scrobble_data["source"]
             mtype = media.__class__.__name__

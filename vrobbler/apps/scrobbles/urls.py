@@ -35,6 +35,11 @@ urlpatterns = [
         name="lastfm-import",
     ),
     path(
+        "webhook/gps/",
+        views.gps_webhook,
+        name="gps-webhook",
+    ),
+    path(
         "webhook/jellyfin/",
         views.jellyfin_webhook,
         name="jellyfin-webhook",
