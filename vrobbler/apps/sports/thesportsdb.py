@@ -25,12 +25,17 @@ def lookup_event_from_thesportsdb(event_id: str) -> dict:
         thesportsdb_id=event.get("strSport")
     )
 
+    try:
+        start = parse(event.get("strTimestamp"))
+    except:
+        start = timezone.now()
+
     data_dict = {
         "EventId": event_id,
         "ItemType": sport.default_event_type,
         "Name": event.get("strEvent"),
         "AltName": event.get("strEventAlternate"),
-        "Start": parse(event.get("strTimestamp")),
+        "Start": start,
         "Provider_thesportsdb": event.get("idEvent"),
         "RunTime": sport.default_event_run_time_seconds,
         "Sport": event.get("strSport"),
