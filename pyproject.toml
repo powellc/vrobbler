@@ -41,6 +41,7 @@ django-storages = "^1.13.2"
 boto3 = "^1.26.98"
 stream-sqlite = "^0.0.41"
 ipython = "^8.14.0"
+pendulum = "^2.1.2"
 
 [tool.poetry.dev-dependencies]
 Werkzeug = "2.0.3"
