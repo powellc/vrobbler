@@ -26,7 +26,9 @@ def scrobble_counts(user=None):
     starting_day_of_current_year = now.date().replace(month=1, day=1)
 
     finished_scrobbles_qs = Scrobble.objects.filter(
-        user_filter, played_to_completion=True
+        user_filter,
+        played_to_completion=True,
+        media_type=Scrobble.MediaType.TRACK,
     )
     data = {}
     data["today"] = finished_scrobbles_qs.filter(

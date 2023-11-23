@@ -68,6 +68,7 @@ class LastFM:
                 track=track,
                 played_to_completion=True,
                 in_progress=False,
+                media_type=Scrobble.MediaType.TRACK,
             )
             # Vrobbler scrobbles on finish, LastFM scrobbles on start
             seconds_eariler = timestamp - timedelta(seconds=20)
