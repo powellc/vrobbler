@@ -58,7 +58,7 @@ class GeoLocation(ScrobblableMixin):
 
         truncated_lat = lat_places[0:4]
         truncated_lon = lon_places[0:4]
-        truncated_alt = alt_places[0:3]
+        truncated_alt = alt_places[0:2]
 
         data_dict["lat"] = float(".".join([lat_int, truncated_lat]))
         data_dict["lon"] = float(".".join([lon_int, truncated_lon]))
