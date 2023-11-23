@@ -24,6 +24,7 @@ from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
 from videos.models import Video
 from locations.models import GeoLocation, RawGeoLocation
+from vrobbler.apps.locations.constants import LOCATION_PROVIDERS
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +274,8 @@ def gpslogger_scrobble_location(
     }
 
     scrobble = Scrobble.create_or_update(location, user_id, extra_data)
-    provider = f"gps source - {data_dict.get('prov')}"
+
+    provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
     if scrobble.notes:
         scrobble.notes = scrobble.notes + f"\n{provider}"
     else:
