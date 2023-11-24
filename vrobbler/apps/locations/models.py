@@ -20,10 +20,18 @@ class GeoLocation(ScrobblableMixin):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     lat = models.FloatField()
     lon = models.FloatField()
+    truncated_lat = models.FloatField(**BNULL)
+    truncated_lon = models.FloatField(**BNULL)
     altitude = models.FloatField(**BNULL)
 
     class Meta:
         unique_together = [["lat", "lon", "altitude"]]
+
+    def save(self, *args, **kwargs):
+        if not self.truncated_lat or not self.truncated_lon:
+            self.truncated_lat = float(str(self.lat)[:-3])
+            self.truncated_lon = float(str(self.lon)[:-3])
+        super(GeoLocation, self).save(*args, **kwargs)
 
     def __str__(self):
         if self.title:
@@ -35,14 +43,6 @@ class GeoLocation(ScrobblableMixin):
         return reverse(
             "locations:geo_location_detail", kwargs={"slug": self.uuid}
         )
-
-    @property
-    def truncated_lat(self):
-        return float(str(self.lat)[:-3])
-
-    @property
-    def truncated_lan(self):
-        return float(str(self.lon)[:-3])
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
@@ -60,8 +60,8 @@ class GeoLocation(ScrobblableMixin):
         data_dict["altitude"] = float(data_dict.get("alt", ""))
 
         location = cls.objects.filter(
-            lat=data_dict.get("lat"),
-            lon=data_dict.get("lon"),
+            truncated_lat=float(str(data_dict.get("lat", ""))[:-3]),
+            truncated_lon=float(str(data_dict.get("lon", ""))[:-3]),
             altitude=data_dict.get("alt"),
         ).first()
 
@@ -69,6 +69,8 @@ class GeoLocation(ScrobblableMixin):
             location = cls.objects.create(
                 lat=data_dict.get("lat"),
                 lon=data_dict.get("lon"),
+                truncated_lat=float(str(data_dict.get("lat", ""))[:-3]),
+                truncated_lon=float(str(data_dict.get("lon", ""))[:-3]),
                 altitude=data_dict.get("alt"),
             )
         return location
