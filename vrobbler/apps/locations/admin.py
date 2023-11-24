@@ -18,6 +18,9 @@ class GeoLocationAdmin(admin.ModelAdmin):
         "lat",
         "lon",
     )
+    inlines = [
+        ScrobbleInline,
+    ]
 
 
 @admin.register(RawGeoLocation)

@@ -47,6 +47,10 @@ def get_scrobble_count_qs(
         data_model = apps.get_model(
             app_label="sports", model_name="SportEvent"
         )
+    if model_str == "GeoLocation":
+        data_model = apps.get_model(
+            app_label="locations", model_name="GeoLocation"
+        )
 
     if model_str == "Artist":
         base_qs = data_model.objects.filter(

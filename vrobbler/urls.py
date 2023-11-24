@@ -10,6 +10,7 @@ from vrobbler.apps.sports import urls as sports_urls
 from vrobbler.apps.podcasts import urls as podcast_urls
 from vrobbler.apps.videogames import urls as videogame_urls
 from vrobbler.apps.boardgames import urls as boardgame_urls
+from vrobbler.apps.locations import urls as locations_urls
 from vrobbler.apps.music.api.views import (
     AlbumViewSet,
     ArtistViewSet,
@@ -66,6 +67,7 @@ urlpatterns = [
     path("", include(videogame_urls, namespace="videogames")),
     path("", include(boardgame_urls, namespace="boardgames")),
     path("", include(sports_urls, namespace="sports")),
+    path("", include(locations_urls, namespace="locations")),
     path("", include(podcast_urls, namespace="podcasts")),
     path("", include(scrobble_urls, namespace="scrobbles")),
     path(
