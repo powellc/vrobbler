@@ -27,12 +27,6 @@ class GeoLocation(ScrobblableMixin):
     class Meta:
         unique_together = [["lat", "lon", "altitude"]]
 
-    def save(self, *args, **kwargs):
-        if not self.truncated_lat or not self.truncated_lon:
-            self.truncated_lat = float(str(self.lat)[:-3])
-            self.truncated_lon = float(str(self.lon)[:-3])
-        super(GeoLocation, self).save(*args, **kwargs)
-
     def __str__(self):
         if self.title:
             return self.title
@@ -55,23 +49,23 @@ class GeoLocation(ScrobblableMixin):
             logger.error("No lat or lon keys in data dict")
             return
 
-        data_dict["lat"] = float(data_dict.get("lat", ""))
-        data_dict["lon"] = float(data_dict.get("lon", ""))
-        data_dict["altitude"] = float(data_dict.get("alt", ""))
+        if len(str(data_dict["lat"])) > 8:
+            data_dict["lat"] = float(str(data_dict.get("lat", ""))[:-3])
+        if len(str(data_dict["lon"])) > 8:
+            data_dict["lon"] = float(str(data_dict.get("lon", ""))[:-3])
+        data_dict["altitude"] = float(str(data_dict.get("alt", ""))[:-3])
 
         location = cls.objects.filter(
-            truncated_lat=float(str(data_dict.get("lat", ""))[:-3]),
-            truncated_lon=float(str(data_dict.get("lon", ""))[:-3]),
-            altitude=data_dict.get("alt"),
+            lat=data_dict.get("lat"),
+            lon=data_dict.get("lon"),
+            altitude=data_dict.get("altitude"),
         ).first()
 
         if not location:
             location = cls.objects.create(
                 lat=data_dict.get("lat"),
                 lon=data_dict.get("lon"),
-                truncated_lat=float(str(data_dict.get("lat", ""))[:-3]),
-                truncated_lon=float(str(data_dict.get("lon", ""))[:-3]),
-                altitude=data_dict.get("alt"),
+                altitude=data_dict.get("altitude"),
             )
         return location
 

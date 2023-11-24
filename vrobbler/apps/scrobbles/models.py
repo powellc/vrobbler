@@ -630,14 +630,8 @@ class Scrobble(TimeStampedModel):
         if self.media_obj.__class__.__name__ in ["GeoLocation"]:
             logger.info(f"Calculate proximity to last scrobble")
             if self.previous:
-                same_lat = (
-                    self.previous.media_obj.truncated_lat
-                    == self.media_obj.truncated_lat
-                )
-                same_lon = (
-                    self.previous.media_obj.truncated_lon
-                    == self.media_obj.truncated_lon
-                )
+                same_lat = self.previous.media_obj.lat == self.media_obj.lat
+                same_lon = self.previous.media_obj.lon == self.media_obj.lon
                 if same_lat and same_lon:  # We have moved
                     logger.info("Yes - We're in the same place!")
                     updatable = True
