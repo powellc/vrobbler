@@ -9,15 +9,13 @@ from scrobbles.admin import ScrobbleInline
 class GeoLocationAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (
+        "created",
         "lat",
         "lon",
         "title",
         "altitude",
     )
-    ordering = (
-        "lat",
-        "lon",
-    )
+    ordering = ("-created",)
     inlines = [
         ScrobbleInline,
     ]
