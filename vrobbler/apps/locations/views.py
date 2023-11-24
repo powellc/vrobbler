@@ -6,7 +6,7 @@ from scrobbles.stats import get_scrobble_count_qs
 
 class GeoLocationListView(generic.ListView):
     model = GeoLocation
-    paginate_by = 200
+    paginate_by = 75
 
     def get_queryset(self):
         return super().get_queryset().order_by("-created")

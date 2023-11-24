@@ -55,17 +55,9 @@ class GeoLocation(ScrobblableMixin):
             logger.error("No lat or lon keys in data dict")
             return
 
-        lat_int, lat_places = data_dict.get("lat", "").split(".")
-        lon_int, lon_places = data_dict.get("lon", "").split(".")
-        alt_int, alt_places = data_dict.get("alt", "").split(".")
-
-        truncated_lat = lat_places[0:5]
-        truncated_lon = lon_places[0:5]
-        truncated_alt = alt_places[0:3]
-
-        data_dict["lat"] = float(".".join([lat_int, truncated_lat]))
-        data_dict["lon"] = float(".".join([lon_int, truncated_lon]))
-        data_dict["altitude"] = float(".".join([alt_int, truncated_alt]))
+        data_dict["lat"] = float(data_dict.get("lat", ""))
+        data_dict["lon"] = float(data_dict.get("lon", ""))
+        data_dict["altitude"] = float(data_dict.get("alt", ""))
 
         location = cls.objects.filter(
             lat=data_dict.get("lat"),
