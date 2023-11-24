@@ -253,14 +253,6 @@ def gpslogger_scrobble_location(
     # Save the data coming in
     if not user_id:
         user_id = 1  # TODO fix authing the end point to get user
-    raw_location = RawGeoLocation.objects.create(
-        user_id=user_id,
-        lat=data_dict.get("lat"),
-        lon=data_dict.get("lon"),
-        altitude=data_dict.get("alt"),
-        speed=data_dict.get("spd"),
-        timestamp=pendulum.parse(data_dict.get("time", timezone.now())),
-    )
 
     location = GeoLocation.find_or_create(data_dict)
 
