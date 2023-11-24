@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "books",
     "boardgames",
     "videogames",
+    "locations",
     "mathfilters",
     "rest_framework",
     "allauth",

@@ -26,8 +26,10 @@ class GeoLocation(ScrobblableMixin):
         unique_together = [["lat", "lon", "altitude"]]
 
     def __str__(self):
-        return f"{self.lat} x {self.lon}"
+        if self.title:
+            return self.title
 
+        return f"{self.lat} x {self.lon}"
 
     def get_absolute_url(self):
         return reverse(
