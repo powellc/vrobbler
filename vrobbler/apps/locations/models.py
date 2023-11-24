@@ -53,16 +53,16 @@ class GeoLocation(ScrobblableMixin):
         int_lon, r_lon = str(data_dict.get("lat", "")).split(".")
 
         try:
-            trunc_len = r_lat[0:4]
+            trunc_lat = r_lat[0:4]
         except IndexError:
-            trunc_len = r_lat
+            trunc_lat = r_lat
         try:
             trunc_lon = r_lon[0:4]
         except IndexError:
             trunc_lon = r_lon
 
-        data_dict["lat"] = float(f"{{int_lat}}.{{trunc_lat}}")
-        data_dict["lon"] = float(f"{{int_lon}}.{{trunc_lon}}")
+        data_dict["lat"] = float(f"{int_lat}.{trunc_lat}")
+        data_dict["lon"] = float(f"{int_lon}.{trunc_lon}")
 
         int_alt, r_alt = str(data_dict.get("alt", "")).split(".")
         try:
@@ -70,7 +70,7 @@ class GeoLocation(ScrobblableMixin):
         except IndexError:
             trunc_alt = r_alt
 
-        data_dict["altitude"] = float(f"{{int_alt}}.{{trunc_alt}}")
+        data_dict["altitude"] = float(f"{int_alt}.{trunc_alt}")
 
         location = cls.objects.filter(
             lat=data_dict.get("lat"),
