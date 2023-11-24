@@ -643,6 +643,9 @@ class Scrobble(TimeStampedModel):
                     updatable = True
                 else:
                     logger.info("No - We've moved, start a new scrobble")
+                    # TODO maybe this should go to `update`?
+                    self.previous.played_to_completion = True
+                    self.previous.save(update_fields=["played_to_completion"])
                     updatable = False
         return updatable
 
