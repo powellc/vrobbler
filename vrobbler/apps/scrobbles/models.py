@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
+from locations.models import GeoLocation
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import Episode
@@ -34,7 +35,6 @@ from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
-from locations.models import GeoLocation
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

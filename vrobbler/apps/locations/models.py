@@ -28,6 +28,7 @@ class GeoLocation(ScrobblableMixin):
     def __str__(self):
         return f"{self.lat} x {self.lon}"
 
+
     def get_absolute_url(self):
         return reverse(
             "locations:geo_location_detail", kwargs={"slug": self.uuid}

@@ -56,6 +56,11 @@ class ScrobblableMixin(TimeStampedModel):
     def find_or_create(cls):
         logger.warn("find_or_create() not implemented yet")
 
+    def scrobble(self, user_id, **kwargs):
+        """Given a user ID and a dictionary of data, attempts to scrobble it"""
+        from scrobbles.models import Scrobble
+        Scrobble.create_or_update(self, user_id, **kwargs)
+
 
 class LongPlayScrobblableMixin(ScrobblableMixin):
     class Meta:

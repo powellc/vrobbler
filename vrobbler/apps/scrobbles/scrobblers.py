@@ -24,7 +24,7 @@ from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
 from videos.models import Video
 from locations.models import GeoLocation, RawGeoLocation
-from vrobbler.apps.locations.constants import LOCATION_PROVIDERS
+from locations.constants import LOCATION_PROVIDERS
 
 logger = logging.getLogger(__name__)
 
