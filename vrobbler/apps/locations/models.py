@@ -50,7 +50,7 @@ class GeoLocation(ScrobblableMixin):
             return
 
         int_lat, r_lat = str(data_dict.get("lat", "")).split(".")
-        int_lon, r_lon = str(data_dict.get("lat", "")).split(".")
+        int_lon, r_lon = str(data_dict.get("lon", "")).split(".")
 
         try:
             trunc_lat = r_lat[0:4]
