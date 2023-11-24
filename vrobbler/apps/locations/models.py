@@ -49,8 +49,8 @@ class GeoLocation(ScrobblableMixin):
             logger.error("No lat or lon keys in data dict")
             return
 
-        int_lat, r_lat = str(data_dict["lat", ""]).split(".")
-        int_lon, r_lon = str(data_dict["lat", ""]).split(".")
+        int_lat, r_lat = str(data_dict.get("lat", "")).split(".")
+        int_lon, r_lon = str(data_dict.get("lat", "")).split(".")
 
         try:
             trunc_len = r_lat[0:4]
