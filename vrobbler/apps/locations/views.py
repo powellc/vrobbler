@@ -9,7 +9,7 @@ class GeoLocationListView(generic.ListView):
     paginate_by = 75
 
     def get_queryset(self):
-        return super().get_queryset().order_by("-created")
+        return super().get_queryset().filter(scrobble__user_id=self.request.user.id).order_by("-created")
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
