@@ -68,7 +68,7 @@
                 <tbody>
                     {% for location in object_list %}
                     <tr>
-                        <td>{{location.scrobbles.count}}</td>
+                        <td>{{location.scrobble_set.count}}</td>
                         <td><a href="{{location.get_absolute_url}}">{{location.lat}}x{{location.lon}}</a></td>
                     </tr>
                     {% endfor %}
