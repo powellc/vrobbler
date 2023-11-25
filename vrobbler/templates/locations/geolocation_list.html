@@ -62,6 +62,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Scrobbles</th>
+                        <th scope="col">Title</th>
                         <th scope="col">Point</th>
                     </tr>
                 </thead>
@@ -69,6 +70,7 @@
                     {% for location in object_list %}
                     <tr>
                         <td>{{location.scrobble_set.count}}</td>
+			<td>{{location.title}}</td>
                         <td><a href="{{location.get_absolute_url}}">{{location.lat}}x{{location.lon}}</a></td>
                     </tr>
                     {% endfor %}

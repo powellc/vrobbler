@@ -1,7 +1,7 @@
 {% extends "base_list.html" %}
 {% load mathfilters %}
 {% load static %}
-{% load naturalduration %}
+{% load humanize %}
 
 {% block title %}{{object.title}}{% endblock %}
 
@@ -62,7 +62,7 @@
                 <tbody>
                     {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                     <tr>
-                        <td>{{scrobble.timestamp}}</td>
+                        <td>{{scrobble.timestamp|naturaltime}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
