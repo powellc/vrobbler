@@ -674,6 +674,7 @@ class Scrobble(TimeStampedModel):
     ) -> "Scrobble":
 
         media_class = media.__class__.__name__
+        dup = None
 
         media_query = models.Q(track=media)
         if media_class == "Track":
@@ -699,6 +700,15 @@ class Scrobble(TimeStampedModel):
         if media_class == "GeoLocation":
             media_query = models.Q(geo_location=media)
             scrobble_data["geo_location_id"] = media.id
+            dup = cls.objects.filter(
+                    media_type=cls.MEDIA_TYPE.GeoLocation, 
+                    timestamp = scrobble_data.get("timestamp"),
+            ).first()
+
+        if dup:
+            logger.info("[scrobbling] scrobble with identical timestamp found")
+            return
+
 
         scrobble = (
             cls.objects.filter(
@@ -708,6 +718,7 @@ class Scrobble(TimeStampedModel):
             .order_by("-timestamp")
             .first()
         )
+
 
         if scrobble and scrobble.can_be_updated:
             source = scrobble_data["source"]
