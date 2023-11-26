@@ -268,10 +268,11 @@ def gpslogger_scrobble_location(
     scrobble = Scrobble.create_or_update(location, user_id, extra_data)
 
     provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
-    if scrobble.notes:
-        scrobble.notes = scrobble.notes + f"\n{provider}"
-    else:
-        scrobble.notes = provider
-    scrobble.save(update_fields=["notes"])
+    if scrobble: 
+        if scrobble.notes:
+            scrobble.notes = scrobble.notes + f"\n{provider}"
+        else:
+            scrobble.notes = provider
+        scrobble.save(update_fields=["notes"])
 
     return scrobble
