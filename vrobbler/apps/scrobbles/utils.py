@@ -184,7 +184,7 @@ def get_long_plays_completed(user: User) -> list:
         for media in media_obj.objects.all():
             if (
                 media.scrobble_set.all()
-                and media.scrobble_set.filter(user=user)
+                and media.scrobble_set.filter(user=user).order_by("timestamp")
                 .last()
                 .long_play_complete
                 == True
