@@ -705,7 +705,7 @@ class Scrobble(TimeStampedModel):
                 media_query,
                 user_id=user_id,
             )
-            .order_by("-modified")
+            .order_by("-timestamp")
             .first()
         )
 
