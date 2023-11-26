@@ -701,7 +701,7 @@ class Scrobble(TimeStampedModel):
             media_query = models.Q(geo_location=media)
             scrobble_data["geo_location_id"] = media.id
             dup = cls.objects.filter(
-                    media_type=cls.MEDIA_TYPE.GeoLocation, 
+                    media_type=cls.MediaType.GEO_LOCATION,
                     timestamp = scrobble_data.get("timestamp"),
             ).first()
 
