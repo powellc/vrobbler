@@ -440,7 +440,7 @@ def scrobble_start(request, uuid):
         if media_obj.__class__.__name__ == Scrobble.MediaType.VIDEO_GAME:
             scrobble = manual_scrobble_video_game(media_obj.hltb_id, user_id)
         if media_obj.__class__.__name__ == Scrobble.MediaType.BOARD_GAME:
-            scrobble = manual_scrobble_board_game(media_obj.hltb_id, user_id)
+            scrobble = manual_scrobble_board_game(media_obj.bggeek_id, user_id)
 
     if scrobble:
         messages.add_message(
