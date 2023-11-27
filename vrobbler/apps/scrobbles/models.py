@@ -698,7 +698,7 @@ class Scrobble(TimeStampedModel):
             media_query = models.Q(board_game=media)
             scrobble_data["board_game_id"] = media.id
         if media_class == "GeoLocation":
-            media_query = models.Q(geo_location=media)
+            media_query = models.Q(media_type=Scrobble.MediaType.GEO_LOCATION)
             scrobble_data["geo_location_id"] = media.id
             dup = cls.objects.filter(
                     media_type=cls.MediaType.GEO_LOCATION,
