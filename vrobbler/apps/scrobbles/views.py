@@ -11,7 +11,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, FormView, TemplateView
@@ -33,6 +33,7 @@ from scrobbles.constants import (
     JELLYFIN_VIDEO_ITEM_TYPES,
     LONG_PLAY_MEDIA,
     MANUAL_SCROBBLE_FNS,
+    PLAY_AGAIN_MEDIA,
 )
 from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
