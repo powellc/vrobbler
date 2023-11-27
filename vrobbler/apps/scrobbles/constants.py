@@ -8,9 +8,14 @@ LONG_PLAY_MEDIA = {
     "books": "Book",
 }
 
-EXCLUDE_FROM_NOW_PLAYING = (
-    "GeoLocation",
-)
+PLAY_AGAIN_MEDIA = {
+    "videogames": "VideoGame",
+    "books": "Book",
+    "boardgames": "BoardGame",
+}
+
+
+EXCLUDE_FROM_NOW_PLAYING = ("GeoLocation",)
 
 MANUAL_SCROBBLE_FNS = {
     "-v": "manual_scrobble_video_game",

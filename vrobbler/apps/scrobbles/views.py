@@ -50,8 +50,6 @@ from scrobbles.scrobblers import (
     jellyfin_scrobble_video,
     manual_scrobble_board_game,
     manual_scrobble_book,
-    manual_scrobble_event,
-    manual_scrobble_video,
     manual_scrobble_video_game,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
@@ -424,7 +422,7 @@ def scrobble_start(request, uuid):
         return HttpResponseRedirect(success_url)
 
     media_obj = None
-    for app, model in LONG_PLAY_MEDIA.items():
+    for app, model in PLAY_AGAIN_MEDIA.items():
         media_model = apps.get_model(app_label=app, model_name=model)
         media_obj = media_model.objects.filter(uuid=uuid).first()
         if media_obj:
@@ -435,10 +433,13 @@ def scrobble_start(request, uuid):
 
     scrobble = None
     user_id = request.user.id
-    if media_obj and media_obj.__class__.__name__ == "Book":
-        scrobble = manual_scrobble_book(media_obj.openlibrary_id, user_id)
-    if media_obj and media_obj.__class__.__name__ == "VideoGame":
-        scrobble = manual_scrobble_video_game(media_obj.hltb_id, user_id)
+    if media_obj:
+        if media_obj.__class__.__name__ == Scrobble.MediaType.BOOK:
+            scrobble = manual_scrobble_book(media_obj.openlibrary_id, user_id)
+        if media_obj.__class__.__name__ == Scrobble.MediaType.VIDEO_GAME:
+            scrobble = manual_scrobble_video_game(media_obj.hltb_id, user_id)
+        if media_obj.__class__.__name__ == Scrobble.MediaType.BOARD_GAME:
+            scrobble = manual_scrobble_board_game(media_obj.hltb_id, user_id)
 
     if scrobble:
         messages.add_message(
