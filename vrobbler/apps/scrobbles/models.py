@@ -13,8 +13,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
 from locations.models import GeoLocation
-from webpages.models import WebPage
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import Episode
@@ -36,6 +37,7 @@ from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
+from webpages.models import WebPage
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -525,6 +527,18 @@ class Scrobble(TimeStampedModel):
     )
     videogame_screenshot = models.ImageField(
         upload_to="scrobbles/videogame_screenshot/", **BNULL
+    )
+    videogame_screenshot_small = ImageSpecField(
+        source="videogame_screenshot",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    videogame_screenshot_medium = ImageSpecField(
+        source="videogame_screenshot",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
     )
     long_play_seconds = models.BigIntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
