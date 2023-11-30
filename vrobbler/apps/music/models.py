@@ -168,13 +168,13 @@ class Album(TimeStampedModel):
     cover_image = models.ImageField(upload_to="albums/", **BNULL)
     cover_image_small = ImageSpecField(
         source="cover_image",
-        processors=[ResizeToFit(100)],
+        processors=[ResizeToFit(100, 100)],
         format="JPEG",
         options={"quality": 60},
     )
     cover_image_medium = ImageSpecField(
         source="cover_image",
-        processors=[ResizeToFit(300)],
+        processors=[ResizeToFit(300, 300)],
         format="JPEG",
         options={"quality": 75},
     )
