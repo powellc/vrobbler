@@ -65,6 +65,7 @@ from scrobbles.utils import (
     get_long_plays_in_progress,
     get_recently_played_board_games,
 )
+from vrobbler.apps.scrobbles.scrobblers import manual_scrobble_webpage
 
 logger = logging.getLogger(__name__)
 
@@ -441,6 +442,8 @@ def scrobble_start(request, uuid):
             scrobble = manual_scrobble_video_game(media_obj.hltb_id, user_id)
         if media_obj.__class__.__name__ == Scrobble.MediaType.BOARD_GAME:
             scrobble = manual_scrobble_board_game(media_obj.bggeek_id, user_id)
+        if media_obj.__class__.__name__ == Scrobble.MediaType.WEBPAGE:
+            scrobble = manual_scrobble_webpage(media_obj.url, user_id)
 
     if scrobble:
         messages.add_message(

@@ -1,13 +1,15 @@
 import logging
-import pendulum
 from typing import Optional
 
+import pendulum
 from boardgames.bgg import lookup_boardgame_from_bgg
 from boardgames.models import BoardGame
 from books.models import Book
 from books.openlibrary import lookup_book_from_openlibrary
 from dateutil.parser import parse
 from django.utils import timezone
+from locations.constants import LOCATION_PROVIDERS
+from locations.models import GeoLocation
 from music.constants import JELLYFIN_POST_KEYS
 from music.models import Track
 from music.utils import (
@@ -23,8 +25,7 @@ from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
 from videos.models import Video
-from locations.models import GeoLocation, RawGeoLocation
-from locations.constants import LOCATION_PROVIDERS
+from webpages.models import WebPage
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +248,20 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
     return Scrobble.create_or_update(boardgame, user_id, scrobble_dict)
 
 
+def manual_scrobble_webpage(url: str, user_id: int):
+    webpage = WebPage.find_or_create({"url": url})
+
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_seconds": 0,
+        "source": "Vrobbler",
+        "source_id": "Manually scrobbled from Vrobbler",
+    }
+
+    return Scrobble.create_or_update(webpage, user_id, scrobble_dict)
+
+
 def gpslogger_scrobble_location(
     data_dict: dict, user_id: Optional[int]
 ) -> Optional[Scrobble]:
@@ -268,7 +283,7 @@ def gpslogger_scrobble_location(
     scrobble = Scrobble.create_or_update(location, user_id, extra_data)
 
     provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
-    if scrobble: 
+    if scrobble:
         if scrobble.notes:
             scrobble.notes = scrobble.notes + f"\n{provider}"
         else:

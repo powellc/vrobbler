@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 from locations.models import GeoLocation
+from webpages.models import WebPage
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import Episode
@@ -471,6 +472,7 @@ class Scrobble(TimeStampedModel):
         VIDEO_GAME = "VideoGame", "Video game"
         BOARD_GAME = "BoardGame", "Board game"
         GEO_LOCATION = "GeoLocation", "GeoLocation"
+        WEBPAGE = "WebPage", "Web Page"
 
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
@@ -491,6 +493,7 @@ class Scrobble(TimeStampedModel):
     geo_location = models.ForeignKey(
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
+    webpage = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -697,18 +700,23 @@ class Scrobble(TimeStampedModel):
         if media_class == "BoardGame":
             media_query = models.Q(board_game=media)
             scrobble_data["board_game_id"] = media.id
+        if media_class == "WebPage":
+            media_query = models.Q(webpage=media)
+            scrobble_data["webpage_id"] = media.id
         if media_class == "GeoLocation":
             media_query = models.Q(media_type=Scrobble.MediaType.GEO_LOCATION)
             scrobble_data["geo_location_id"] = media.id
             dup = cls.objects.filter(
-                    media_type=cls.MediaType.GEO_LOCATION,
-                    timestamp = scrobble_data.get("timestamp"),
+                media_type=cls.MediaType.GEO_LOCATION,
+                timestamp=scrobble_data.get("timestamp"),
             ).first()
 
-        if dup:
-            logger.info("[scrobbling] scrobble with identical timestamp found")
-            return
-
+            if dup:
+                logger.info(
+                    "[scrobbling] scrobble for geo location with identical timestamp found"
+                )
+                # TODO Fix return type, can we ever return a Scrobble?
+                return
 
         scrobble = (
             cls.objects.filter(
@@ -718,7 +726,6 @@ class Scrobble(TimeStampedModel):
             .order_by("-timestamp")
             .first()
         )
-
 
         if scrobble and scrobble.can_be_updated:
             source = scrobble_data["source"]
