@@ -45,17 +45,7 @@ from scrobbles.models import (
     RetroarchImport,
     Scrobble,
 )
-from scrobbles.scrobblers import (
-    gpslogger_scrobble_location,
-    jellyfin_scrobble_track,
-    jellyfin_scrobble_video,
-    manual_scrobble_board_game,
-    manual_scrobble_book,
-    manual_scrobble_video_game,
-    manual_scrobble_webpage,
-    mopidy_scrobble_podcast,
-    mopidy_scrobble_track,
-)
+from scrobbles.scrobblers import *
 from scrobbles.tasks import (
     process_koreader_import,
     process_lastfm_import,
