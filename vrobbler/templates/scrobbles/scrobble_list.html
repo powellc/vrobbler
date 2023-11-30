@@ -258,7 +258,9 @@
                                     {% if scrobble.videogame_screenshot %}
                                     <td><img src="{{scrobble.videogame_screenshot_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     {% else %}
-                                    <td><img src="{{scrobble.media_obj.cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                                    {% if scrobble.videogame.hltb_cover %}
+                                    <td><img src="{{scrobble.videogame.hltb_cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                                    {% endif %}
                                     {% endif %}
                                     <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
                                     <td>{{scrobble.playback_position_seconds|natural_duration}}</td>
