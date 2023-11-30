@@ -12,6 +12,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
 from music.allmusic import get_allmusic_slug, scrape_data_from_allmusic
 from music.bandcamp import get_bandcamp_slug
 from music.theaudiodb import lookup_album_from_tadb, lookup_artist_from_tadb
@@ -32,6 +34,18 @@ class Artist(TimeStampedModel):
     allmusic_id = models.CharField(max_length=100, **BNULL)
     bandcamp_id = models.CharField(max_length=100, **BNULL)
     thumbnail = models.ImageField(upload_to="artist/", **BNULL)
+    thumbnail_small = ImageSpecField(
+        source="thumbnail",
+        processors=[ResizeToFill(100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    thumbnail_medium = ImageSpecField(
+        source="thumbnail",
+        processors=[ResizeToFill(300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
 
     class Meta:
         unique_together = [["name", "musicbrainz_id"]]
@@ -152,6 +166,18 @@ class Album(TimeStampedModel):
     musicbrainz_releasegroup_id = models.CharField(max_length=255, **BNULL)
     musicbrainz_albumartist_id = models.CharField(max_length=255, **BNULL)
     cover_image = models.ImageField(upload_to="albums/", **BNULL)
+    cover_image_small = ImageSpecField(
+        source="cover_image",
+        processors=[ResizeToFill(100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    cover_image_medium = ImageSpecField(
+        source="cover_image",
+        processors=[ResizeToFill(300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     theaudiodb_id = models.CharField(max_length=255, unique=True, **BNULL)
     theaudiodb_description = models.TextField(**BNULL)
     theaudiodb_year_released = models.IntegerField(**BNULL)
