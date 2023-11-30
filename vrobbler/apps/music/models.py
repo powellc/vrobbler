@@ -212,7 +212,7 @@ class Album(TimeStampedModel):
 
     @property
     def primary_image_url(self) -> str:
-        if self.cover_image.url:
+        if self.cover_image:
             return self.cover_image_medium.url
         return ""
 
