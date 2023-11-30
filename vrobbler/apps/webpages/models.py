@@ -62,6 +62,15 @@ class WebPage(ScrobblableMixin):
 
         self.save(update_fields=["title", "domain", "extract"])
 
+    @property
+    def estimated_time_to_read_in_seconds(self):
+        if not self.extract:
+            return 600
+
+        words_per_minute = getattr(settings, "READING_WORDS_PER_MINUTE", 200)
+        words = len(self.extract.split(" "))
+        return int(words / words_per_minute) * 60
+
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
         """Given a data dict from an manual URL scrobble, does the heavy lifting of looking up
@@ -77,6 +86,8 @@ class WebPage(ScrobblableMixin):
 
         if not webpage:
             webpage = cls.objects.create(url=data_dict.get("url"))
-            webpage.run_time_seconds = settings.get("WEBSITE_READ_TIME", 600)
+            webpage.run_time_seconds = (
+                webpage.estimated_time_to_read_in_seconds
+            )
             webpage._update_data_from_web()
         return webpage
