@@ -52,6 +52,7 @@ from scrobbles.scrobblers import (
     manual_scrobble_board_game,
     manual_scrobble_book,
     manual_scrobble_video_game,
+    manual_scrobble_webpage,
     mopidy_scrobble_podcast,
     mopidy_scrobble_track,
 )
@@ -65,7 +66,6 @@ from scrobbles.utils import (
     get_long_plays_in_progress,
     get_recently_played_board_games,
 )
-from vrobbler.apps.scrobbles.scrobblers import manual_scrobble_webpage
 
 logger = logging.getLogger(__name__)
 
