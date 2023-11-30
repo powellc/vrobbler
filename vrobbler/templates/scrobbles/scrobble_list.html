@@ -162,6 +162,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Time</th>
+                                    <th scope="col">Cover</th>
                                     <th scope="col">Title</th>
                                     <th scope="col">Series</th>
                                 </tr>
@@ -170,6 +171,7 @@
                                 {% for scrobble in video_scrobble_list %}
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
+                                    <td><img src="{{scrobble.media_obj.cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     <td><a href="{{scrobble.video.get_absolute_url }}">{% if scrobble.video.tv_series%}S{{scrobble.video.season_number}}E{{scrobble.video.episode_number}} -{%endif %} {{scrobble.video.title}}</a></td>
                                     <td><a href="{{scrobble.video.tv_series.get_absolute_url }}">{% if scrobble.video.tv_series %}{{scrobble.video.tv_series}}</a>{% endif %}
                                     </td>
@@ -250,9 +252,9 @@
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
                                     {% if scrobble.videogame_screenshot %}
-                                    <td><img src="{{scrobble.videogame_screenshot.url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                                    <td><img src="{{scrobble.videogame_screenshot_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     {% else %}
-                                    <td><img src="{{scrobble.media_obj.primary_image_url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                                    <td><img src="{{scrobble.media_obj.cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     {% endif %}
                                     <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
                                     <td>{{scrobble.playback_position_seconds|natural_duration}}</td>
@@ -282,7 +284,7 @@
                                 {% for scrobble in boardgame_scrobble_list %}
                                 <tr>
                                     <td>{{scrobble.timestamp|naturaltime}}</td>
-                                    <td><img src="{{scrobble.media_obj.primary_image_url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                                    <td><img src="{{scrobble.media_obj.cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                                     <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
                                     <td>{{scrobble.playback_position_seconds|natural_duration}}</td>
                                 </tr>

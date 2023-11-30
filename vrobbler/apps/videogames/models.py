@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
 from scrobbles.mixins import LongPlayScrobblableMixin
 from scrobbles.utils import get_scrobbles_for_media
 from videogames.igdb import lookup_game_id_from_gdb
@@ -34,6 +36,18 @@ class VideoGameCollection(TimeStampedModel):
     name = models.CharField(max_length=255)
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     cover = models.ImageField(upload_to="games/series-covers/", **BNULL)
+    cover_small = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    cover_medium = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     igdb_id = models.IntegerField(**BNULL)
 
     def __str__(self):
@@ -72,9 +86,45 @@ class VideoGame(LongPlayScrobblableMixin):
     alternative_name = models.CharField(max_length=255, **BNULL)
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     cover = models.ImageField(upload_to="games/covers/", **BNULL)
+    cover_small = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    cover_medium = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     screenshot = models.ImageField(upload_to="games/screenshots/", **BNULL)
+    screenshot_small = ImageSpecField(
+        source="screenshot",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    screenshot_medium = ImageSpecField(
+        source="screenshot",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     summary = models.TextField(**BNULL)
     hltb_cover = models.ImageField(upload_to="games/hltb_covers/", **BNULL)
+    hltb_cover_small = ImageSpecField(
+        source="htlb_cover",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    hltb_cover_medium = ImageSpecField(
+        source="hltb_cover",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     rating = models.FloatField(**BNULL)
     rating_count = models.IntegerField(**BNULL)
     release_date = models.DateTimeField(**BNULL)
@@ -97,9 +147,9 @@ class VideoGame(LongPlayScrobblableMixin):
     def primary_image_url(self) -> str:
         url = ""
         if self.cover:
-            url = self.cover.url
+            url = self.cover_medium.url
         if self.hltb_cover:
-            url = self.hltb_cover.url
+            url = self.hltb_cover_medium.url
         return url
 
     def get_absolute_url(self):

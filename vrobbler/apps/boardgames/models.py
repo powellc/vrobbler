@@ -10,6 +10,8 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
 from scrobbles.mixins import ScrobblableMixin
 from vrobbler.apps.boardgames.bgg import lookup_boardgame_id_from_bgg
 
@@ -54,7 +56,31 @@ class BoardGame(ScrobblableMixin):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     description = models.TextField(**BNULL)
     cover = models.ImageField(upload_to="boardgames/covers/", **BNULL)
+    cover_small = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    cover_medium = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     layout_image = models.ImageField(upload_to="boardgames/layouts/", **BNULL)
+    layout_image_small = ImageSpecField(
+        source="layout_image",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    layout_image_medium = ImageSpecField(
+        source="layout_image",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     rating = models.FloatField(**BNULL)
     max_players = models.PositiveSmallIntegerField(**BNULL)
     min_players = models.PositiveSmallIntegerField(**BNULL)

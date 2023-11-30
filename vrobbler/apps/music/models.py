@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
-from imagekit.processors import ResizeToFill
+from imagekit.processors import ResizeToFit
 from music.allmusic import get_allmusic_slug, scrape_data_from_allmusic
 from music.bandcamp import get_bandcamp_slug
 from music.theaudiodb import lookup_album_from_tadb, lookup_artist_from_tadb
@@ -36,13 +36,13 @@ class Artist(TimeStampedModel):
     thumbnail = models.ImageField(upload_to="artist/", **BNULL)
     thumbnail_small = ImageSpecField(
         source="thumbnail",
-        processors=[ResizeToFill(100)],
+        processors=[ResizeToFit(100, 100)],
         format="JPEG",
         options={"quality": 60},
     )
     thumbnail_medium = ImageSpecField(
         source="thumbnail",
-        processors=[ResizeToFill(300)],
+        processors=[ResizeToFit(300, 300)],
         format="JPEG",
         options={"quality": 75},
     )
@@ -168,13 +168,13 @@ class Album(TimeStampedModel):
     cover_image = models.ImageField(upload_to="albums/", **BNULL)
     cover_image_small = ImageSpecField(
         source="cover_image",
-        processors=[ResizeToFill(100)],
+        processors=[ResizeToFit(100)],
         format="JPEG",
         options={"quality": 60},
     )
     cover_image_medium = ImageSpecField(
         source="cover_image",
-        processors=[ResizeToFill(300)],
+        processors=[ResizeToFit(300)],
         format="JPEG",
         options={"quality": 75},
     )
@@ -213,7 +213,7 @@ class Album(TimeStampedModel):
     @property
     def primary_image_url(self) -> str:
         if self.cover_image.url:
-            return self.cover_image.url
+            return self.cover_image_medium.url
         return ""
 
     @property
@@ -440,9 +440,9 @@ class Track(ScrobblableMixin):
     def primary_image_url(self) -> str:
         url = ""
         if self.artist.thumbnail:
-            url = self.artist.thumbnail.url
+            url = self.artist.thumbnail_medium.url
         if self.album and self.album.cover_image:
-            url = self.album.cover_image.url
+            url = self.album.cover_image_medium.url
         return url
 
     @classmethod

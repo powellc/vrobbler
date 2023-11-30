@@ -13,6 +13,8 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
 from scrobbles.mixins import (
     LongPlayScrobblableMixin,
     ObjectWithGenres,
@@ -37,6 +39,18 @@ class Author(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     openlibrary_id = models.CharField(max_length=255, **BNULL)
     headshot = models.ImageField(upload_to="books/authors/", **BNULL)
+    headshot_small = ImageSpecField(
+        source="headshot",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    headshot_medium = ImageSpecField(
+        source="headshot",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     bio = models.TextField(**BNULL)
     wikipedia_url = models.CharField(max_length=255, **BNULL)
     isni = models.CharField(max_length=255, **BNULL)
@@ -88,6 +102,18 @@ class Book(LongPlayScrobblableMixin):
     openlibrary_id = models.CharField(max_length=255, **BNULL)
     locg_slug = models.CharField(max_length=255, **BNULL)
     cover = models.ImageField(upload_to="books/covers/", **BNULL)
+    cover_small = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    cover_medium = ImageSpecField(
+        source="cover",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
     summary = models.TextField(**BNULL)
 
     genre = TaggableManager(through=ObjectWithGenres)
@@ -103,7 +129,7 @@ class Book(LongPlayScrobblableMixin):
     def primary_image_url(self) -> str:
         url = ""
         if self.cover:
-            url = self.cover.url
+            url = self.cover_medium.url
         return url
 
     def get_start_url(self):
