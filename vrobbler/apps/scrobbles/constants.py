@@ -23,6 +23,7 @@ MANUAL_SCROBBLE_FNS = {
     "-s": "manual_scrobble_event",
     "-i": "manual_scrobble_video",
     "-g": "manual_scrobble_board_game",
+    "-w": "manual_scrobble_webpage",
 }
 
 
