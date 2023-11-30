@@ -665,6 +665,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.board_game
         if self.geo_location:
             media_obj = self.geo_location
+        if self.webpage:
+            media_obj = self.webpage
         return media_obj
 
     def __str__(self):
