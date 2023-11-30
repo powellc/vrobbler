@@ -1,6 +1,7 @@
 import requests
 import logging
 from typing import Dict
+import trafilatura
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
@@ -19,6 +20,8 @@ class WebPage(ScrobblableMixin):
 
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     url = models.URLField(max_length=500)
+    domain = models.CharField(max_length=200, **BNULL)
+    extract = models.TextField(**BNULL)
 
     def __str__(self):
         if self.title:
@@ -26,14 +29,22 @@ class WebPage(ScrobblableMixin):
 
         return self.domain
 
-    @property
-    def domain(self):
+    def _raw_domain(self):
         self.url.split("//")[-1].split("/")[0]
+
+    def _update_extract_from_web(self, force=True):
+        headers = {
+            "headers": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
+        }
+        raw_text = requests.get(self.url, headers=headers).text
+        if not self.extract or force:
+            self.extract = trafilatura.extract(raw_text)
+            self.save(update_fields=["extract"])
 
     def get_absolute_url(self):
         return reverse("webpages:webpage_detail", kwargs={"slug": self.uuid})
 
-    def _update_title_from_web(self, force=False):
+    def _update_data_from_web(self, force=True):
         headers = {
             "headers": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
         }
@@ -42,7 +53,14 @@ class WebPage(ScrobblableMixin):
             self.title = raw_text[
                 raw_text.find("<title>") + 7 : raw_text.find("</title>")
             ]
-            self.save(update_fields=["title"])
+
+        if not self.extract or force:
+            self.extract = trafilatura.extract(raw_text)
+
+        if not self.domain or force:
+            self.domain = self.url.split("//")[-1].split("/")[0]
+
+        self.save(update_fields=["title", "domain", "extract"])
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
@@ -60,5 +78,5 @@ class WebPage(ScrobblableMixin):
         if not webpage:
             webpage = cls.objects.create(url=data_dict.get("url"))
             webpage.run_time_seconds = settings.get("WEBSITE_READ_TIME", 600)
-            webpage._update_title_from_web()
+            webpage._update_data_from_web()
         return webpage
