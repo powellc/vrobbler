@@ -22,6 +22,9 @@ class ScrobbleInline(admin.TabularInline):
         "video_game",
         "book",
         "sport_event",
+        "board_game",
+        "geo_location",
+        "webpage",
         "user",
     )
     exclude = ("source_id", "scrobble_log")
