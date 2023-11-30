@@ -140,13 +140,13 @@ class Video(ScrobblableMixin):
     imdb_id = models.CharField(max_length=20, **BNULL)
     imdb_rating = models.FloatField(**BNULL)
     cover_image = models.ImageField(upload_to="videos/video/", **BNULL)
-    cover_small = ImageSpecField(
+    cover_image_small = ImageSpecField(
         source="cover_image",
         processors=[ResizeToFit(100, 100)],
         format="JPEG",
         options={"quality": 60},
     )
-    cover_medium = ImageSpecField(
+    cover_image_medium = ImageSpecField(
         source="cover_image",
         processors=[ResizeToFit(300, 300)],
         format="JPEG",
