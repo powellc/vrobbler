@@ -374,7 +374,7 @@ def gps_webhook(request):
     scrobble = gpslogger_scrobble_location(data_dict, request.user.id)
 
     if not scrobble:
-        return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({}, status=status.HTTP_200_OK)
 
     return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)
 
