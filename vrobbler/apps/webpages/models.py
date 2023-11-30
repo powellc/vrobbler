@@ -31,9 +31,7 @@ class WebPage(ScrobblableMixin):
         self.url.split("//")[-1].split("/")[0]
 
     def get_absolute_url(self):
-        return reverse(
-            "locations:geo_location_detail", kwargs={"slug": self.uuid}
-        )
+        return reverse("webpages:webpage_detail", kwargs={"slug": self.uuid})
 
     def _update_title_from_web(self, force=False):
         headers = {
@@ -61,5 +59,6 @@ class WebPage(ScrobblableMixin):
 
         if not webpage:
             webpage = cls.objects.create(url=data_dict.get("url"))
+            webpage.run_time_seconds = settings.get("WEBSITE_READ_TIME", 600)
             webpage._update_title_from_web()
         return webpage
