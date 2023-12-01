@@ -44,6 +44,19 @@ class WebPage(ScrobblableMixin):
     def get_absolute_url(self):
         return reverse("webpages:webpage_detail", kwargs={"slug": self.uuid})
 
+    @property
+    def estimated_time_to_read_in_seconds(self):
+        if not self.extract:
+            return 600
+
+        words_per_minute = getattr(settings, "READING_WORDS_PER_MINUTE", 200)
+        words = len(self.extract.split(" "))
+        return int(words / words_per_minute) * 60
+
+    @property
+    def subtitle(self):
+        return self.domain
+
     def _update_data_from_web(self, force=True):
         headers = {
             "headers": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
@@ -60,16 +73,10 @@ class WebPage(ScrobblableMixin):
         if not self.domain or force:
             self.domain = self.url.split("//")[-1].split("/")[0]
 
+        if not self.run_time_seconds or force:
+            self.run_time_seconds = self.estimated_time_to_read_in_seconds
+
         self.save(update_fields=["title", "domain", "extract"])
-
-    @property
-    def estimated_time_to_read_in_seconds(self):
-        if not self.extract:
-            return 600
-
-        words_per_minute = getattr(settings, "READING_WORDS_PER_MINUTE", 200)
-        words = len(self.extract.split(" "))
-        return int(words / words_per_minute) * 60
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
@@ -86,8 +93,5 @@ class WebPage(ScrobblableMixin):
 
         if not webpage:
             webpage = cls.objects.create(url=data_dict.get("url"))
-            webpage.run_time_seconds = (
-                webpage.estimated_time_to_read_in_seconds
-            )
             webpage._update_data_from_web()
         return webpage
