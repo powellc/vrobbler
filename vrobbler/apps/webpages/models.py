@@ -76,7 +76,9 @@ class WebPage(ScrobblableMixin):
         if not self.run_time_seconds or force:
             self.run_time_seconds = self.estimated_time_to_read_in_seconds
 
-        self.save(update_fields=["title", "domain", "extract"])
+        self.save(
+            update_fields=["title", "domain", "extract", "run_time_seconds"]
+        )
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
