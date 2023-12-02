@@ -114,7 +114,7 @@ class VideoGame(LongPlayScrobblableMixin):
     summary = models.TextField(**BNULL)
     hltb_cover = models.ImageField(upload_to="games/hltb_covers/", **BNULL)
     hltb_cover_small = ImageSpecField(
-        source="htlb_cover",
+        source="hltb_cover",
         processors=[ResizeToFit(100, 100)],
         format="JPEG",
         options={"quality": 60},
