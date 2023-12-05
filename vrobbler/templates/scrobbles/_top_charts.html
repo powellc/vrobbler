@@ -18,7 +18,7 @@
                                 <div class="caption">#1 {{artists.0.name}}</div>
                                 {% if artists.0 %}
                                 {% if artists.0.thumbnail %}
-                                <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{artists.0.thumbnail.url}}" width="300px"></a>
+                                <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{{artists.0.thumbnail_medium.url}}" width="300px"></a>
                                 {% else %}
                                 <a href="{{artists.0.get_absolute_url}}"><img lt="{{artists.0.name}}" src="{% static "images/not-found.jpg" %}" width="300px"></a>
                                 {% endif %}
@@ -31,7 +31,7 @@
                                     <div class="caption-medium">#2 {{artists.1.name}}</div>
                                     {% if artists.1 %}
                                     {% if artists.1.thumbnail %}
-                                    <a href="{{artists.1.get_absolute_url}}"><img lt="{{artists.1.name}}" src="{{artists.1.thumbnail.url}}" width="150px"></a>
+                                    <a href="{{artists.1.get_absolute_url}}"><img lt="{{artists.1.name}}" src="{{artists.1.thumbnail_medium.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.1.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
@@ -41,7 +41,7 @@
                                     <div class="caption-medium">#3 {{artists.2.name}}</div>
                                     {% if artists.2 %}
                                     {% if artists.2.thumbnail %}
-                                    <a href="{{artists.2.get_absolute_url}}"><img src="{{artists.2.thumbnail.url}}" width="150px"></a>
+                                    <a href="{{artists.2.get_absolute_url}}"><img src="{{artists.2.thumbnail_medium.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.2.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
@@ -51,7 +51,7 @@
                                     <div class="caption-medium">#4 {{artists.3.name}}</div>
                                     {% if artists.3 %}
                                     {% if artists.3.thumbnail %}
-                                    <a href="{{artists.3.get_absolute_url}}"><img src="{{artists.3.thumbnail.url}}" width="150px"></a>
+                                    <a href="{{artists.3.get_absolute_url}}"><img src="{{artists.3.thumbnail_medium.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.3.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
@@ -61,7 +61,7 @@
                                     <div class="caption-medium">#5 {{artists.4.name}}</div>
                                     {% if artists.4 %}
                                     {% if artists.4.thumbnail %}
-                                    <a href="{{artists.4.get_absolute_url}}"><img src="{{artists.4.thumbnail.url}}" width="150px"></a>
+                                    <a href="{{artists.4.get_absolute_url}}"><img src="{{artists.4.thumbnail_medium.url}}" width="150px"></a>
                                     {% else %}
                                     <a href="{{artists.4.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="150px"></a>
                                     {% endif %}
@@ -75,7 +75,7 @@
                                     <div class="caption-small">#6 {{artists.5.name}}</div>
                                     {% if artists.5 %}
                                     {% if artists.5.thumbnail %}
-                                    <a href="{{artists.5.get_absolute_url}}"><img src="{{artists.5.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.5.get_absolute_url}}"><img src="{{artists.5.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.5.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -85,7 +85,7 @@
                                     <div class="caption-small">#7 {{artists.6.name}}</div>
                                     {% if artists.6 %}
                                     {% if artists.6.thumbnail %}
-                                    <a href="{{artists.6.get_absolute_url}}"><img src="{{artists.6.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.6.get_absolute_url}}"><img src="{{artists.6.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.6.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -95,7 +95,7 @@
                                     <div class="caption-small">#8 {{artists.7.name}}</div>
                                     {% if artists.7 %}
                                     {% if artists.7.thumbnail %}
-                                    <a href="{{artists.7.get_absolute_url}}"><img src="{{artists.7.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.7.get_absolute_url}}"><img src="{{artists.7.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.7.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -105,7 +105,7 @@
                                     <div class="caption-small">#9 {{artists.8.name}}</div>
                                     {% if artists.8 %}
                                     {% if artists.8.thumbnail %}
-                                    <a href="{{artists.8.get_absolute_url}}"><img src="{{artists.8.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.8.get_absolute_url}}"><img src="{{artists.8.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.8.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -115,7 +115,7 @@
                                     <div class="caption-small">#10 {{artists.9.name}}</div>
                                     {% if artists.9 %}
                                     {% if artists.9.thumbnail %}
-                                    <a href="{{artists.9.get_absolute_url}}"><img src="{{artists.9.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.9.get_absolute_url}}"><img src="{{artists.9.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.9.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -125,7 +125,7 @@
                                     <div class="caption-small">#11 {{artists.10.name}}</div>
                                     {% if artists.10 %}
                                     {% if artists.10.thumbnail %}
-                                    <a href="{{artists.10.get_absolute_url}}"><img src="{{artists.10.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.10.get_absolute_url}}"><img src="{{artists.10.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.10.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -135,7 +135,7 @@
                                     <div class="caption-small">#12 {{artists.11.name}}</div>
                                     {% if artists.11 %}
                                     {% if artists.11.thumbnail %}
-                                    <a href="{{artists.11.get_absolute_url}}"><img src="{{artists.11.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.11.get_absolute_url}}"><img src="{{artists.11.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.11.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -145,7 +145,7 @@
                                     <div class="caption-small">#13 {{artists.12.name}}</div>
                                     {% if artists.12 %}
                                     {% if artists.12.thumbnail %}
-                                    <a href="{{artists.12.get_absolute_url}}"><img src="{{artists.12.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.12.get_absolute_url}}"><img src="{{artists.12.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.12.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
@@ -155,7 +155,7 @@
                                     <div class="caption-small">#14 {{artists.13.name}}</div>
                                     {% if artists.13 %}
                                     {% if artists.13.thumbnail %}
-                                    <a href="{{artists.13.get_absolute_url}}"><img src="{{artists.13.thumbnail.url}}" width="100px"></a>
+                                    <a href="{{artists.13.get_absolute_url}}"><img src="{{artists.13.thumbnail_medium.url}}" width="100px"></a>
                                     {% else %}
                                     <a href="{{artists.13.get_absolute_url}}"><img src="{% static "images/not-found.jpg" %}" width="100px"></a>
                                     {% endif %}
