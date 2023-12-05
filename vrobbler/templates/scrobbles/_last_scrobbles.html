@@ -1,5 +1,8 @@
-<h2>Last Scrobbles</h2>
-<p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
+{% load humanize %}
+{% load naturalduration %}
+<div>
+    <h2>Last Scrobbles</h2>
+    <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
 </div>
 <div class="row">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -206,4 +209,4 @@
             </div>
         </div>
     </div>
-    {% endif %}
+</div>

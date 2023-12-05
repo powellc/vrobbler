@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% load humanize %}
 {% load static %}
+{% load humanize %}
 {% load naturalduration %}
 
 {% block head_extra  %}
@@ -85,7 +85,6 @@
     {% endif %}
 
     <div class="container">
-
         {% if user.is_authenticated %}
         <div class="row">
             {% include "scrobbles/_top_charts.html" %}
@@ -94,6 +93,8 @@
         <div class="row">
             {% include "scrobbles/_last_scrobbles.html" %}
         </div>
+        {% endif %}
+    </div>
 </main>
 
 <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel"
