@@ -190,7 +190,7 @@
                     <div class="caption">#1 {{tracks.0.title}}</div>
                     {% if tracks.0 %}
                     {% if tracks.0.album.cover_image %}
-                    <a href="{{tracks.0.get_absolute_url}}"><img src="{{tracks.0.album.cover_image.url}}" width="300px"></a>
+                    <a href="{{tracks.0.get_absolute_url}}"><img src="{{tracks.0.album.cover_image_medium.url}}" width="300px"></a>
                     {% else %}
                     <a href="{{tracks.0.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="300px"></a>
                     {% endif %}
@@ -203,7 +203,7 @@
                         <div class="caption-medium">#2 {{tracks.1.title}}</div>
                         {% if tracks.1 %}
                         {% if tracks.1.album.cover_image %}
-                        <a href="{{tracks.1.get_absolute_url}}"><img src="{{tracks.1.album.cover_image.url}}" width="150px"></a>
+                        <a href="{{tracks.1.get_absolute_url}}"><img src="{{tracks.1.album.cover_image_medium.url}}" width="150px"></a>
                         {% else %}
                         <a href="{{tracks.1.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                         {% endif %}
@@ -213,7 +213,7 @@
                         <div class="caption-medium">#3 {{tracks.2.title}}</div>
                         {% if tracks.2 %}
                         {% if tracks.2.album.cover_image %}
-                        <a href="{{tracks.2.get_absolute_url}}"><img src="{{tracks.2.album.cover_image.url}}" width="150px"></a>
+                        <a href="{{tracks.2.get_absolute_url}}"><img src="{{tracks.2.album.cover_image_medium.url}}" width="150px"></a>
                         {% else %}
                         <a href="{{tracks.2.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                         {% endif %}
@@ -223,7 +223,7 @@
                         <div class="caption-medium">#4 {{tracks.3.title}}</div>
                         {% if tracks.3 %}
                         {% if tracks.3.album.cover_image %}
-                        <a href="{{tracks.3.get_absolute_url}}"><img src="{{tracks.3.album.cover_image.url}}" width="150px"></a>
+                        <a href="{{tracks.3.get_absolute_url}}"><img src="{{tracks.3.album.cover_image_medium.url}}" width="150px"></a>
                         {% else %}
                         <a href="{{tracks.3.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                         {% endif %}
@@ -233,7 +233,7 @@
                         <div class="caption-medium">#5 {{tracks.4.title}}</div>
                         {% if tracks.4 %}
                         {% if tracks.4.album.cover_image %}
-                        <a href="{{tracks.4.get_absolute_url}}"><img src="{{tracks.4.album.cover_image.url}}" width="150px"></a>
+                        <a href="{{tracks.4.get_absolute_url}}"><img src="{{tracks.4.album.cover_image_medium.url}}" width="150px"></a>
                         {% else %}
                         <a href="{{tracks.4.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="150px"></a>
                         {% endif %}
@@ -247,7 +247,7 @@
                         <div class="caption-small">#6 {{tracks.5.title}}</div>
                         {% if tracks.5 %}
                         {% if tracks.5.album.cover_image %}
-                        <a href="{{tracks.5.get_absolute_url}}"><img src="{{tracks.5.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.5.get_absolute_url}}"><img src="{{tracks.5.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.5.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -257,7 +257,7 @@
                         <div class="caption-small">#7 {{tracks.6.title}}</div>
                         {% if tracks.6 %}
                         {% if tracks.6.album.cover_image %}
-                        <a href="{{tracks.6.get_absolute_url}}"><img src="{{tracks.6.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.6.get_absolute_url}}"><img src="{{tracks.6.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.6.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -267,7 +267,7 @@
                         <div class="caption-small">#8 {{tracks.7.title}}</div>
                         {% if tracks.7 %}
                         {% if tracks.7.album.cover_image %}
-                        <a href="{{tracks.7.get_absolute_url}}"><img src="{{tracks.7.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.7.get_absolute_url}}"><img src="{{tracks.7.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.7.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -277,7 +277,7 @@
                         <div class="caption-small">#9 {{tracks.8.title}}</div>
                         {% if tracks.8 %}
                         {% if tracks.8.album.cover_image %}
-                        <a href="{{tracks.8.get_absolute_url}}"><img src="{{tracks.8.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.8.get_absolute_url}}"><img src="{{tracks.8.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.8.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -287,7 +287,7 @@
                         <div class="caption-small">#10 {{tracks.9.title}}</div>
                         {% if tracks.9 %}
                         {% if tracks.9.album.cover_image %}
-                        <a href="{{tracks.9.get_absolute_url}}"><img src="{{tracks.9.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.9.get_absolute_url}}"><img src="{{tracks.9.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.9.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -297,7 +297,7 @@
                         <div class="caption-small">#11 {{tracks.10.title}}</div>
                         {% if tracks.10 %}
                         {% if tracks.10.album.cover_image %}
-                        <a href="{{tracks.10.get_absolute_url}}"><img src="{{tracks.10.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.10.get_absolute_url}}"><img src="{{tracks.10.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.10.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -307,7 +307,7 @@
                         <div class="caption-small">#12 {{tracks.11.title}}</div>
                         {% if tracks.11 %}
                         {% if tracks.11.album.cover_image %}
-                        <a href="{{tracks.11.get_absolute_url}}"><img src="{{tracks.11.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.11.get_absolute_url}}"><img src="{{tracks.11.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.11.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -317,7 +317,7 @@
                         <div class="caption-small">#13 {{tracks.12.title}}</div>
                         {% if tracks.12 %}
                         {% if tracks.12.album.cover_image %}
-                        <a href="{{tracks.12.get_absolute_url}}"><img src="{{tracks.12.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.12.get_absolute_url}}"><img src="{{tracks.12.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.12.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
@@ -327,7 +327,7 @@
                         <div class="caption-small">#14 {{tracks.13.title}}</div>
                         {% if tracks.13 %}
                         {% if tracks.13.album.cover_image %}
-                        <a href="{{tracks.13.get_absolute_url}}"><img src="{{tracks.13.album.cover_image.url}}" width="100px"></a>
+                        <a href="{{tracks.13.get_absolute_url}}"><img src="{{tracks.13.album.cover_image_medium.url}}" width="100px"></a>
                         {% else %}
                         <a href="{{tracks.13.get_absolute_url}}"><img src="{% static 'images/not-found.jpg' %}" width="100px"></a>
                         {% endif %}
