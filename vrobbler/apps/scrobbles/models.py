@@ -588,6 +588,40 @@ class Scrobble(TimeStampedModel):
         )
 
     @property
+    def previous_all(self) -> "Scrobble":
+        return (
+            Scrobble.objects.filter(media_type=self.media_type)
+            .order_by("-timestamp")
+            .filter(timestamp__lt=self.timestamp)
+            .first()
+        )
+
+    @property
+    def next_all(self) -> "Scrobble":
+        return (
+            Scrobble.objects.filter(media_type=self.media_type)
+            .order_by("-timestamp")
+            .filter(timestamp__gt=self.timestamp)
+            .first()
+        )
+
+    @property
+    def previous_all_media(self) -> "Scrobble":
+        return (
+            Scrobble.objects.order_by("-timestamp")
+            .filter(timestamp__lt=self.timestamp)
+            .first()
+        )
+
+    @property
+    def next_all_media(self) -> "Scrobble":
+        return (
+            Scrobble.objects.order_by("-timestamp")
+            .filter(timestamp__gt=self.timestamp)
+            .first()
+        )
+
+    @property
     def session_pages_read(self) -> Optional[int]:
         """Look one scrobble back, if it isn't complete,"""
         if not self.book_pages_read:
@@ -646,12 +680,13 @@ class Scrobble(TimeStampedModel):
             updatable = False
         if self.media_obj.__class__.__name__ in ["GeoLocation"]:
             logger.info(f"Calculate proximity to last scrobble")
-            if self.previous:
-                same_lat = self.previous.media_obj.lat == self.media_obj.lat
-                same_lon = self.previous.media_obj.lon == self.media_obj.lon
-                same_title = (
-                    self.previous.media_obj.title == self.media_obj.title
-                )
+            if self.previous_all:
+                last_location = self.previous_all.media_obj
+
+                same_lat = last_location.lat == self.media_obj.lat
+                same_lon = last_location.lon == self.media_obj.lon
+                same_title = last_location.title == self.media_obj.title
+
                 if (same_lat and same_lon) or same_title:
                     logger.info("Yes - We're in the same place!")
                     updatable = True
