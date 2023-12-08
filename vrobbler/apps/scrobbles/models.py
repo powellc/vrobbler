@@ -679,22 +679,33 @@ class Scrobble(TimeStampedModel):
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
         if self.media_obj.__class__.__name__ in ["GeoLocation"]:
-            logger.info(f"Calculate proximity to last scrobble")
             if self.previous_all:
                 last_location = self.previous_all.media_obj
+                logger.info(
+                    f"Calculate proximity to last scrobble: {last_location}"
+                )
 
                 same_lat = last_location.lat == self.media_obj.lat
                 same_lon = last_location.lon == self.media_obj.lon
                 same_title = last_location.title == self.media_obj.title
 
+                logger.info(
+                    f"Same lat? {same_lat}, Same lon? {same_lon} or Same title? {same_title}"
+                )
+
                 if (same_lat and same_lon) or same_title:
-                    logger.info("Yes - We're in the same place!")
+                    logger.info(
+                        f"Yes - We're in the same place: {self.media_obj}"
+                    )
                     updatable = True
                 else:
-                    logger.info("No - We've moved, start a new scrobble")
+                    logger.info(
+                        f"No - We've moved, start a new scrobble: {self.media_obj}"
+                    )
                     # TODO maybe this should go to `update`?
-                    self.previous.played_to_completion = True
-                    self.previous.save(update_fields=["played_to_completion"])
+                    last = self.previous_all
+                    last.played_to_completion = True
+                    last.save(update_fields=["played_to_completion"])
                     updatable = False
         return updatable
 
