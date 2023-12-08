@@ -649,7 +649,10 @@ class Scrobble(TimeStampedModel):
             if self.previous:
                 same_lat = self.previous.media_obj.lat == self.media_obj.lat
                 same_lon = self.previous.media_obj.lon == self.media_obj.lon
-                if same_lat and same_lon:  # We have moved
+                same_title = (
+                    self.previous.media_obj.title == self.media_obj.title
+                )
+                if (same_lat and same_lon) or same_title:
                     logger.info("Yes - We're in the same place!")
                     updatable = True
                 else:
