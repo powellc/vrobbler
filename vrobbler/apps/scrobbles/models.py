@@ -687,7 +687,9 @@ class Scrobble(TimeStampedModel):
 
                 same_lat = last_location.lat == self.media_obj.lat
                 same_lon = last_location.lon == self.media_obj.lon
-                same_title = last_location.title == self.media_obj.title
+                same_title = False
+                if self.media_obj.title:
+                    same_title = last_location.title == self.media_obj.title
 
                 logger.info(f"{self.timestamp}")
                 logger.info(f"Last lat: {last_location.lat}, last long {last_location.lon}, last title {last_location.title}")
