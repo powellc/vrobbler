@@ -706,10 +706,8 @@ class Scrobble(TimeStampedModel):
                     logger.info(
                         f"No - We've moved, start a new scrobble: {self.media_obj}"
                     )
-                    # TODO maybe this should go to `update`?
-                    self.played_to_completion = True
-                    self.stop_timestamp = timezone.now()
-                    self.save(update_fields=["played_to_completion", "stop_timestamp"])
+                    # Stop the previous location scrobble
+                    self.previous_all.stop()
                     updatable = False
         return updatable
 
