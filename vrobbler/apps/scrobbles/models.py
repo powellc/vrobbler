@@ -703,9 +703,9 @@ class Scrobble(TimeStampedModel):
                         f"No - We've moved, start a new scrobble: {self.media_obj}"
                     )
                     # TODO maybe this should go to `update`?
-                    last = self.previous_all
-                    last.played_to_completion = True
-                    last.save(update_fields=["played_to_completion"])
+                    self.played_to_completion = True
+                    self.stop_timestamp = timezone.now()
+                    self.save(update_fields=["played_to_completion", "stop_timestamp"])
                     updatable = False
         return updatable
 
