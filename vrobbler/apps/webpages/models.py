@@ -4,6 +4,7 @@ from typing import Dict
 import trafilatura
 from uuid import uuid4
 
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.db import models

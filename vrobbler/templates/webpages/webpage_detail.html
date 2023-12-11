@@ -1,0 +1,48 @@
+{% extends "base_list.html" %}
+{% load static %}
+
+{% block title %}{{object.title}}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .webpage-body {float:left: width:500px; margin-right:10px; font-size:larger;}
+  .webpage-body br { margin-bottom: 1em; }
+  .webpage-source {float:left; width:600px; margin-left:10px;}
+</style>
+{% endblock %}
+
+{% block lists %}
+<div class="row webpage">
+
+    <div class="webpage-source">
+      <p>Source: <a href="{{object.url}}">{{object.url}}</a></p>
+    </div>
+    {% if object.extract %}
+    <div class="webpage-body">
+      {{object.extract|linebreaks}}
+    </div>
+    {% endif %}
+    <hr/>
+</div>
+<div class="row">
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scrobble in object.scrobble_set.all %}
+                <tr>
+                    <td>{{scrobble.timestamp}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
