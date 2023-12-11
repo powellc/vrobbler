@@ -57,6 +57,12 @@ class WebPage(ScrobblableMixin):
     def subtitle(self):
         return self.domain
 
+    def scrobbles(self, user):
+        Scrobble = apps.get_model("scrobbles", "Scrobble")
+        return Scrobble.objects.filter(user=user, webpage=self).order_by(
+            "-timestamp"
+        )
+
     def _update_data_from_web(self, force=True):
         headers = {
             "headers": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"

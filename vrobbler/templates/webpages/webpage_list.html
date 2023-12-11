@@ -1,0 +1,70 @@
+{% extends "base_list.html" %}
+{% load urlreplace %}
+
+{% block title %}Webpages{% endblock %}
+
+{% block lists %}
+<div class="row">
+    <p class="pagination">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?{% urlreplace page=page_obj.previous_page_number %}">prev</a>
+            {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% if page_obj.has_next %}
+                <a href="?{% urlreplace page=page_obj.next_page_number %}">next</a>
+            {% endif %}
+        </span>
+    </p>
+    <hr />
+
+    {% if view == 'grid' %}
+    <div>
+        {% for webpage in object_list %}
+        {% if webpage.thumbnail %}
+        <dl style="width: 130px; float: left; margin-right:10px;">
+            <dd><img src="{{webpage.primary_image_url}}" width=120 height=120 /></dd>
+        </dl>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Scrobbles</th>
+                    <th scope="col">Webpage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for webpage in object_list %}
+                <tr>
+                    <td>{{webpage.scrobble_count}}</td>
+                    <td><a href="{{webpage.get_absolute_url}}">{{webpage}}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="pagination" style="margin-bottom:50px;">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?{% urlreplace page=page_obj.previous_page_number %}">prev</a>
+            {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            {% if page_obj.has_next %}
+                <a href="?{% urlreplace page=page_obj.next_page_number %}">next</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}
