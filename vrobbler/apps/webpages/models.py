@@ -55,6 +55,10 @@ class WebPage(ScrobblableMixin):
         return int(words / words_per_minute) * 60
 
     @property
+    def estimated_time_to_read_in_minutes(self):
+        return int(self.estimated_time_to_read_in_seconds / 60)
+
+    @property
     def subtitle(self):
         return self.domain
 

@@ -28,6 +28,8 @@ class UserProfile(TimeStampedModel):
     retroarch_path = models.CharField(max_length=255, **BNULL)
     retroarch_auto_import = models.BooleanField(default=False)
 
+    redirect_to_webpage = models.BooleanField(default=True)
+
     def __str__(self):
         return f"User profile for {self.user}"
 

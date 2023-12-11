@@ -100,29 +100,29 @@ class RecentScrobbleList(ListView):
 
             limit = 14
             artist = {"user": user, "media_type": "Artist", "limit": limit}
-            #This is weird. They don't display properly as QuerySets, so we cast to lists
+            # This is weird. They don't display properly as QuerySets, so we cast to lists
             data["chart_keys"] = {
-               "today": "Today",
-               "last7": "Last 7 days",
-               "last30": "Last 30 days",
-               "year": "This year",
-               "all": "All time",
+                "today": "Today",
+                "last7": "Last 7 days",
+                "last30": "Last 30 days",
+                "year": "This year",
+                "all": "All time",
             }
             data["current_artist_charts"] = {
-               "today": list(live_charts(**artist, chart_period="today")),
-               "last7": list(live_charts(**artist, chart_period="last7")),
-               "last30": list(live_charts(**artist, chart_period="last30")),
-               "year": list(live_charts(**artist, chart_period="year")),
-               "all": list(live_charts(**artist)),
+                "today": list(live_charts(**artist, chart_period="today")),
+                "last7": list(live_charts(**artist, chart_period="last7")),
+                "last30": list(live_charts(**artist, chart_period="last30")),
+                "year": list(live_charts(**artist, chart_period="year")),
+                "all": list(live_charts(**artist)),
             }
 
             track = {"user": user, "media_type": "Track", "limit": limit}
             data["current_track_charts"] = {
-               "today": list(live_charts(**track, chart_period="today")),
-               "last7": list(live_charts(**track, chart_period="last7")),
-               "last30": list(live_charts(**track, chart_period="last30")),
-               "year": list(live_charts(**track, chart_period="year")),
-               "all": list(live_charts(**track)),
+                "today": list(live_charts(**track, chart_period="today")),
+                "last7": list(live_charts(**track, chart_period="last7")),
+                "last30": list(live_charts(**track, chart_period="last30")),
+                "year": list(live_charts(**track, chart_period="year")),
+                "all": list(live_charts(**track)),
             }
             data["counts"] = scrobble_counts(user)
         else:
@@ -222,7 +222,11 @@ class ManualScrobbleView(FormView):
 
         key, item_id = item_str[:2], item_str[3:]
         scrobble_fn = MANUAL_SCROBBLE_FNS[key]
-        eval(scrobble_fn)(item_id, self.request.user.id)
+        scrobble = eval(scrobble_fn)(item_id, self.request.user.id)
+
+        if self.request.user.profile.redirect_to_webpage and key == "-w":
+            logger.info(f"Redirecting to {scrobble.media_obj} detail page")
+            return HttpResponseRedirect(scrobble.media_obj.get_absolute_url())
 
         return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
@@ -445,6 +449,13 @@ def scrobble_start(request, uuid):
         messages.add_message(
             request, messages.ERROR, f"Media with uuid {uuid} not found."
         )
+
+    if (
+        user.profile.redirect_on_webpage
+        and media_obj.__class__.__name__ == Scrobble.MediaType.WEBPAGE
+    ):
+        logger.info(f"Redirecting to {media_obj} detail apge")
+        return HttpResponseRedirect(media_obj.get_absolute_url())
     return HttpResponseRedirect(success_url)
 
 

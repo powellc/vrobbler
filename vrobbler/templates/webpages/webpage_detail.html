@@ -7,15 +7,16 @@
 <style>
   .webpage-body {float:left: width:500px; margin-right:10px; font-size:larger;}
   .webpage-body br { margin-bottom: 1em; }
-  .webpage-source {float:left; width:600px; margin-left:10px;}
+  .webpage-metadata {float:left; width:600px; padding:20px 0px 0px 20px; margin-bottom:10px; border: 1px solid #aaa;}
 </style>
 {% endblock %}
 
 {% block lists %}
 <div class="row webpage">
 
-    <div class="webpage-source">
+    <div class="webpage-metadata">
       <p>Source: <a href="{{object.url}}">{{object.url}}</a></p>
+      <p>Time to read: {{object.estimated_time_to_read_in_minutes}} minutes</p>
     </div>
     {% if object.extract %}
     <div class="webpage-body">
