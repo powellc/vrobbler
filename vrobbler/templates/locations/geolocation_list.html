@@ -20,12 +20,12 @@
      crossorigin=""></script>
 
  <script>
-   var map = L.map('map').setView([{{latest.lat}}, {{latest.lon}}], 17);
+   var map = L.map('map').setView([{{object_list.0.lat}}, {{object_list.0.lon}}], 15);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 20,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-   var marker = L.marker([{{latest.lat}}, {{latest.lon}}]).addTo(map);
+   var marker = L.marker([{{object_list.0.lat}}, {{object_list.0.lon}}]).addTo(map);
    var latest_path = [
        {% for l in object_list %}
        [{{l.lat}}, {{l.lon}}]{% if not forloop.last %},{% endif %}
@@ -70,7 +70,7 @@
                     {% for location in object_list %}
                     <tr>
                         <td>{{location.scrobble_set.count}}</td>
-			<td>{{location.title}}</td>
+                        <td>{{location.title}}</td>
                         <td><a href="{{location.get_absolute_url}}">{{location.lat}}x{{location.lon}}</a></td>
                     </tr>
                     {% endfor %}
