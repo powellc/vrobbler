@@ -46,12 +46,17 @@ def parse_mopidy_uri(uri: str) -> dict:
 
     episode_str = unquote(parsed_uri.pop(-1).strip(".mp3"))
     podcast_str = unquote(parsed_uri.pop(-1))
-    possible_date_str = episode_str[0:10]
 
     try:
-        pub_date = parse(possible_date_str)
+        # Without episode numbers the date will lead
+        pub_date = parse(episode_str[0:10])
     except ParserError:
-        pub_date = ""
+        try:
+            # Beacuse we have epsiode numbers on
+            pub_date = episode_str[4:14]
+        except ParserError:
+            pub_date = ""
+
     logger.debug(f"Found pub date {pub_date} from Mopidy URI")
 
     try:
@@ -184,7 +189,8 @@ def get_long_plays_completed(user: User) -> list:
         for media in media_obj.objects.all():
             if (
                 media.scrobble_set.all()
-                and media.scrobble_set.filter(user=user).order_by("timestamp")
+                and media.scrobble_set.filter(user=user)
+                .order_by("timestamp")
                 .last()
                 .long_play_complete
                 == True
