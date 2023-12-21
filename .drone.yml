@@ -41,7 +41,7 @@ steps:
     when:
       branch:
       - main
-  - name: success notification
+  - name: build success notification
     image: parrazam/drone-ntfy
     when:
         status: [success]
@@ -49,12 +49,11 @@ steps:
       url: https://ntfy.unbl.ink
       topic: drone
       priority: low
-      click: https://ci.lab.unbl.ink/secstate/vrobbler
       tags:
         - cd
         - failure
         - vrobbler
-  - name: failure notification
+  - name: build failure notification
     image: parrazam/drone-ntfy
     when:
         status: [failure]
@@ -62,7 +61,6 @@ steps:
       url: https://ntfy.unbl.ink
       topic: drone
       priority: high
-      click: https://ci.lab.unbl.ink/secstate/vrobbler
       tags:
         - cd
         - success
