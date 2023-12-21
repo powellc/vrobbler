@@ -17,6 +17,7 @@ steps:
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
       - poetry run pytest --cov-report term:skip-covered --cov=vrobbler tests
+      - curl -d "Deploy successful!" -H "Title: Vrobbler CI process complete" -H "Priority: high" -H "Tags: success,cd"
     environment:
       VROBBLER_DATABASE_URL: sqlite:///test.db
     volumes:
