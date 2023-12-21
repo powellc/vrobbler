@@ -4,7 +4,7 @@
 ################
 
 kind: pipeline
-name: run_tests
+name: build & deploy
 
 steps:
   # Run tests against Python/Flask engine backend (with pytest)
@@ -44,14 +44,26 @@ steps:
   - name: notification
     image: parrazam/drone-ntfy
     when:
-        status: [success, failure]
+        status: [success]
     settings:
       url: https://ntfy.unbl.ink
       topic: drone
-      priority: medium
+      priority: low
       tags:
         - cd
-        - pipeline
+        - failure
+        - vrobbler
+  - name: notification
+    image: parrazam/drone-ntfy
+    when:
+        status: [failure]
+    settings:
+      url: https://ntfy.unbl.ink
+      topic: drone
+      priority: high
+      tags:
+        - cd
+        - success
         - vrobbler
 volumes:
   - name: docker
