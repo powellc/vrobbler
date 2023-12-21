@@ -17,7 +17,6 @@ steps:
       - poetry install
       # Start with a fresh database (which is already running as a service from Drone)
       - poetry run pytest --cov-report term:skip-covered --cov=vrobbler tests
-      - curl -d "Deploy successful!" -H "Title: Vrobbler CI process complete" -H "Priority: high" -H "Tags: success,cd" https://ntfy.unbl.ink/drone
     environment:
       VROBBLER_DATABASE_URL: sqlite:///test.db
     volumes:
@@ -39,6 +38,7 @@ steps:
         - vrobbler migrate
         - vrobbler collectstatic --noinput
         - immortalctl restart celery && immortalctl restart vrobbler
+        - curl -d "Deploy successful!" -H "Title: Vrobbler CI process complete" -H "Priority: high" -H "Tags: success,cd" https://ntfy.unbl.ink/drone
     when:
       branch:
       - main
