@@ -49,6 +49,7 @@ steps:
       url: https://ntfy.unbl.ink
       topic: drone
       priority: low
+      click: https://ci.lab.unbl.ink/secstate/vrobbler
       tags:
         - cd
         - failure
@@ -61,6 +62,7 @@ steps:
       url: https://ntfy.unbl.ink
       topic: drone
       priority: high
+      click: https://ci.lab.unbl.ink/secstate/vrobbler
       tags:
         - cd
         - success
