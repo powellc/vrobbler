@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timedelta, tzinfo
 from urllib.parse import unquote
 
@@ -42,10 +43,11 @@ def convert_to_seconds(run_time: str) -> int:
 
 def parse_mopidy_uri(uri: str) -> dict:
     logger.debug(f"Parsing URI: {uri}")
-    parsed_uri = uri.split("/")
+    parsed_uri = os.path.splitext(unquote(uri))[0].split("/")
 
-    episode_str = unquote(parsed_uri.pop(-1).strip(".mp3"))
-    podcast_str = unquote(parsed_uri.pop(-1))
+    episode_str = parsed_uri[-1]
+    podcast_name = parsed_uri[-2]
+    episode_num = None
 
     try:
         # Without episode numbers the date will lead
@@ -54,36 +56,23 @@ def parse_mopidy_uri(uri: str) -> dict:
         try:
             # Beacuse we have epsiode numbers on
             pub_date = episode_str[4:14]
+            episode_num = int(episode_str.split("-")[0])
         except ParserError:
             pub_date = ""
-
-    logger.debug(f"Found pub date {pub_date} from Mopidy URI")
-
-    try:
-        if pub_date:
-            episode_num = int(episode_str.split("-")[3])
-        else:
             episode_num = int(episode_str.split("-")[0])
-    except IndexError:
-        episode_num = None
-    except ValueError:
-        episode_num = None
-    logger.debug(f"Found episode num {episode_num} from Mopidy URI")
 
+    gap_to_strip = 0
     if pub_date:
-        episode_str = episode_str.strip(episode_str[:11])
+        gap_to_strip += 11
+    if episode_num:
+        gap_to_strip += len(str(episode_num)) + 1
 
-    if type(episode_num) is int:
-        episode_num_gap = len(str(episode_num)) + 1
-        episode_str = episode_str.strip(episode_str[:episode_num_gap])
-
-    episode_str = episode_str.replace("-", " ")
-    logger.debug(f"Found episode name {episode_str} from Mopidy URI")
+    episode_name = episode_str[gap_to_strip:].replace("-", " ")
 
     return {
-        "episode_filename": episode_str,
+        "episode_filename": episode_name,
         "episode_num": episode_num,
-        "podcast_name": podcast_str,
+        "podcast_name": podcast_name,
         "pub_date": pub_date,
     }
 
