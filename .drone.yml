@@ -38,7 +38,7 @@ steps:
         - vrobbler migrate
         - vrobbler collectstatic --noinput
         - immortalctl restart celery && immortalctl restart vrobbler
-        - curl -d "Deploy successful!" -H "Title: Vrobbler CI process complete" -H "Priority: high" -H "Tags: success,cd" https://ntfy.unbl.ink/drone
+        - curl -d "Deploy successful!" -H "Title#58; Vrobbler CI process complete" -H "Priority#58; high" -H "Tags#58; success,cd" https://ntfy.unbl.ink/drone
     when:
       branch:
       - main
