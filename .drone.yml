@@ -39,10 +39,21 @@ steps:
         - vrobbler collectstatic --noinput
         - immortalctl restart celery && immortalctl restart vrobbler
         - service immortaldir restart
-        - curl -d "Deploy successful!" -H "Title#58; Vrobbler CI process complete" -H "Priority#58; high" -H "Tags#58; success,cd" https://ntfy.unbl.ink/drone
     when:
       branch:
       - main
+  - name: notification
+    image: parrazam/drone-ntfy
+    when:
+        status: [success, failure]
+    settings:
+      url: https://ntfy.unbl.ink
+      topic: drone
+      priority: medium
+      tags:
+        - cd
+        - pipeline
+        - vrobbler
 volumes:
   - name: docker
     host:
