@@ -41,7 +41,7 @@ steps:
     when:
       branch:
       - main
-  - name: notification
+  - name: success notification
     image: parrazam/drone-ntfy
     when:
         status: [success]
@@ -53,7 +53,7 @@ steps:
         - cd
         - failure
         - vrobbler
-  - name: notification
+  - name: failure notification
     image: parrazam/drone-ntfy
     when:
         status: [failure]
