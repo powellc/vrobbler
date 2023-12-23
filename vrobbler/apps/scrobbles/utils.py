@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
+PODCAST_DATE_FORMAT = "YYYY-MM-DD"
+
 def timestamp_user_tz_to_utc(timestamp: int, user_tz: tzinfo) -> datetime:
     return user_tz.localize(datetime.utcfromtimestamp(timestamp)).astimezone(
         pytz.utc
@@ -40,7 +42,6 @@ def convert_to_seconds(run_time: str) -> int:
         run_time_int = int((((hours * 60) + minutes) * 60) + seconds)
     return run_time_int
 
-
 def parse_mopidy_uri(uri: str) -> dict:
     logger.debug(f"Parsing URI: {uri}")
     parsed_uri = os.path.splitext(unquote(uri))[0].split("/")
@@ -48,24 +49,26 @@ def parse_mopidy_uri(uri: str) -> dict:
     episode_str = parsed_uri[-1]
     podcast_name = parsed_uri[-2]
     episode_num = None
+    episode_num_pad = 0
 
     try:
         # Without episode numbers the date will lead
         pub_date = parse(episode_str[0:10])
     except ParserError:
+        episode_num = int(episode_str.split("-")[0])
+        episode_num_pad = len(str(episode_num)) + 1
+
         try:
             # Beacuse we have epsiode numbers on
-            pub_date = episode_str[4:14]
-            episode_num = int(episode_str.split("-")[0])
+            pub_date = episode_str[episode_num_pad:14]
         except ParserError:
             pub_date = ""
-            episode_num = int(episode_str.split("-")[0])
 
     gap_to_strip = 0
     if pub_date:
-        gap_to_strip += 11
+        gap_to_strip += len(PODCAST_DATE_FORMAT)
     if episode_num:
-        gap_to_strip += len(str(episode_num)) + 1
+        gap_to_strip += episode_num_pad
 
     episode_name = episode_str[gap_to_strip:].replace("-", " ")
 
