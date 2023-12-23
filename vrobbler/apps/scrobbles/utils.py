@@ -60,7 +60,7 @@ def parse_mopidy_uri(uri: str) -> dict:
 
         try:
             # Beacuse we have epsiode numbers on
-            pub_date = episode_str[episode_num_pad:14]
+            pub_date = parse(episode_str[episode_num_pad:len(PODCAST_DATE_FORMAT) + episode_num_pad])
         except ParserError:
             pub_date = ""
 
