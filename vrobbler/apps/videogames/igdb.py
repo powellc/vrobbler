@@ -72,7 +72,7 @@ def lookup_game_from_igdb(name_or_igdb_id: str) -> Dict:
     fields = "id,name,alternative_names.*,genres.*,release_dates.*,cover.*,screenshots.*,rating,rating_count,summary"
 
     game_dict = {}
-    body = f"fields {fields}; where id = {igdb_id};"
+    body = f"fields {fields}; where id = {igdb_id}; sort id asc;"
     response = requests.post(GAMES_URL, data=body, headers=headers)
     results = json.loads(response.content)
     if not results:
