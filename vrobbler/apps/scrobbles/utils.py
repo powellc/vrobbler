@@ -47,7 +47,7 @@ def parse_mopidy_uri(uri: str) -> dict:
     parsed_uri = os.path.splitext(unquote(uri))[0].split("/")
 
     episode_str = parsed_uri[-1]
-    podcast_name = parsed_uri[-2]
+    podcast_name = parsed_uri[-2].strip()
     episode_num = None
     episode_num_pad = 0
 
@@ -70,7 +70,7 @@ def parse_mopidy_uri(uri: str) -> dict:
     if episode_num:
         gap_to_strip += episode_num_pad
 
-    episode_name = episode_str[gap_to_strip:].replace("-", " ")
+    episode_name = episode_str[gap_to_strip:].replace("-", " ").strip()
 
     return {
         "episode_filename": episode_name,
