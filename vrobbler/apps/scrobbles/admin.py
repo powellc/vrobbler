@@ -108,6 +108,9 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "sport_event",
         "book",
         "video_game",
+        "board_game",
+        "geo_location",
+        "webpage",
     )
     list_filter = (
         "is_paused",
