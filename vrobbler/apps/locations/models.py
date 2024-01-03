@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
+ACCURACY = getattr(settings, "GEOLOC_ACCURACY", 3)
 
 class GeoLocation(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, "LOCATION_COMPLETION_PERCENT", 100)
@@ -53,11 +54,11 @@ class GeoLocation(ScrobblableMixin):
         int_lon, r_lon = str(data_dict.get("lon", "")).split(".")
 
         try:
-            trunc_lat = r_lat[0:4]
+            trunc_lat = r_lat[0:GEOLOC_ACCURACY]
         except IndexError:
             trunc_lat = r_lat
         try:
-            trunc_lon = r_lon[0:4]
+            trunc_lon = r_lon[0:GEOLOC_ACCURACY]
         except IndexError:
             trunc_lon = r_lon
 
@@ -65,12 +66,8 @@ class GeoLocation(ScrobblableMixin):
         data_dict["lon"] = float(f"{int_lon}.{trunc_lon}")
 
         int_alt, r_alt = str(data_dict.get("alt", "")).split(".")
-        try:
-            trunc_alt = r_lon[0:4]
-        except IndexError:
-            trunc_alt = r_alt
 
-        data_dict["altitude"] = float(f"{int_alt}.{trunc_alt}")
+        data_dict["altitude"] = float(int_alt)
 
         location = cls.objects.filter(
             lat=data_dict.get("lat"),
