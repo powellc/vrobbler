@@ -201,8 +201,10 @@ def manual_scrobble_event(thesportsdb_id: str, user_id: int):
 
 
 def manual_scrobble_video_game(hltb_id: str, user_id: int):
-    data_dict = lookup_game_from_hltb(hltb_id)
-    game = VideoGame.find_or_create(data_dict)
+    game = VideoGame.objects.filter(hltb_id=hltb_id).first()
+    if not game:
+        data_dict = lookup_game_from_hltb(hltb_id)
+        game = VideoGame.find_or_create(data_dict)
 
     scrobble_dict = {
         "user_id": user_id,
