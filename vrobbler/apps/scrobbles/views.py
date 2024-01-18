@@ -451,7 +451,7 @@ def scrobble_start(request, uuid):
         )
 
     if (
-        user.profile.redirect_on_webpage
+        user.profile.redirect_to_webpage
         and media_obj.__class__.__name__ == Scrobble.MediaType.WEBPAGE
     ):
         logger.info(f"Redirecting to {media_obj} detail apge")
