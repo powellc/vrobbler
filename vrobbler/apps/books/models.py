@@ -269,11 +269,14 @@ class Book(LongPlayScrobblableMixin):
 
     @classmethod
     def find_or_create(cls, lookup_id: str, author: str = "") -> "Book":
-        data = lookup_book_from_openlibrary(lookup_id, author)
+        book = cls.objects.filter(openlibrary_id=lookup_id).first()
 
-        book, book_created = cls.objects.get_or_create(isbn=data["isbn"])
-        if book_created:
-            book.fix_metadata(data=data)
+        if not book:
+            data = lookup_book_from_openlibrary(lookup_id, author)
+
+            book, book_created = cls.objects.get_or_create(isbn=data["isbn"])
+            if book_created:
+                book.fix_metadata(data=data)
 
         return book
 
