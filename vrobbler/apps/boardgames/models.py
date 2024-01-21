@@ -151,12 +151,12 @@ class BoardGame(ScrobblableMixin):
         cls, lookup_id: str, data: Optional[dict] = {}
     ) -> Optional["BoardGame"]:
         """Given a Lookup ID (either BGG or BGA ID), return a board game object"""
-        boardgame = None
+        boardgame = cls.objects.filter(bggeek_id=lookup_id).first()
 
-        if not data:
+        if not data or not boardgame:
             data = lookup_boardgame_from_bgg(lookup_id)
 
-        if data:
+        if data and not boardgame:
             boardgame, created = cls.objects.get_or_create(
                 title=data["title"], bggeek_id=lookup_id
             )
