@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
-ACCURACY = getattr(settings, "GEOLOC_ACCURACY", 3)
+GEOLOC_ACCURACY = getattr(settings, "GEOLOC_ACCURACY", 3)
+
 
 class GeoLocation(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, "LOCATION_COMPLETION_PERCENT", 100)
@@ -72,7 +73,6 @@ class GeoLocation(ScrobblableMixin):
         location = cls.objects.filter(
             lat=data_dict.get("lat"),
             lon=data_dict.get("lon"),
-            altitude=data_dict.get("altitude"),
         ).first()
 
         if not location:

@@ -692,7 +692,9 @@ class Scrobble(TimeStampedModel):
                     same_title = last_location.title == self.media_obj.title
 
                 logger.info(f"{self.timestamp}")
-                logger.info(f"Last lat: {last_location.lat}, last long {last_location.lon}, last title {last_location.title}")
+                logger.info(
+                    f"Last lat: {last_location.lat}, last long {last_location.lon}, last title {last_location.title}"
+                )
                 logger.info(
                     f"Our lat {self.media_obj.lat}, Our lon {self.media_obj.lon} or our title {self.media_obj.title}"
                 )
@@ -782,8 +784,7 @@ class Scrobble(TimeStampedModel):
                 logger.info(
                     "[scrobbling] scrobble for geo location with identical timestamp found"
                 )
-                # TODO Fix return type, can we ever return a Scrobble?
-                return
+                return dup
 
         scrobble = (
             cls.objects.filter(
