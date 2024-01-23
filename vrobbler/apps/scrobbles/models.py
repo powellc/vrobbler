@@ -338,7 +338,7 @@ class ChartRecord(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
     rank = models.IntegerField(db_index=True)
     count = models.IntegerField(default=0)
-    year = models.IntegerField(default=timezone.now().year)
+    year = models.IntegerField(**BNULL)
     month = models.IntegerField(**BNULL)
     week = models.IntegerField(**BNULL)
     day = models.IntegerField(**BNULL)
@@ -522,6 +522,7 @@ class Scrobble(TimeStampedModel):
 
     # Fields for keeping track long content like books and games
     book_pages_read = models.IntegerField(**BNULL)
+    book_page_data = models.JSONField(**BNULL)
     videogame_save_data = models.FileField(
         upload_to="scrobbles/videogame_save_data/", **BNULL
     )
