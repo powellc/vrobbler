@@ -36,8 +36,11 @@ def get_author_openlibrary_id(name: str) -> str:
         logger.warn(f"No author results found from search for {name}")
         return ""
 
-    result = results.get("docs", [])
-    return result[0].get("key")
+    try:
+        result = results.get("docs", [])[0]
+    except IndexError:
+        result = {"key": ""}
+    return result.get("key")
 
 
 def lookup_author_from_openlibrary(olid: str) -> dict:

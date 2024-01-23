@@ -274,6 +274,12 @@ class Book(LongPlayScrobblableMixin):
         if not book:
             data = lookup_book_from_openlibrary(lookup_id, author)
 
+            if not data:
+                logger.error(
+                    f"No book found on openlibrary, or in our database for {lookup_id}"
+                )
+                return book
+
             book, book_created = cls.objects.get_or_create(isbn=data["isbn"])
             if book_created:
                 book.fix_metadata(data=data)
@@ -292,9 +298,11 @@ class Book(LongPlayScrobblableMixin):
 
 
 class Page(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    """DEPRECATED, we need to migrate pages into page_data on scrobbles and move on"""
+
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     number = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     start_time = models.DateTimeField(**BNULL)
     end_time = models.DateTimeField(**BNULL)
     duration_seconds = models.IntegerField(**BNULL)
