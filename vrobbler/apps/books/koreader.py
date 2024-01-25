@@ -62,6 +62,7 @@ def get_author_str_from_row(row):
     # Strip middle initials, OpenLibrary often fails with these
     return re.sub(" [A-Z]. ", " ", ko_authors)
 
+
 def lookup_or_create_authors_from_author_str(ko_author_str: str) -> list:
     """Takes a string of authors from KoReader and returns a list
     of Authors from our database
@@ -72,9 +73,7 @@ def lookup_or_create_authors_from_author_str(ko_author_str: str) -> list:
         logger.debug(f"Looking up author {author_str}")
         # KoReader gave us nothing, bail
         if author_str == "N/A":
-            logger.warn(
-                f"KoReader author string is N/A, no authors to find"
-            )
+            logger.warn(f"KoReader author string is N/A, no authors to find")
             continue
 
         author = Author.objects.filter(name=author_str).first()
@@ -106,14 +105,13 @@ def create_book_from_row(row: list):
     book.fix_metadata()
 
     # Add authors
-    author_list = lookup_or_create_authors_from_author_str(
-        author_str
-    )
+    author_list = lookup_or_create_authors_from_author_str(author_str)
     if author_list:
         book.authors.add(*author_list)
 
     # self._lookup_authors
     return book
+
 
 def build_book_map(rows) -> dict:
     """Given an interable of sqlite rows from the books table, lookup existing
@@ -134,9 +132,7 @@ def build_book_map(rows) -> dict:
         book.refresh_from_db()
         total_seconds = 0
         if book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]:
-            total_seconds = book_row[
-                KoReaderBookColumn.TOTAL_READ_TIME.value
-            ]
+            total_seconds = book_row[KoReaderBookColumn.TOTAL_READ_TIME.value]
 
         book_id_map[book_row[KoReaderBookColumn.ID.value]] = {
             "book_id": book.id,
@@ -144,13 +140,19 @@ def build_book_map(rows) -> dict:
         }
     return book_id_map
 
-def build_page_data(page_rows: list, book_map: dict, user_tz = None) -> dict:
+
+def build_page_data(page_rows: list, book_map: dict, user_tz=None) -> dict:
     """Given rows of page data from KoReader, parse each row and build
     scrobbles for our user, loading the page data into the page_data
     field on the scrobble instance.
     """
     for page_row in page_rows:
         koreader_book_id = page_row[KoReaderPageStatColumn.ID_BOOK.value]
+        if koreader_book_id not in book_map.keys():
+            logger.info(
+                f"Found pages for book ID {koreader_book_id} not in our history, skipping"
+            )
+            continue
         if "pages" not in book_map[koreader_book_id].keys():
             book_map[koreader_book_id]["pages"] = {}
 
@@ -164,13 +166,20 @@ def build_page_data(page_rows: list, book_map: dict, user_tz = None) -> dict:
         page_number = page_row[KoReaderPageStatColumn.PAGE.value]
         duration = page_row[KoReaderPageStatColumn.DURATION.value]
         start_ts = page_row[KoReaderPageStatColumn.START_TIME.value]
-        if user_tz:
-            start_ts = timestamp_user_tz_to_utc(
-                page_row[KoReaderPageStatColumn.START_TIME.value],
-                pytz.timezone(user_tz),
-            ).timestamp()
-        else:
-            logger.warning(f"Page data built with out user timezone, defaulting to UTC")
+        # TODO Not sure if this is doing nothing, as timestamps are already assumed in user TZ
+        # Maybe we want to save datetime strings with TZ info here?
+        # if user_tz:
+        #    start_ts = (
+        #        datetime.utcfromtimestamp(
+        #            int(page_row[KoReaderPageStatColumn.START_TIME.value])
+        #        )
+        #        .replace(tzinfo=user_tz)
+        #        .timestamp()
+        #    )
+        # else:
+        #    logger.warning(
+        #        f"Page data built with out user timezone, defaulting to UTC"
+        #    )
 
         book_map[koreader_book_id]["pages"][page_number] = {
             "duration": duration,
@@ -179,7 +188,10 @@ def build_page_data(page_rows: list, book_map: dict, user_tz = None) -> dict:
         }
     return book_map
 
-def build_scrobbles_from_book_map(book_map: dict, user: "User") -> list["Scrobble"]:
+
+def build_scrobbles_from_book_map(
+    book_map: dict, user: "User"
+) -> list["Scrobble"]:
     Scrobble = apps.get_model("scrobbles", "Scrobble")
 
     scrobbles_to_create = []
@@ -198,9 +210,7 @@ def build_scrobbles_from_book_map(book_map: dict, user: "User") -> list["Scrobbl
         pages_processed = 0
         total_pages = len(book_map[koreader_book_id]["pages"])
 
-        for page_number, stats in book_map[koreader_book_id][
-            "pages"
-        ].items():
+        for page_number, stats in book_map[koreader_book_id]["pages"].items():
             pages_processed += 1
             # Accumulate our page data for this scrobble
             scrobble_page_data[page_number] = stats
@@ -210,24 +220,39 @@ def build_scrobbles_from_book_map(book_map: dict, user: "User") -> list["Scrobbl
                 seconds_from_last_page = stats.get(
                     "end_ts"
                 ) - prev_page_stats.get("start_ts")
-            playback_position_seconds = (
-                playback_position_seconds + stats.get("duration")
+            playback_position_seconds = playback_position_seconds + stats.get(
+                "duration"
             )
 
             end_of_reading = pages_processed == total_pages
-            if (
-                seconds_from_last_page > SESSION_GAP_SECONDS
-                or end_of_reading
-            ):
+            if seconds_from_last_page > SESSION_GAP_SECONDS or end_of_reading:
                 should_create_scrobble = True
 
-            logger.info(f"Book {koreader_book_id} - {page_number} {seconds_from_last_page} read seconds")
+            logger.info(
+                f"Book {koreader_book_id} - {page_number} {seconds_from_last_page} read seconds"
+            )
             if should_create_scrobble:
                 first_page_in_scrobble = list(scrobble_page_data.keys())[0]
-                timestamp = timestamp_user_tz_to_utc(
-                    int(scrobble_page_data.get(first_page_in_scrobble).get("start_ts")),
-                    pytz.timezone(user.profile.timezone),
+                start_ts = int(
+                    scrobble_page_data.get(first_page_in_scrobble).get(
+                        "start_ts"
+                    )
                 )
+                timestamp = datetime.fromtimestamp(start_ts).replace(
+                    tzinfo=user.profile.tzinfo
+                )
+                # TODO Add a shim here temporarily to fix imports while we were in France
+                # if date is between 10/15 and 12/15, cast it to Europe/Central
+                if (
+                    datetime(2023, 10, 15).replace(
+                        tzinfo=pytz.timezone("Europe/Paris")
+                    )
+                    <= timestamp
+                    <= datetime(2023, 12, 15).replace(
+                        tzinfo=pytz.timezone("Europe/Paris")
+                    )
+                ):
+                    timestamp.replace(tzinfo=pytz.timezone("Europe/Paris"))
 
                 scrobble = Scrobble.objects.filter(
                     timestamp=timestamp,
@@ -235,10 +260,19 @@ def build_scrobbles_from_book_map(book_map: dict, user: "User") -> list["Scrobbl
                     user_id=user.id,
                 ).first()
                 if scrobble:
-                    logger.info(f"Found existing scrobble {scrobble}, updating")
+                    logger.info(
+                        f"Found existing scrobble {scrobble}, updating"
+                    )
                     scrobble.book_page_data = scrobble_page_data
-                    scrobble.playback_position_seconds = scrobble.calc_reading_duration()
-                    scrobble.save(update_fields=["book_page_data", "playback_position_seconds"])
+                    scrobble.playback_position_seconds = (
+                        scrobble.calc_reading_duration()
+                    )
+                    scrobble.save(
+                        update_fields=[
+                            "book_page_data",
+                            "playback_position_seconds",
+                        ]
+                    )
                 if not scrobble:
                     logger.info(
                         f"Queueing scrobble for {book_id}, page {page_number}"
@@ -275,15 +309,20 @@ def fix_long_play_stats_for_scrobbles(scrobbles: list) -> None:
         # But if there's a next scrobble, set pages read to their starting page
         #
         if scrobble.previous:
-            scrobble.long_play_seconds = scrobble.playback_position_seconds + scrobble.previous.long_play_seconds
-            scrobble.book_pages_read = scrobble.book_pages_read + scrobble.previous.book_pages_read
+            scrobble.long_play_seconds = scrobble.playback_position_seconds + (
+                scrobble.previous.long_play_seconds or 0
+            )
+            if not scrobble.book_pages_read:
+                scrobble.book_pages_read = (
+                    scrobble.calc_pages_read()
+                    + scrobble.previous.book_pages_read
+                )
         else:
             scrobble.long_play_seconds = scrobble.playback_position_seconds
             scrobble.book_pages_read = scrobble.calc_pages_read()
 
-        scrobble.save(
-            update_fields=["book_pages_read", "long_play_seconds"]
-        )
+        scrobble.save(update_fields=["book_pages_read", "long_play_seconds"])
+
 
 def process_koreader_sqlite_file(file_path, user_id) -> list:
     """Given a sqlite file from KoReader, open the book table, iterate
@@ -301,7 +340,9 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
         con = sqlite3.connect(file_path)
         cur = con.cursor()
         book_map = build_book_map(cur.execute("SELECT * FROM book"))
-        book_map = build_page_data(cur.execute("SELECT * from page_stat_data"), book_map, tz)
+        book_map = build_page_data(
+            cur.execute("SELECT * from page_stat_data"), book_map, tz
+        )
         new_scrobbles = build_scrobbles_from_book_map(book_map, user)
     else:
         for table_name, pragma_table_info, rows in stream_sqlite(

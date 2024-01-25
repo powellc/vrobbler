@@ -185,6 +185,12 @@ class Book(LongPlayScrobblableMixin):
             if data.get("pages") == None:
                 data.pop("pages")
 
+            if not isinstance(data.get("pages"), int):
+                logger.info(
+                    f"Pages for {self} from OL expected to be int, but got {data.get('pages')}"
+                )
+                data.pop("pages")
+
             # Pop this, so we can look it up later
             cover_url = data.pop("cover_url", "")
 
