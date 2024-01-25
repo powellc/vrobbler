@@ -2,11 +2,7 @@ import hashlib
 import pytest
 import random
 
-from vrobbler.apps.books.koreader import (
-    KoReaderBookColumn,
-    KoReaderImporter,
-    KoReaderPageStatColumn,
-)
+from vrobbler.apps.books.koreader import KoReaderBookColumn
 
 ordinal = lambda n: "%d%s" % (
     n,
@@ -114,20 +110,5 @@ class KoReaderBookRows:
 
 
 @pytest.fixture
-def koreader_book_row():
-    return KoReaderBookRows(book_count=1).BOOK_ROWS[0]
-
-
-@pytest.fixture
-def koreader_book_rows():
-    return KoReaderBookRows(book_count=4).BOOK_ROWS
-
-
-@pytest.fixture
 def koreader_rows():
-    return KoReaderBookRows(book_count=1)
-
-
-@pytest.fixture
-def koreader_rows_for_pages():
     return KoReaderBookRows(book_count=1)

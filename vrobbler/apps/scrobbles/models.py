@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import uuid4
 
 from boardgames.models import BoardGame
+from books.koreader import process_koreader_sqlite_file
 from books.models import Book
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -172,7 +173,6 @@ class KoReaderImport(BaseFileImportMixin):
     sqlite_file = models.FileField(upload_to=get_path, **BNULL)
 
     def process(self, force=False):
-        from books.koreader import process_koreader_sqlite
 
         if self.processed_finished and not force:
             logger.info(
@@ -181,7 +181,7 @@ class KoReaderImport(BaseFileImportMixin):
             return
 
         self.mark_started()
-        scrobbles = process_koreader_sqlite(
+        scrobbles = process_koreader_sqlite_file(
             self.upload_file_path, self.user.id
         )
         self.record_log(scrobbles)
@@ -740,6 +740,21 @@ class Scrobble(TimeStampedModel):
     def __str__(self):
         timestamp = self.timestamp.strftime("%Y-%m-%d")
         return f"Scrobble of {self.media_obj} ({timestamp})"
+
+    def calc_reading_duration(self) -> int:
+        duration = 0
+        if self.book_page_data:
+            for k, v in self.book_page_data.items():
+                duration += v.get("duration")
+        return duration
+
+    def calc_pages_read(self) -> int:
+        pages_read = 0
+        if self.book_page_data:
+            pages = [int(k) for k in self.book_page_data.keys()]
+            pages.sort()
+            pages_read = pages[-1] - pages[0]
+        return pages_read
 
     @classmethod
     def create_or_update(

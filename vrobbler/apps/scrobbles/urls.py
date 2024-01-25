@@ -10,24 +10,19 @@ urlpatterns = [
         name="lookup-manual-scrobble",
     ),
     path(
-        "manual/audioscrobbler/",
-        views.AudioScrobblerImportCreateView.as_view(),
-        name="audioscrobbler-file-upload",
-    ),
-    path(
-        "manual/koreader/",
-        views.KoReaderImportCreateView.as_view(),
-        name="koreader-file-upload",
-    ),
-    path(
         "long-play-finish/<slug:uuid>/",
         views.scrobble_longplay_finish,
         name="longplay-finish",
     ),
     path(
-        "upload/",
+        "upload/audioscrobbler/",
         views.AudioScrobblerImportCreateView.as_view(),
         name="audioscrobbler-file-upload",
+    ),
+    path(
+        "upload/koreader/",
+        views.KoReaderImportCreateView.as_view(),
+        name="koreader-file-upload",
     ),
     path(
         "lastfm-import/",

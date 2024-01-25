@@ -1,28 +1,26 @@
 import pytest
 from unittest import mock
 
-from books.koreader import KoReaderImporter, KoReaderBookColumn
+from books.koreader import KoReaderBookColumn, build_book_map, build_page_data, build_scrobbles_from_book_map
 
 
 @pytest.mark.django_db
 @mock.patch("requests.get")
-def test_get_or_create_books(get_mock, koreader_book_rows, valid_response):
+def test_build_book_map(get_mock, koreader_rows, valid_response):
     get_mock.return_value = valid_response
-    importer = KoReaderImporter("test.sqlite3", user_id=1)
-    importer.get_or_create_books(koreader_book_rows)
-    assert len(importer.BOOK_MAP) == 4
+    book_map = build_book_map(koreader_rows.BOOK_ROWS)
+    assert len(book_map) == 1
 
 
 @pytest.mark.django_db
 @mock.patch("requests.get")
 def test_load_page_data_to_map(get_mock, koreader_rows, valid_response):
     get_mock.return_value = valid_response
-    importer = KoReaderImporter("test.sqlite3", user_id=1)
-    importer.get_or_create_books(koreader_rows.BOOK_ROWS)
+    book_map = build_book_map(koreader_rows.BOOK_ROWS)
 
-    importer.load_page_data_to_map(koreader_rows.PAGE_STATS_ROWS)
+    book_map = build_page_data(koreader_rows.PAGE_STATS_ROWS, book_map)
     assert (
-        len(importer.BOOK_MAP[1]["pages"])
+        len(book_map[1]["pages"])
         == koreader_rows.BOOK_ROWS[0][
             KoReaderBookColumn.TOTAL_READ_PAGES.value
         ]
@@ -32,15 +30,16 @@ def test_load_page_data_to_map(get_mock, koreader_rows, valid_response):
 @pytest.mark.django_db
 @mock.patch("requests.get")
 def test_build_scrobbles_from_pages(
-    get_mock, koreader_rows_for_pages, valid_response
+    get_mock, koreader_rows, valid_response
 ):
     get_mock.return_value = valid_response
-    importer = KoReaderImporter("test.sqlite3", user_id=1)
-    importer.get_or_create_books(koreader_rows.BOOK_ROWS)
-    importer.load_page_data_to_map(koreader_rows.PAGE_STATS_ROWS)
-    scrobbles = importer.build_scrobbles_from_pages()
+    book_map = build_book_map(koreader_rows.BOOK_ROWS)
+    book_map = build_page_data(koreader_rows.PAGE_STATS_ROWS, book_map)
+
+    scrobbles = build_scrobbles_from_book_map(book_map)
     # Corresponds to number of sessions per book ( 20 pages per session, 120 +/- 15 pages read )
-    assert len(scrobbles) == 6
+    expected_scrobbles = 6 * len(book_map.keys())
+    assert len(scrobbles) == expected_scrobbles
     assert len(scrobbles[0].book_page_data.keys()) == 22
     assert len(scrobbles[1].book_page_data.keys()) == 20
     assert len(scrobbles[2].book_page_data.keys()) == 20
