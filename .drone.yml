@@ -14,7 +14,7 @@ steps:
       # Install dependencies
       - cp vrobbler.conf.test vrobbler.conf
       - pip install poetry
-      - poetry install
+      - poetry install --with dev
       # Start with a fresh database (which is already running as a service from Drone)
       - poetry run pytest --cov-report term:skip-covered --cov=vrobbler tests
     environment:
