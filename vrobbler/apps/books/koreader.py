@@ -228,9 +228,6 @@ def build_scrobbles_from_book_map(
             if seconds_from_last_page > SESSION_GAP_SECONDS or end_of_reading:
                 should_create_scrobble = True
 
-            logger.info(
-                f"Book {koreader_book_id} - {page_number} {seconds_from_last_page} read seconds"
-            )
             if should_create_scrobble:
                 first_page = scrobble_page_data.get(
                     list(scrobble_page_data.keys())[0]
@@ -239,9 +236,7 @@ def build_scrobbles_from_book_map(
                     list(scrobble_page_data.keys())[-1]
                 )
                 start_ts = int(first_page.get("start_ts"))
-                end_ts = int(last_page.get("start_ts")) + int(
-                    last_page.get("duration")
-                )
+                end_ts = start_ts + playback_position_seconds
 
                 timestamp = datetime.fromtimestamp(start_ts).replace(
                     tzinfo=user.profile.tzinfo
