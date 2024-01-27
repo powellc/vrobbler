@@ -5,6 +5,8 @@ import urllib
 
 import requests
 
+from thefuzz import fuzz
+
 logger = logging.getLogger(__name__)
 
 ISBN_URL = "https://openlibrary.org/isbn/{isbn}.json"
@@ -102,8 +104,9 @@ def lookup_book_from_openlibrary(
 
     top = None
     for result in results.get("docs"):
-        if title.lower() == result.get("title", "").lower():
+        if fuzz.ratio(title.lower(), result.get("title", "").lower()) > 90:
             top = result
+            break
 
     if not top:
         for result in results.get("docs"):

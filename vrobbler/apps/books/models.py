@@ -185,7 +185,10 @@ class Book(LongPlayScrobblableMixin):
             if "pages" in data.keys() and data.get("pages") == None:
                 data.pop("pages")
 
-            if not isinstance(data.get("pages"), int):
+            if (
+                not isinstance(data.get("pages"), int)
+                and "pages" in data.keys()
+            ):
                 logger.info(
                     f"Pages for {self} from OL expected to be int, but got {data.get('pages')}"
                 )

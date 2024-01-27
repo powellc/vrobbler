@@ -44,6 +44,7 @@ ipython = "^8.14.0"
 pendulum = "^2.1.2"
 trafilatura = "^1.6.3"
 django-imagekit = "^5.0.0"
+thefuzz = "^0.22.1"
 
 [tool.poetry.group.dev]
 optional = true
