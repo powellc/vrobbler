@@ -182,7 +182,7 @@ class Book(LongPlayScrobblableMixin):
                 )
 
             # If we don't know pages, don't overwrite existing with None
-            if data.get("pages") == None:
+            if "pages" in data.keys() and data.get("pages") == None:
                 data.pop("pages")
 
             if not isinstance(data.get("pages"), int):
