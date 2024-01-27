@@ -232,16 +232,24 @@ def build_scrobbles_from_book_map(
                 f"Book {koreader_book_id} - {page_number} {seconds_from_last_page} read seconds"
             )
             if should_create_scrobble:
-                first_page_in_scrobble = list(scrobble_page_data.keys())[0]
-                start_ts = int(
-                    scrobble_page_data.get(first_page_in_scrobble).get(
-                        "start_ts"
-                    )
+                first_page = scrobble_page_data.get(
+                    list(scrobble_page_data.keys())[0]
                 )
+                last_page = scrobble_page_data.get(
+                    list(scrobble_page_data.keys())[-1]
+                )
+                start_ts = int(first_page.get("start_ts"))
+                end_ts = int(last_page.get("start_ts")) + int(
+                    last_page.get("duration")
+                )
+
                 timestamp = datetime.fromtimestamp(start_ts).replace(
                     tzinfo=user.profile.tzinfo
                 )
-                # TODO Add a shim here temporarily to fix imports while we were in France
+                stop_timestamp = datetime.fromtimestamp(end_ts).replace(
+                    tzinfo=user.profile.tzinfo
+                )
+                # Add a shim here temporarily to fix imports while we were in France
                 # if date is between 10/15 and 12/15, cast it to Europe/Central
                 if (
                     datetime(2023, 10, 15).replace(
@@ -284,11 +292,12 @@ def build_scrobbles_from_book_map(
                             source="KOReader",
                             media_type=Scrobble.MediaType.BOOK,
                             timestamp=timestamp,
-                            played_to_completion=True,
+                            stop_timestamp=stop_timestamp,
                             playback_position_seconds=playback_position_seconds,
-                            in_progress=False,
                             book_page_data=scrobble_page_data,
                             book_pages_read=page_number,
+                            in_progress=False,
+                            played_to_completion=True,
                             long_play_complete=False,
                         )
                     )

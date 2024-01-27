@@ -1,8 +1,12 @@
 import hashlib
-import pytest
 import random
 
+import pytest
+from django.contrib.auth import get_user_model
+
 from vrobbler.apps.books.koreader import KoReaderBookColumn
+
+User = get_user_model()
 
 ordinal = lambda n: "%d%s" % (
     n,
@@ -112,3 +116,8 @@ class KoReaderBookRows:
 @pytest.fixture
 def koreader_rows():
     return KoReaderBookRows(book_count=1)
+
+
+@pytest.fixture
+def demo_user():
+    return User.objects.create(email="demo@example.com")
