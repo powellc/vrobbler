@@ -22,6 +22,7 @@ from scrobbles.mixins import (
 )
 from scrobbles.utils import get_scrobbles_for_media
 from taggit.managers import TaggableManager
+from thefuzz import fuzz
 
 from vrobbler.apps.books.locg import (
     lookup_comic_by_locg_slug,
@@ -176,10 +177,16 @@ class Book(LongPlayScrobblableMixin):
             ol_title = data.get("title", "")
 
             # Kick out a little warning if we're about to change KoReader's title
-            if ol_title.lower() != str(self.title).lower():
+            if (
+                fuzz.ratio(ol_title.lower(), str(self.title).lower()) < 80
+                and not force_update
+            ):
                 logger.warn(
-                    f"OL and KoReader disagree on this book title {self.title} != {ol_title}"
+                    f"OL and KoReader disagree on this book title {self.title} != {ol_title}, check manually"
                 )
+                self.openlibrary_id = data.get("openlibrary_id")
+                self.save(update_fields=["openlibrary_id"])
+                return
 
             # If we don't know pages, don't overwrite existing with None
             if "pages" in data.keys() and data.get("pages") == None:

@@ -2,7 +2,7 @@ from unittest import skip
 
 import pytest
 
-from vrobbler.apps.books.openlibrary import lookup_book_from_openlibrary
+from books.openlibrary import lookup_book_from_openlibrary
 
 
 def test_lookup_modern_book():
