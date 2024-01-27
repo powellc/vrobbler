@@ -302,16 +302,6 @@ class Book(LongPlayScrobblableMixin):
 
         return book
 
-    def save(self, *args, **kwargs):
-        if (
-            (not self.isbn and not self.cover)
-            and (self.locg_slug or self.openlibrary_id)
-            and self.id
-        ):
-            self.fix_metadata(force_update=True)
-
-        return super(Book, self).save(*args, **kwargs)
-
 
 class Page(TimeStampedModel):
     """DEPRECATED, we need to migrate pages into page_data on scrobbles and move on"""
