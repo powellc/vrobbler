@@ -102,10 +102,20 @@ def lookup_book_from_openlibrary(
 
     top = None
     for result in results.get("docs"):
-        # These Summary things suck and ruin our one-shot search
-        if "Summary of" not in result.get("title"):
+        if title.lower() == result.get("title", "").lower():
             top = result
-            break
+
+    if not top:
+        for result in results.get("docs"):
+            # These Summary things suck and ruin our one-shot search
+            if "Summary of" in result.get("title"):
+                continue
+
+            if title.lower() in result.get("title", "").lower():
+                top = result
+
+    if not top and len(results.get("docs")) > 0:
+        top = results.get("docs")[0]
 
     if not top:
         logger.warn(f"No book found for query {query}")
