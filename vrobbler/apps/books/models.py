@@ -59,6 +59,7 @@ class Author(TimeStampedModel):
     wikidata_id = models.CharField(max_length=255, **BNULL)
     goodreads_id = models.CharField(max_length=255, **BNULL)
     librarything_id = models.CharField(max_length=255, **BNULL)
+    comicvine_data = models.JSONField(**BNULL)
     amazon_id = models.CharField(max_length=255, **BNULL)
 
     def __str__(self):
@@ -92,9 +93,11 @@ class Book(LongPlayScrobblableMixin):
     title = models.CharField(max_length=255)
     authors = models.ManyToManyField(Author, blank=True)
     goodreads_id = models.CharField(max_length=255, **BNULL)
+    # All individual koreader fields are deprecated
     koreader_id = models.IntegerField(**BNULL)
     koreader_authors = models.CharField(max_length=255, **BNULL)
     koreader_md5 = models.CharField(max_length=255, **BNULL)
+    koreader_data_by_hash = models.JSONField(**BNULL)
     isbn = models.CharField(max_length=255, **BNULL)
     pages = models.IntegerField(**BNULL)
     language = models.CharField(max_length=4, **BNULL)
@@ -102,6 +105,7 @@ class Book(LongPlayScrobblableMixin):
     first_sentence = models.TextField(**BNULL)
     openlibrary_id = models.CharField(max_length=255, **BNULL)
     locg_slug = models.CharField(max_length=255, **BNULL)
+    comicvine_data = models.JSONField(**BNULL)
     cover = models.ImageField(upload_to="books/covers/", **BNULL)
     cover_small = ImageSpecField(
         source="cover",
@@ -146,15 +150,8 @@ class Book(LongPlayScrobblableMixin):
                 author_name = self.author.name
 
             if not data:
-                if self.locg_slug:
-                    data = lookup_comic_by_locg_slug(str(self.locg_slug))
-                else:
-                    data = lookup_comic_from_locg(str(self.title))
-
                 if not data:
-                    logger.warn(
-                        f"Book not found on LOCG, checking OL {self.title}"
-                    )
+                    logger.warn(f"rChecking openlibrary for {self.title}")
                     if self.openlibrary_id and force_update:
                         data = lookup_book_from_openlibrary(
                             str(self.openlibrary_id)
@@ -163,9 +160,20 @@ class Book(LongPlayScrobblableMixin):
                         data = lookup_book_from_openlibrary(
                             str(self.title), author_name
                         )
-                if not data:
-                    logger.warn(f"Book not found in OL {self.title}")
-                    return
+
+            if not data:
+                if self.locg_slug:
+                    logger.warn(
+                        f"rChecking openlibrary for {self.title} with slug {self.locg_slug}"
+                    )
+                    data = lookup_comic_by_locg_slug(str(self.locg_slug))
+                else:
+                    logger.warn(f"rChecking openlibrary for {self.title}")
+                    data = lookup_comic_from_locg(str(self.title))
+
+            if not data:
+                logger.warn(f"Book not found in any sources: {self.title}")
+                return
 
             # We can discard the author name from OL for now, we'll lookup details below
             data.pop("ol_author_name", "")

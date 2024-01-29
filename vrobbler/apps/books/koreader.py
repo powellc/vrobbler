@@ -1,21 +1,14 @@
-import codecs
 import logging
-import os
 import re
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Iterable, List, Optional
 
 import pytz
-import requests
-from books.models import Author, Book, Page
+from books.models import Author, Book
 from books.openlibrary import get_author_openlibrary_id
 from django.apps import apps
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
-from pylast import httpx, tempfile
-from scrobbles.utils import timestamp_user_tz_to_utc
 from stream_sqlite import stream_sqlite
 
 logger = logging.getLogger(__name__)
@@ -95,11 +88,16 @@ def create_book_from_row(row: list):
     run_time = total_pages * Book.AVG_PAGE_READING_SECONDS
 
     book = Book.objects.create(
-        koreader_md5=row[KoReaderBookColumn.MD5.value],
         title=row[KoReaderBookColumn.TITLE.value],
-        koreader_id=row[KoReaderBookColumn.ID.value],
-        koreader_authors=author_str,
         pages=total_pages,
+        koreader_data_by_hash={
+            row[KoReaderBookColumn.MD5.value]: {
+                "title": row[KoReaderBookColumn.TITLE.value],
+                "author_str": author_str,
+                "book_id": row[KoReaderBookColumn.ID.value],
+                "pages": total_pages,
+            }
+        },
         run_time_seconds=run_time,
     )
     book.fix_metadata()
@@ -122,8 +120,16 @@ def build_book_map(rows) -> dict:
     book_id_map = {}
 
     for book_row in rows:
+        if (
+            book_row[KoReaderBookColumn.TITLE.value]
+            == "KOReader Quickstart Guide"
+        ):
+            logger.info(
+                "Ignoring the KOReader quickstart guide. No on wants that."
+            )
+            continue
         book = Book.objects.filter(
-            koreader_md5=book_row[KoReaderBookColumn.MD5.value]
+            koreader_md5__icontains=book_row[KoReaderBookColumn.MD5.value]
         ).first()
 
         if not book:
@@ -136,6 +142,7 @@ def build_book_map(rows) -> dict:
 
         book_id_map[book_row[KoReaderBookColumn.ID.value]] = {
             "book_id": book.id,
+            "hash": book_row[KoReaderBookColumn.MD5.value],
             "total_seconds": total_seconds,
         }
     return book_id_map
@@ -289,6 +296,7 @@ def build_scrobbles_from_book_map(
                             timestamp=timestamp,
                             stop_timestamp=stop_timestamp,
                             playback_position_seconds=playback_position_seconds,
+                            book_koreader_hash=book_dict.get("hash"),
                             book_page_data=scrobble_page_data,
                             book_pages_read=page_number,
                             in_progress=False,

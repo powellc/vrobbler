@@ -520,9 +520,12 @@ class Scrobble(TimeStampedModel):
     scrobble_log = models.TextField(**BNULL)
     notes = models.TextField(**BNULL)
 
-    # Fields for keeping track long content like books and games
+    # Fields for keeping track of book data
+    book_koreader_hash = models.CharField(max_length=50, **BNULL)
     book_pages_read = models.IntegerField(**BNULL)
     book_page_data = models.JSONField(**BNULL)
+
+    # Fields for keeping track of video game data
     videogame_save_data = models.FileField(
         upload_to="scrobbles/videogame_save_data/", **BNULL
     )
