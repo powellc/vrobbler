@@ -17,7 +17,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         scrobbles_to_create = []
 
-        for book in Book.objects.all():
+        for book in Book.objects.filter(koreader_id__isnull=False):
+            for scrobble in book.scrobble_set.all():
+                scrobble.scrobbledpage_set.all().delete()
+            book.scrobble_set.all().delete()
+
             koreader_data = book.koreader_data_by_hash or {}
             if book.koreader_md5:
                 koreader_data[book.koreader_md5] = {
@@ -50,7 +54,7 @@ class Command(BaseCommand):
                 if prev_page:
                     seconds_from_last_page = (
                         page.end_time.timestamp()
-                        - prev_page.start_ts.timestamp()
+                        - prev_page.start_time.timestamp()
                     )
                 playback_position_seconds = (
                     playback_position_seconds + page.duration_seconds
@@ -124,9 +128,9 @@ class Command(BaseCommand):
                                 timestamp=timestamp,
                                 stop_timestamp=stop_timestamp,
                                 playback_position_seconds=playback_position_seconds,
-                                book_koreader_hash=book.koreader_data_by_hash.keys()[
-                                    0
-                                ],
+                                book_koreader_hash=list(
+                                    book.koreader_data_by_hash.keys()
+                                )[0],
                                 book_page_data=scrobble_page_data,
                                 book_pages_read=page.number,
                                 in_progress=False,
