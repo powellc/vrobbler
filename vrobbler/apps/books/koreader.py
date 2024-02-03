@@ -129,7 +129,9 @@ def build_book_map(rows) -> dict:
             )
             continue
         book = Book.objects.filter(
-            koreader_md5__icontains=book_row[KoReaderBookColumn.MD5.value]
+            koreader_data_by_hash__icontains=book_row[
+                KoReaderBookColumn.MD5.value
+            ]
         ).first()
 
         if not book:
@@ -269,20 +271,20 @@ def build_scrobbles_from_book_map(
                     book_id=book_id,
                     user_id=user.id,
                 ).first()
-                if scrobble:
-                    logger.info(
-                        f"Found existing scrobble {scrobble}, updating"
-                    )
-                    scrobble.book_page_data = scrobble_page_data
-                    scrobble.playback_position_seconds = (
-                        scrobble.calc_reading_duration()
-                    )
-                    scrobble.save(
-                        update_fields=[
-                            "book_page_data",
-                            "playback_position_seconds",
-                        ]
-                    )
+                # if scrobble:
+                #    logger.info(
+                #        f"Found existing scrobble {scrobble}, updating"
+                #    )
+                #    scrobble.book_page_data = scrobble_page_data
+                #    scrobble.playback_position_seconds = (
+                #        scrobble.calc_reading_duration
+                #    )
+                #    scrobble.save(
+                #        update_fields=[
+                #            "book_page_data",
+                #            "playback_position_seconds",
+                #        ]
+                #    )
                 if not scrobble:
                     logger.info(
                         f"Queueing scrobble for {book_id}, page {page_number}"
