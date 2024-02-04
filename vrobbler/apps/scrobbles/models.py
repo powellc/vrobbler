@@ -576,30 +576,18 @@ class Scrobble(TimeStampedModel):
         return is_stale
 
     @property
-    def next(self) -> "Scrobble":
-        return (
-            self.media_obj.scrobble_set.order_by("-timestamp")
-            .exclude(id=self.id)
-            .filter(timestamp__lt=self.timestamp)
-            .first()
-        )
-
-    @property
     def previous(self) -> "Scrobble":
         return (
-            self.media_obj.scrobble_set.order_by("timestamp")
-            .exclude(id=self.id)
-            .filter(timestamp__gt=self.timestamp)
+            self.media_obj.scrobble_set.order_by("-timestamp")
+            .filter(timestamp__lt=self.timestamp)
             .first()
         )
 
     @property
-    def next_all(self) -> "Scrobble":
+    def next(self) -> "Scrobble":
         return (
-            Scrobble.objects.filter(media_type=self.media_type)
-            .exclude(id=self.id)
-            .order_by("-timestamp")
-            .filter(timestamp__lt=self.timestamp)
+            self.media_obj.scrobble_set.order_by("timestamp")
+            .filter(timestamp__gt=self.timestamp)
             .first()
         )
 
@@ -607,18 +595,17 @@ class Scrobble(TimeStampedModel):
     def previous_all(self) -> "Scrobble":
         return (
             Scrobble.objects.filter(media_type=self.media_type)
-            .exclude(id=self.id)
             .order_by("-timestamp")
-            .filter(timestamp__gt=self.timestamp)
+            .filter(timestamp__lt=self.timestamp)
             .first()
         )
 
     @property
-    def next_all_media(self) -> "Scrobble":
+    def next_all(self) -> "Scrobble":
         return (
-            Scrobble.objects.order_by("-timestamp")
-            .exclude(id=self.id)
-            .filter(timestamp__lt=self.timestamp)
+            Scrobble.objects.filter(media_type=self.media_type)
+            .order_by("-timestamp")
+            .filter(timestamp__gt=self.timestamp)
             .first()
         )
 
@@ -626,7 +613,14 @@ class Scrobble(TimeStampedModel):
     def previous_all_media(self) -> "Scrobble":
         return (
             Scrobble.objects.order_by("-timestamp")
-            .exclude(id=self.id)
+            .filter(timestamp__lt=self.timestamp)
+            .first()
+        )
+
+    @property
+    def next_all_media(self) -> "Scrobble":
+        return (
+            Scrobble.objects.order_by("-timestamp")
             .filter(timestamp__gt=self.timestamp)
             .first()
         )
