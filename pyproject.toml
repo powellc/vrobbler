@@ -68,7 +68,7 @@ bandit = "^1.7.4"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
+addopts = "-ra -q --reuse-db"
 testpaths = ["tests"]
 DJANGO_SETTINGS_MODULE='vrobbler.settings-testing'
 
