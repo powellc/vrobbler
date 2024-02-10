@@ -744,7 +744,7 @@ class Scrobble(TimeStampedModel):
 
         scrobble = self
         all_moves = []
-        for i in range(NUM_HISTORY_FOR_MOVEMENT):
+        for i in range(POINTS_FOR_MOVEMENT_HISTORY):
             loc_diff = self.loc_diff
             if loc_diff and loc_diff[0] < 0.001 and loc_diff[1] > 0.001:
                 all_moves.append(True)
