@@ -830,7 +830,7 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble.update(scrobble_data)
 
-        if scrobble:
+        if scrobble and scrobble.media_type == "GeoLocation":
             logger.info(
                 f"[scrobbling] stopping existing scrobble {scrobble.id} before creating new one"
             )
