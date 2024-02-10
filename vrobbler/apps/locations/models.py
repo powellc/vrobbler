@@ -1,3 +1,4 @@
+from decimal import Decimal
 import logging
 from typing import Dict
 from uuid import uuid4
@@ -82,6 +83,28 @@ class GeoLocation(ScrobblableMixin):
                 altitude=data_dict.get("altitude"),
             )
         return location
+
+    def loc_diff(self, old_lat_lon: tuple) -> tuple:
+        return (
+            abs(Decimal(old_lat_lon[0]) - Decimal(self.lat)),
+            abs(Decimal(old_lat_lon[1]) - Decimal(self.lon)),
+        )
+
+    def has_moved(self, past_points) -> bool:
+        has_moved = False
+
+        all_moves = []
+        for point in past_points:
+            loc_diff = self.loc_diff((point.lat, point.lon))
+            if loc_diff and loc_diff[0] < 0.001 and loc_diff[1] > 0.001:
+                all_moves.append(True)
+            else:
+                all_moves.append(False)
+
+        if not False in all_moves:
+            has_moved = True
+
+        return has_moved
 
 
 class RawGeoLocation(TimeStampedModel):

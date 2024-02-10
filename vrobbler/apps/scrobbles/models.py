@@ -687,8 +687,7 @@ class Scrobble(TimeStampedModel):
 
         return percent
 
-    @property
-    def can_be_updated(self) -> bool:
+    def can_be_updated(self, media, user_id) -> bool:
         updatable = True
 
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
@@ -700,62 +699,26 @@ class Scrobble(TimeStampedModel):
         if self.is_stale:
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
-        if (
-            self.media_obj.__class__.__name__ in ["GeoLocation"]
-            and not self.has_moved
-        ):
+        if self.media_obj.__class__.__name__ in [
+            "GeoLocation"
+        ] and not self.has_moved(media, user_id):
             logger.info(f"Yes - in the same place - {self.id} - {self.source}")
             updatable = True
 
         return updatable
 
-    @property
-    def loc_diff(self) -> tuple:
-        if self.media_type != self.MediaType.GEO_LOCATION:
-            logger.warn("Non-location scrobble, no diff")
-            return tuple()
-
-        if not self.previous_by_media:
-            logger.warn(f"No previous location scrobble for {self},  no diff")
-            return tuple()
-
-        if self.media_obj == self.previous_by_media.media_obj:
-            logger.warn("Previous scrobble is same location, no diff")
-            return tuple()
-
-        return (
-            abs(
-                Decimal(self.media_obj.lat)
-                - Decimal(self.previous_by_media.media_obj.lat)
-            ),
-            abs(
-                Decimal(self.media_obj.lon)
-                - Decimal(self.previous_by_media.media_obj.lon)
-            ),
-        )
-
-    @property
-    def has_moved(self) -> bool:
+    @classmethod
+    def has_moved(cls, new_location: GeoLocation, user_id: int) -> bool:
+        """Given a new location, let us know if we've moved from there"""
         has_moved = False
 
-        if self.media_type != self.MediaType.GEO_LOCATION:
-            logger.warn("Non-location scrobble means nothing")
-            return has_moved
+        past_scrobbles = Scrobble.objects.filter(
+            media_type="GeoLocation",
+            user_id=user_id,
+        ).order_by("-timestamp")[1:POINTS_FOR_MOVEMENT_HISTORY]
+        past_points = [s.media_obj for s in past_scrobbles]
 
-        scrobble = self
-        all_moves = []
-        for i in range(POINTS_FOR_MOVEMENT_HISTORY):
-            loc_diff = self.loc_diff
-            if loc_diff and loc_diff[0] < 0.001 and loc_diff[1] > 0.001:
-                all_moves.append(True)
-            else:
-                all_moves.append(False)
-            scrobble = self.previous_by_media
-
-        if not False in all_moves:
-            has_moved = True
-
-        return has_moved
+        return new_location.has_moved(past_points)
 
     @property
     def media_obj(self):
@@ -807,11 +770,6 @@ class Scrobble(TimeStampedModel):
         media_query = models.Q(**{key: media})
         scrobble_data[key + "_id"] = media.id
 
-        if key == "geo_location":
-            # For geo locations, it's a time sequence, not per location, so
-            # just get the last location we know of
-            media_query = models.Q(media_type="GeoLocation")
-
         scrobble = (
             cls.objects.filter(
                 media_query,
@@ -821,7 +779,7 @@ class Scrobble(TimeStampedModel):
             .first()
         )
 
-        if scrobble and scrobble.can_be_updated:
+        if scrobble and scrobble.can_be_updated(media, user_id):
             source = scrobble_data["source"]
             mtype = media.__class__.__name__
             logger.info(
