@@ -15,6 +15,7 @@ BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
 GEOLOC_ACCURACY = int(getattr(settings, "GEOLOC_ACCURACY", 4))
+GEOLOC_PROXIMITY = Decimal(getattr(settings, "GEOLOC_ACCURACY", "0.0001"))
 
 
 class GeoLocation(ScrobblableMixin):
@@ -96,7 +97,11 @@ class GeoLocation(ScrobblableMixin):
         all_moves = []
         for point in past_points:
             loc_diff = self.loc_diff((point.lat, point.lon))
-            if loc_diff and loc_diff[0] < 0.001 and loc_diff[1] > 0.001:
+            if (
+                loc_diff
+                and loc_diff[0] < GEOLOC_PROXIMITY
+                and loc_diff[1] < GEOLOC_PROXIMITY
+            ):
                 all_moves.append(True)
             else:
                 all_moves.append(False)
