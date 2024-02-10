@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
-GEOLOC_ACCURACY = getattr(settings, "GEOLOC_ACCURACY", 4)
+GEOLOC_ACCURACY = int(getattr(settings, "GEOLOC_ACCURACY", 4))
 
 
 class GeoLocation(ScrobblableMixin):
