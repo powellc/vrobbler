@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from datetime import datetime, timedelta, tzinfo
 from urllib.parse import unquote
 
@@ -19,6 +20,7 @@ User = get_user_model()
 
 
 PODCAST_DATE_FORMAT = "YYYY-MM-DD"
+
 
 def timestamp_user_tz_to_utc(timestamp: int, user_tz: tzinfo) -> datetime:
     return user_tz.localize(datetime.utcfromtimestamp(timestamp)).astimezone(
@@ -42,6 +44,7 @@ def convert_to_seconds(run_time: str) -> int:
         run_time_int = int((((hours * 60) + minutes) * 60) + seconds)
     return run_time_int
 
+
 def parse_mopidy_uri(uri: str) -> dict:
     logger.debug(f"Parsing URI: {uri}")
     parsed_uri = os.path.splitext(unquote(uri))[0].split("/")
@@ -60,7 +63,12 @@ def parse_mopidy_uri(uri: str) -> dict:
 
         try:
             # Beacuse we have epsiode numbers on
-            pub_date = parse(episode_str[episode_num_pad:len(PODCAST_DATE_FORMAT) + episode_num_pad])
+            pub_date = parse(
+                episode_str[
+                    episode_num_pad : len(PODCAST_DATE_FORMAT)
+                    + episode_num_pad
+                ]
+            )
         except ParserError:
             pub_date = ""
 
@@ -264,3 +272,7 @@ def delete_zombie_scrobbles(dry_run=True):
         f"Found {zombies_found} zombie scrobbles to delete, use dry_run=False to proceed"
     )
     return zombies_found
+
+
+def media_class_to_foreign_key(media_class: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", media_class).lower()

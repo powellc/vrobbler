@@ -33,6 +33,7 @@ from scrobbles.stats import build_charts
 from scrobbles.utils import (
     check_long_play_for_finish,
     check_scrobble_for_finish,
+    media_class_to_foreign_key,
 )
 from sports.models import SportEvent
 from videogames import retroarch
@@ -476,6 +477,15 @@ class Scrobble(TimeStampedModel):
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         WEBPAGE = "WebPage", "Web Page"
 
+    media_ids = {
+        "Track": "track_id",
+        "Video": "video_id",
+        "Episode": "episode_id",
+        "SportEvent": "spoort_event_id",
+        "Track": "track_id",
+        "Track": "track_id",
+    }
+
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
@@ -551,9 +561,15 @@ class Scrobble(TimeStampedModel):
         if not self.uuid:
             self.uuid = uuid4()
 
+        # Microseconds mess up Django's filtering, and we don't need be that specific
+        self.timestamp = self.timestamp.replace(microsecond=0)
         self.media_type = self.MediaType(self.media_obj.__class__.__name__)
 
         return super(Scrobble, self).save(*args, **kwargs)
+
+    @property
+    def scrobble_media_key(self) -> str:
+        return media_class_to_foreign_key(self.media_type) + "_id"
 
     @property
     def status(self) -> str:
@@ -592,25 +608,31 @@ class Scrobble(TimeStampedModel):
         )
 
     @property
-    def previous_all(self) -> "Scrobble":
+    def previous_by_media(self) -> "Scrobble":
         return (
-            Scrobble.objects.filter(media_type=self.media_type)
+            Scrobble.objects.filter(
+                media_type=self.media_type,
+                user=self.user,
+                timestamp__lt=self.timestamp,
+            )
             .order_by("-timestamp")
-            .filter(timestamp__lt=self.timestamp)
             .first()
         )
 
     @property
-    def next_all(self) -> "Scrobble":
+    def next_by_media(self) -> "Scrobble":
         return (
-            Scrobble.objects.filter(media_type=self.media_type)
+            Scrobble.objects.filter(
+                media_type=self.media_type,
+                user=self.user,
+                timestamp__gt=self.timestamp,
+            )
             .order_by("-timestamp")
-            .filter(timestamp__gt=self.timestamp)
             .first()
         )
 
     @property
-    def previous_all_media(self) -> "Scrobble":
+    def previous_by_user(self) -> "Scrobble":
         return (
             Scrobble.objects.order_by("-timestamp")
             .filter(timestamp__lt=self.timestamp)
@@ -618,7 +640,7 @@ class Scrobble(TimeStampedModel):
         )
 
     @property
-    def next_all_media(self) -> "Scrobble":
+    def next_by_user(self) -> "Scrobble":
         return (
             Scrobble.objects.order_by("-timestamp")
             .filter(timestamp__gt=self.timestamp)
@@ -683,39 +705,50 @@ class Scrobble(TimeStampedModel):
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
         if self.media_obj.__class__.__name__ in ["GeoLocation"]:
-            if self.previous_all:
-                last_location = self.previous_all.media_obj
-                logger.info(
-                    f"Calculate proximity to last scrobble: {last_location}"
-                )
-
-                same_lat = last_location.lat == self.media_obj.lat
-                same_lon = last_location.lon == self.media_obj.lon
-                same_title = False
-                if self.media_obj.title:
-                    same_title = last_location.title == self.media_obj.title
-
-                logger.info(f"{self.timestamp}")
-                logger.info(
-                    f"Last lat: {last_location.lat}, last long {last_location.lon}, last title {last_location.title}"
-                )
-                logger.info(
-                    f"Our lat {self.media_obj.lat}, Our lon {self.media_obj.lon} or our title {self.media_obj.title}"
-                )
-
-                if (same_lat and same_lon) or same_title:
-                    logger.info(
-                        f"Yes - We're in the same place: {self.media_obj}"
-                    )
-                    updatable = True
-                else:
-                    logger.info(
-                        f"No - We've moved, start a new scrobble: {self.media_obj}"
-                    )
-                    # Stop the previous location scrobble
-                    self.previous_all.stop()
-                    updatable = False
+            updatable = not self.has_moved
         return updatable
+
+    @property
+    def loc_diff(self) -> tuple:
+        if self.media_type != self.MediaType.GEO_LOCATION:
+            logger.warn("Non-location scrobble, no diff")
+            return tuple()
+
+        if not self.previous_by_media:
+            logger.warn(f"No previous location scrobble for {self},  no diff")
+            return tuple()
+
+        if self.media_obj == self.previous_by_media.media_obj:
+            logger.warn("Previous scrobble is same location, no diff")
+            return tuple()
+
+        return (
+            abs(self.media_obj.lat - self.previous_by_media.media_obj.lat),
+            abs(self.media_obj.lon - self.previous_by_media.media_obj.lon),
+        )
+
+    @property
+    def has_moved(self) -> bool:
+        has_moved = False
+
+        if self.media_type != self.MediaType.GEO_LOCATION:
+            logger.warn("Non-location scrobble means nothing")
+            return has_moved
+
+        scrobble = self
+        all_moves = []
+        for i in range(3):
+            loc_diff = self.loc_diff
+            if loc_diff and loc_diff[0] < 0.001 and loc_diff[1] > 0.001:
+                all_moves.append(True)
+            else:
+                all_moves.append(False)
+            scrobble = self.previous_by_media
+
+        if not False in all_moves:
+            has_moved = True
+
+        return has_moved
 
     @property
     def media_obj(self):
@@ -763,47 +796,9 @@ class Scrobble(TimeStampedModel):
     def create_or_update(
         cls, media, user_id: int, scrobble_data: dict, **kwargs
     ) -> "Scrobble":
-
-        media_class = media.__class__.__name__
-        dup = None
-
-        media_query = models.Q(track=media)
-        if media_class == "Track":
-            scrobble_data["track_id"] = media.id
-        if media_class == "Video":
-            media_query = models.Q(video=media)
-            scrobble_data["video_id"] = media.id
-        if media_class == "Episode":
-            media_query = models.Q(podcast_episode=media)
-            scrobble_data["podcast_episode_id"] = media.id
-        if media_class == "SportEvent":
-            media_query = models.Q(sport_event=media)
-            scrobble_data["sport_event_id"] = media.id
-        if media_class == "Book":
-            media_query = models.Q(book=media)
-            scrobble_data["book_id"] = media.id
-        if media_class == "VideoGame":
-            media_query = models.Q(video_game=media)
-            scrobble_data["video_game_id"] = media.id
-        if media_class == "BoardGame":
-            media_query = models.Q(board_game=media)
-            scrobble_data["board_game_id"] = media.id
-        if media_class == "WebPage":
-            media_query = models.Q(webpage=media)
-            scrobble_data["webpage_id"] = media.id
-        if media_class == "GeoLocation":
-            media_query = models.Q(media_type=Scrobble.MediaType.GEO_LOCATION)
-            scrobble_data["geo_location_id"] = media.id
-            dup = cls.objects.filter(
-                media_type=cls.MediaType.GEO_LOCATION,
-                timestamp=scrobble_data.get("timestamp"),
-            ).first()
-
-            if dup:
-                logger.info(
-                    "[scrobbling] scrobble for geo location with identical timestamp found"
-                )
-                return dup
+        key = media_class_to_foreign_key(media.__class__.__name__)
+        media_query = models.Q(**{key: media})
+        scrobble_data[key + "_id"] = media.id
 
         scrobble = (
             cls.objects.filter(
