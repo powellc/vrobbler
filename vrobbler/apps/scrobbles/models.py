@@ -1,5 +1,6 @@
 import calendar
 import datetime
+from decimal import Decimal
 import logging
 from typing import Optional
 from uuid import uuid4
@@ -469,7 +470,7 @@ class Scrobble(TimeStampedModel):
 
         VIDEO = "Video", "Video"
         TRACK = "Track", "Track"
-        PODCAST_EPISODE = "PodcastEpisode", "Podcast episode"
+        PODCAST_EPISODE = "Episode", "Podcast episode"
         SPORT_EVENT = "SportEvent", "Sport event"
         BOOK = "Book", "Book"
         VIDEO_GAME = "VideoGame", "Video game"
@@ -714,8 +715,14 @@ class Scrobble(TimeStampedModel):
             return tuple()
 
         return (
-            abs(self.media_obj.lat - self.previous_by_media.media_obj.lat),
-            abs(self.media_obj.lon - self.previous_by_media.media_obj.lon),
+            abs(
+                Decimal(self.media_obj.lat)
+                - Decimal(self.previous_by_media.media_obj.lat)
+            ),
+            abs(
+                Decimal(self.media_obj.lon)
+                - Decimal(self.previous_by_media.media_obj.lon)
+            ),
         )
 
     @property
