@@ -17,7 +17,7 @@ from music.utils import (
     get_or_create_artist,
     get_or_create_track,
 )
-from podcasts.models import Episode
+from podcasts.models import PodcastEpisode
 from scrobbles.models import Scrobble
 from scrobbles.utils import convert_to_seconds, parse_mopidy_uri
 from sports.models import SportEvent
@@ -52,7 +52,9 @@ def mopidy_scrobble_podcast(
         "mopidy_uri": mopidy_uri,
     }
 
-    episode = Episode.find_or_create(podcast_dict, producer_dict, episode_dict)
+    episode = PodcastEpisode.find_or_create(
+        podcast_dict, producer_dict, episode_dict
+    )
 
     # Now we run off a scrobble
     mopidy_data = {

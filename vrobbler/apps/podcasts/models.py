@@ -76,7 +76,7 @@ class Podcast(TimeStampedModel):
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
 
 
-class Episode(ScrobblableMixin):
+class PodcastEpisode(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, "PODCAST_COMPLETION_PERCENT", 90)
 
     podcast = models.ForeignKey(Podcast, on_delete=models.DO_NOTHING)

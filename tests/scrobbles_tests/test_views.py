@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 from music.models import Track
-from podcasts.models import Episode
+from podcasts.models import PodcastEpisode
 from scrobbles.models import Scrobble
 
 
@@ -96,5 +96,5 @@ def test_scrobble_mopidy_podcast(
     assert response.data == {"scrobble_id": 1}
 
     scrobble = Scrobble.objects.get(id=1)
-    assert scrobble.media_obj.__class__ == Episode
+    assert scrobble.media_obj.__class__ == PodcastEpisode
     assert scrobble.media_obj.title == "Up First"

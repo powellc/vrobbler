@@ -1,5 +1,5 @@
 from django.contrib import admin
-from podcasts.models import Episode, Podcast, Producer
+from podcasts.models import PodcastEpisode, Podcast, Producer
 from scrobbles.admin import ScrobbleInline
 
 
@@ -21,8 +21,8 @@ class PodcastAdmin(admin.ModelAdmin):
     ordering = ("name",)
 
 
-@admin.register(Episode)
-class EpisodeAdmin(admin.ModelAdmin):
+@admin.register(PodcastEpisode)
+class PodcastEpisodeAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (
         "title",

@@ -16,7 +16,8 @@ from scrobbles.models import Scrobble
 def build_scrobbles(client, request_data, num=7, spacing=2):
     url = reverse("scrobbles:mopidy-webhook")
     user = get_user_model().objects.create(username="Test User")
-    UserProfile.objects.create(user=user, timezone="US/Eastern")
+    user.profile.timezone = "US/Eastern"
+    user.profile.save()
     for i in range(num):
         client.post(url, request_data, content_type="application/json")
         s = Scrobble.objects.last()

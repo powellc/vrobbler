@@ -19,7 +19,7 @@ from imagekit.processors import ResizeToFit
 from locations.models import GeoLocation
 from music.lastfm import LastFM
 from music.models import Artist, Track
-from podcasts.models import Episode
+from podcasts.models import PodcastEpisode
 from profiles.utils import (
     end_of_day,
     end_of_month,
@@ -469,7 +469,7 @@ class Scrobble(TimeStampedModel):
 
         VIDEO = "Video", "Video"
         TRACK = "Track", "Track"
-        PODCAST_EPISODE = "Episode", "Podcast episode"
+        PODCAST_EPISODE = "PodcastEpisode", "Podcast episode"
         SPORT_EVENT = "SportEvent", "Sport event"
         BOOK = "Book", "Book"
         VIDEO_GAME = "VideoGame", "Video game"
@@ -477,20 +477,11 @@ class Scrobble(TimeStampedModel):
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         WEBPAGE = "WebPage", "Web Page"
 
-    media_ids = {
-        "Track": "track_id",
-        "Video": "video_id",
-        "Episode": "episode_id",
-        "SportEvent": "spoort_event_id",
-        "Track": "track_id",
-        "Track": "track_id",
-    }
-
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
     track = models.ForeignKey(Track, on_delete=models.DO_NOTHING, **BNULL)
     podcast_episode = models.ForeignKey(
-        Episode, on_delete=models.DO_NOTHING, **BNULL
+        PodcastEpisode, on_delete=models.DO_NOTHING, **BNULL
     )
     sport_event = models.ForeignKey(
         SportEvent, on_delete=models.DO_NOTHING, **BNULL
