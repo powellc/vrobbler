@@ -46,6 +46,10 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 BNULL = {"blank": True, "null": True}
 
+POINTS_FOR_MOVEMENT_HISTORY = getattr(
+    settings, "POINTS_FOR_MOVEMENT_HISTORY", 3
+)
+
 
 class BaseFileImportMixin(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, **BNULL)
@@ -702,6 +706,7 @@ class Scrobble(TimeStampedModel):
         ):
             logger.info(f"Yes - in the same place - {self.id} - {self.source}")
             updatable = True
+
         return updatable
 
     @property
@@ -739,7 +744,7 @@ class Scrobble(TimeStampedModel):
 
         scrobble = self
         all_moves = []
-        for i in range(3):
+        for i in range(NUM_HISTORY_FOR_MOVEMENT):
             loc_diff = self.loc_diff
             if loc_diff and loc_diff[0] < 0.001 and loc_diff[1] > 0.001:
                 all_moves.append(True)
@@ -802,6 +807,11 @@ class Scrobble(TimeStampedModel):
         media_query = models.Q(**{key: media})
         scrobble_data[key + "_id"] = media.id
 
+        if key == "geo_location":
+            # For geo locations, it's a time sequence, not per location, so
+            # just get the last location we know of
+            media_query = models.Q(media_type="GeoLocation")
+
         scrobble = (
             cls.objects.filter(
                 media_query,
@@ -819,6 +829,12 @@ class Scrobble(TimeStampedModel):
                 {"scrobble_data": scrobble_data, "media": media},
             )
             return scrobble.update(scrobble_data)
+
+        if scrobble:
+            logger.info(
+                f"[scrobbling] stopping existing scrobble {scrobble.id} before creating new one"
+            )
+            scrobble.stop()
 
         # Discard status before creating
         scrobble_data.pop("mopidy_status", None)

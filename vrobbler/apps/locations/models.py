@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
-GEOLOC_ACCURACY = getattr(settings, "GEOLOC_ACCURACY", 3)
+GEOLOC_ACCURACY = getattr(settings, "GEOLOC_ACCURACY", 4)
 
 
 class GeoLocation(ScrobblableMixin):
@@ -50,6 +50,21 @@ class GeoLocation(ScrobblableMixin):
         if "lat" not in data_dict.keys() or "lon" not in data_dict.keys():
             logger.error("No lat or lon keys in data dict")
             return
+
+        int_lat, r_lat = str(data_dict.get("lat", "")).split(".")
+        int_lon, r_lon = str(data_dict.get("lon", "")).split(".")
+
+        try:
+            trunc_lat = r_lat[0:GEOLOC_ACCURACY]
+        except IndexError:
+            trunc_lat = r_lat
+        try:
+            trunc_lon = r_lon[0:GEOLOC_ACCURACY]
+        except IndexError:
+            trunc_lon = r_lon
+
+        data_dict["lat"] = float(f"{int_lat}.{trunc_lat}")
+        data_dict["lon"] = float(f"{int_lon}.{trunc_lon}")
 
         int_alt, r_alt = str(data_dict.get("alt", "")).split(".")
 
