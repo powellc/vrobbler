@@ -696,8 +696,12 @@ class Scrobble(TimeStampedModel):
         if self.is_stale:
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
-        if self.media_obj.__class__.__name__ in ["GeoLocation"]:
-            updatable = self.has_moved
+        if (
+            self.media_obj.__class__.__name__ in ["GeoLocation"]
+            and self.has_moved
+        ):
+            logger.info(f"No - we've moved- {self.id} - {self.source}")
+            updatable = False
         return updatable
 
     @property
