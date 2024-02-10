@@ -46,8 +46,8 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 BNULL = {"blank": True, "null": True}
 
-POINTS_FOR_MOVEMENT_HISTORY = getattr(
-    settings, "POINTS_FOR_MOVEMENT_HISTORY", 3
+POINTS_FOR_MOVEMENT_HISTORY = int(
+    getattr(settings, "POINTS_FOR_MOVEMENT_HISTORY", 3)
 )
 
 
