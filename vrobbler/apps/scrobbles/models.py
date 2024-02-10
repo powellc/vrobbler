@@ -470,7 +470,7 @@ class Scrobble(TimeStampedModel):
 
         VIDEO = "Video", "Video"
         TRACK = "Track", "Track"
-        PODCAST_EPISODE = "Episode", "Podcast episode"
+        PODCAST_EPISODE = "PodcastEpisode", "Podcast episode"
         SPORT_EVENT = "SportEvent", "Sport event"
         BOOK = "Book", "Book"
         VIDEO_GAME = "VideoGame", "Video game"
