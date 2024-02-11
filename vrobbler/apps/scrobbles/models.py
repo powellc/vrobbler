@@ -688,7 +688,7 @@ class Scrobble(TimeStampedModel):
         return percent
 
     @property
-    def can_be_updated(self, media, user_id) -> bool:
+    def can_be_updated(self) -> bool:
         updatable = True
 
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
