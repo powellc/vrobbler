@@ -92,7 +92,7 @@ def check_scrobble_for_finish(
     scrobble: "Scrobble", force_to_100=False, force_finish=False
 ) -> None:
     completion_percent = scrobble.media_obj.COMPLETION_PERCENT
-    if scrobble.media_type == "GeoLocation":
+    if scrobble.media_type == "GeoLocation" and not force_finish:
         logger.info(
             f"{scrobble.id} not complete, GeoLocs are completed when new one is created"
         )

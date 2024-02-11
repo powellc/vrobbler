@@ -776,21 +776,27 @@ class Scrobble(TimeStampedModel):
             .first()
         )
 
-        geo_loc_has_not_moved = False
-        if key == "geo_location" and not cls.has_moved(media, user_id):
-            # We have a new location, but have not moved from it,
-            # don't proceed with scrobbling, but update the last GeoLoc
-            geo_loc_has_not_moved = True
-            if not scrobble:
-                scrobble = (
-                    cls.objects.filter(
-                        media_type=cls.MediaType.GEO_LOCATION, user_id=user_id
-                    )
-                    .order_by("-timestamp")
-                    .first()
+        moved_location = False
+        if key == "geo_location":
+            # For geo locations, we always only care about our last location
+            scrobble = (
+                cls.objects.filter(
+                    media_type=cls.MediaType.GEO_LOCATION, user_id=user_id
                 )
+                .order_by("-timestamp")
+                .first()
+            )
+            if scrobble and scrobble.media_obj == media:
+                # If scrobble loc and new loc are identical, we haven't moved
+                moved_location = False
+            else:
+                # We have a new location, but have not moved from it,
+                # don't proceed with scrobbling, but update the last GeoLoc
+                moved_location = cls.has_moved(media, user_id)
+            if scrobble and moved_location:
+                check_scrobble_for_finish(scrobble, force_finish=True)
 
-        if scrobble and (scrobble.can_be_updated or geo_loc_has_not_moved):
+        if scrobble and (scrobble.can_be_updated or not moved_location):
             source = scrobble_data["source"]
             mtype = media.__class__.__name__
             logger.info(
