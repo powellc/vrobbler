@@ -687,6 +687,7 @@ class Scrobble(TimeStampedModel):
 
         return percent
 
+    @property
     def can_be_updated(self, media, user_id) -> bool:
         updatable = True
 
@@ -699,17 +700,13 @@ class Scrobble(TimeStampedModel):
         if self.is_stale:
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
-        if self.media_obj.__class__.__name__ in [
-            "GeoLocation"
-        ] and not self.has_moved(media, user_id):
-            logger.info(f"Yes - in the same place - {self.id} - {self.source}")
-            updatable = True
 
         return updatable
 
     @classmethod
     def has_moved(cls, new_location: GeoLocation, user_id: int) -> bool:
-        """Given a new location, let us know if we've moved from there"""
+        """Given a new location and a user, let us know if we've moved from there"""
+        # TODO This can be moved to a utility function, no reason it's a classmethod
         has_moved = False
 
         past_scrobbles = Scrobble.objects.filter(
@@ -779,7 +776,21 @@ class Scrobble(TimeStampedModel):
             .first()
         )
 
-        if scrobble and scrobble.can_be_updated(media, user_id):
+        geo_loc_has_not_moved = False
+        if key == "geo_location" and not cls.has_moved(media, user_id):
+            # We have a new location, but have not moved from it,
+            # don't proceed with scrobbling, but update the last GeoLoc
+            geo_loc_has_not_moved = True
+            if not scrobble:
+                scrobble = (
+                    cls.objects.filter(
+                        media_type=cls.MediaType.GEO_LOCATION, user_id=user_id
+                    )
+                    .order_by("-timestamp")
+                    .first()
+                )
+
+        if scrobble and (scrobble.can_be_updated or geo_loc_has_not_moved):
             source = scrobble_data["source"]
             mtype = media.__class__.__name__
             logger.info(
@@ -787,12 +798,6 @@ class Scrobble(TimeStampedModel):
                 {"scrobble_data": scrobble_data, "media": media},
             )
             return scrobble.update(scrobble_data)
-
-        if scrobble:
-            logger.info(
-                f"[scrobbling] stopping existing scrobble {scrobble.id} before creating new one"
-            )
-            scrobble.stop()
 
         # Discard status before creating
         scrobble_data.pop("mopidy_status", None)

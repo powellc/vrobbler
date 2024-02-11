@@ -98,15 +98,12 @@ class GeoLocation(ScrobblableMixin):
         for point in past_points:
             loc_diff = self.loc_diff((point.lat, point.lon))
             if (
-                loc_diff
-                and loc_diff[0] < GEOLOC_PROXIMITY
-                and loc_diff[1] < GEOLOC_PROXIMITY
+                loc_diff[0] > GEOLOC_PROXIMITY
+                or loc_diff[1] > GEOLOC_PROXIMITY
             ):
                 all_moves.append(True)
-            else:
-                all_moves.append(False)
 
-        if not False in all_moves:
+        if True in all_moves:
             has_moved = True
 
         return has_moved
