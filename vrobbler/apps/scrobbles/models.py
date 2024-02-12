@@ -767,7 +767,7 @@ class Scrobble(TimeStampedModel):
 
         # Do some funny stuff if it's a geo location
         if mtype == cls.MediaType.GEO_LOCATION:
-            moved_location = cls.check_location_for_completion(media, user_id)
+            moved_location = cls.user_has_moved_locations(media, user_id)
             if not moved_location:
                 logger.info(
                     f"[scrobbling] updating {scrobble.id} for {mtype} {media.id} from {source}",
@@ -799,7 +799,7 @@ class Scrobble(TimeStampedModel):
         return cls.create(scrobble_data)
 
     @classmethod
-    def location_can_be_updated(
+    def user_has_moved_locations(
         cls, location: GeoLocation, user_id: int
     ) -> bool:
         scrobble = (
