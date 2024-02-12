@@ -703,11 +703,6 @@ class Scrobble(TimeStampedModel):
         if self.is_stale:
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
-        if self.media_obj.__class__.__name__ == "GeoLocation":
-            logger.info(
-                f"Yes - geolocation is always updatable - {self.id} - {self.source}"
-            )
-            updateable = True
 
         return updatable
 
@@ -773,11 +768,12 @@ class Scrobble(TimeStampedModel):
         source = scrobble_data["source"]
         mtype = media.__class__.__name__
 
-        # Do some funny stuff if it's a geo location
+        # GeoLocations are a special case scrobble
         if mtype == cls.MediaType.GEO_LOCATION:
-            scrobble = cls.check_location_for_finish(
+            scrobble = cls.create_or_update_location(
                 media, scrobble_data, user_id
             )
+            return scrobble
 
         if scrobble and scrobble.can_be_updated:
             logger.info(
@@ -795,9 +791,9 @@ class Scrobble(TimeStampedModel):
         return cls.create(scrobble_data)
 
     @classmethod
-    def check_location_for_finish(
+    def create_or_update_location(
         cls, location: GeoLocation, scrobble_data: dict, user_id: int
-    ) -> Optional["Scrobble"]:
+    ) -> "Scrobble":
         scrobble = (
             cls.objects.filter(
                 media_type=cls.MediaType.GEO_LOCATION,
@@ -839,9 +835,11 @@ class Scrobble(TimeStampedModel):
             f"[scrobbling] finishing {scrobble.id} so we can create new one for {location.id}",
         )
         scrobble.stop()
-        scrobble = None
 
-        return scrobble
+        logger.info(
+            f"[scrobbling] creating for location {location.id} from GPSLogger"
+        )
+        return cls.create(scrobble_data)
 
     def update(self, scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
