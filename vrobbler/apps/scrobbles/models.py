@@ -774,7 +774,7 @@ class Scrobble(TimeStampedModel):
                     f"[scrobbling] updating {scrobble.id} for {mtype} {media.id} from {source}",
                     {"scrobble_data": scrobble_data, "media": media},
                 )
-                scrobble.update(scrobble_data)
+                return scrobble.update(scrobble_data)
             else:
                 logger.info(
                     f"[scrobbling] finishing {scrobble.id} for {mtype} {media.id} from {source}",
