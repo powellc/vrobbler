@@ -802,6 +802,7 @@ class Scrobble(TimeStampedModel):
     def user_has_moved_locations(
         cls, location: GeoLocation, user_id: int
     ) -> bool:
+        moved_location = False
         scrobble = (
             cls.objects.filter(
                 media_type=cls.MediaType.GEO_LOCATION, user_id=user_id
@@ -809,18 +810,30 @@ class Scrobble(TimeStampedModel):
             .order_by("-timestamp")
             .first()
         )
-        moved_location = True
-        if scrobble and scrobble.media_obj != location:
+        if not scrobble:
             logger.info(
-                f"[scrobbling] New location {location} and last location {scrobble.media_obj} are different"
+                f"[scrobbling] No existing location scrobbles, {location} should be created"
             )
-            past_scrobbles = Scrobble.objects.filter(
-                media_type="GeoLocation",
-                user_id=user_id,
-            ).order_by("-timestamp")[1:POINTS_FOR_MOVEMENT_HISTORY]
-            past_points = [s.media_obj for s in past_scrobbles]
+            moved_location = True
 
-            moved_location = location.has_moved(past_points)
+        else:
+            if scrobble.media_obj == location:
+                logger.info(
+                    f"[scrobbling] New location {location} and last location {scrobble.media_obj} are the same"
+                )
+                moved_location = False
+
+            if scrobble.media_obj != location:
+                logger.info(
+                    f"[scrobbling] New location {location} and last location {scrobble.media_obj} are different"
+                )
+                past_scrobbles = Scrobble.objects.filter(
+                    media_type="GeoLocation",
+                    user_id=user_id,
+                ).order_by("-timestamp")[1:POINTS_FOR_MOVEMENT_HISTORY]
+                past_points = [s.media_obj for s in past_scrobbles]
+
+                moved_location = location.has_moved(past_points)
         return moved_location
 
     def update(self, scrobble_data: dict) -> "Scrobble":
