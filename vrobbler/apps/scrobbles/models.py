@@ -766,7 +766,7 @@ class Scrobble(TimeStampedModel):
         mtype = media.__class__.__name__
 
         # Do some funny stuff if it's a geo location
-        if scrobble.media_type == cls.MediaType.GEO_LOCATION:
+        if mtype == cls.MediaType.GEO_LOCATION:
             moved_location = cls.check_location_for_completion(media, user_id)
             if not moved_location:
                 logger.info(
