@@ -266,32 +266,25 @@ def manual_scrobble_webpage(url: str, user_id: int):
     return Scrobble.create_or_update(webpage, user_id, scrobble_dict)
 
 
-def gpslogger_scrobble_location(
-    data_dict: dict, user_id: Optional[int]
-) -> Optional[Scrobble]:
-    # Save the data coming in
-    if not user_id:
-        user_id = 1  # TODO fix authing the end point to get user
-
+def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
     location = GeoLocation.find_or_create(data_dict)
 
-    # Now we run off a scrobble
-    playback_seconds = 1
     extra_data = {
         "user_id": user_id,
         "timestamp": pendulum.parse(data_dict.get("time", timezone.now())),
-        "playback_position_seconds": playback_seconds,
         "source": "GPSLogger",
     }
 
     scrobble = Scrobble.create_or_update(location, user_id, extra_data)
 
     provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
-    if scrobble:
-        if scrobble.notes:
-            scrobble.notes = scrobble.notes + f"\n{provider}"
-        else:
-            scrobble.notes = provider
-        scrobble.save(update_fields=["notes"])
+
+    scrobble.notes = f"Last position provided by {provider}"
+    if scrobble.timestamp:
+        scrobble.playback_position_seconds = (
+            timezone.now() - scrobble.timestamp
+        ).seconds
+
+    scrobble.save(update_fields=["notes", "playback_position_seconds"])
 
     return scrobble
