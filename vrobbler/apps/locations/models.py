@@ -91,20 +91,19 @@ class GeoLocation(ScrobblableMixin):
             abs(Decimal(old_lat_lon[1]) - Decimal(self.lon)),
         )
 
-    def has_moved(self, past_points) -> bool:
+    def has_moved(self, past_points: list["GeoLocation"]) -> bool:
         has_moved = False
-
-        all_moves = []
         for point in past_points:
             loc_diff = self.loc_diff((point.lat, point.lon))
+            logger.info(f"[locations] {self} is {loc_diff} from {point}")
             if (
                 loc_diff[0] > GEOLOC_PROXIMITY
                 or loc_diff[1] > GEOLOC_PROXIMITY
             ):
-                all_moves.append(True)
-
-        if True in all_moves:
-            has_moved = True
+                logger.info(
+                    f"[locations] {loc_diff} is greater than proximity setting {GEOLOC_PROXIMITY}, moving"
+                )
+                has_moved = True
 
         return has_moved
 
