@@ -375,7 +375,12 @@ def gps_webhook(request):
         json_data = json.dumps(data_dict, indent=4)
         logger.debug(f"{json_data}")
 
-    scrobble = gpslogger_scrobble_location(data_dict, request.user.id)
+    # TODO Fix this so we have to authenticate!
+    user_id = 1
+    if request.user.id:
+        user_id = request.user.id
+
+    scrobble = gpslogger_scrobble_location(data_dict, user_id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_200_OK)
