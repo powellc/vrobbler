@@ -5,6 +5,8 @@ import logging
 from typing import Optional
 from uuid import uuid4
 
+from pendulum import DateTime
+
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
@@ -701,6 +703,11 @@ class Scrobble(TimeStampedModel):
         if self.is_stale:
             logger.info(f"No - stale - {self.id} - {self.source}")
             updatable = False
+        if self.media_obj.__class__.__name__ == "GeoLocation":
+            logger.info(
+                f"Yes - geolocation is always updatable - {self.id} - {self.source}"
+            )
+            updateable = True
 
         return updatable
 
@@ -768,21 +775,9 @@ class Scrobble(TimeStampedModel):
 
         # Do some funny stuff if it's a geo location
         if mtype == cls.MediaType.GEO_LOCATION:
-            moved_location = cls.user_has_moved_locations(media, user_id)
-            if not moved_location:
-                logger.info(
-                    f"[scrobbling] updating {scrobble.id} for {mtype} {media.id} from {source}",
-                    {"scrobble_data": scrobble_data, "media": media},
-                )
-                return scrobble.update(scrobble_data)
-            else:
-                logger.info(
-                    f"[scrobbling] finishing {scrobble.id} for {mtype} {media.id} from {source}",
-                    {"scrobble_data": scrobble_data, "media": media},
-                )
-                scrobble.stop()
-                # Just blank our scrobble so we create a new one
-                scrobble = None
+            scrobble = cls.check_location_for_finish(
+                media, scrobble_data, user_id
+            )
 
         if scrobble and scrobble.can_be_updated:
             logger.info(
@@ -800,42 +795,53 @@ class Scrobble(TimeStampedModel):
         return cls.create(scrobble_data)
 
     @classmethod
-    def user_has_moved_locations(
-        cls, location: GeoLocation, user_id: int
-    ) -> bool:
-        moved_location = False
+    def check_location_for_finish(
+        cls, location: GeoLocation, scrobble_data: dict, user_id: int
+    ) -> Optional["Scrobble"]:
         scrobble = (
             cls.objects.filter(
-                media_type=cls.MediaType.GEO_LOCATION, user_id=user_id
+                media_type=cls.MediaType.GEO_LOCATION,
+                user_id=user_id,
+                timestamp__lte=scrobble_data.get("timestamp"),
             )
             .order_by("-timestamp")
             .first()
         )
+
         if not scrobble:
             logger.info(
-                f"[scrobbling] No existing location scrobbles, {location} should be created"
+                f"[scrobbling] No existing location scrobbles, location {location.id} should be new scrobble"
             )
-            moved_location = True
+            return scrobble
 
-        else:
-            if scrobble.media_obj == location:
-                logger.info(
-                    f"[scrobbling] New location {location} and last location {scrobble.media_obj} are the same"
-                )
-                moved_location = False
+        if scrobble.media_obj == location:
+            logger.info(
+                f"[scrobbling] updating {scrobble.id} - new location {location.id} and old location {scrobble.media_obj.id} are the same"
+            )
+            return scrobble
 
-            if scrobble.media_obj != location:
-                logger.info(
-                    f"[scrobbling] New location {location} and last location {scrobble.media_obj} are different"
-                )
-                past_scrobbles = Scrobble.objects.filter(
-                    media_type="GeoLocation",
-                    user_id=user_id,
-                ).order_by("-timestamp")[1:POINTS_FOR_MOVEMENT_HISTORY]
-                past_points = [s.media_obj for s in past_scrobbles]
+        logger.info(
+            f"[scrobbling] new location {location.id} and old location {scrobble.media_obj.id} are different, checking proximity"
+        )
+        past_scrobbles = Scrobble.objects.filter(
+            media_type="GeoLocation",
+            user_id=user_id,
+        ).order_by("-timestamp")[1:POINTS_FOR_MOVEMENT_HISTORY]
+        past_points = [s.media_obj for s in past_scrobbles]
 
-                moved_location = location.has_moved(past_points)
-        return moved_location
+        if not location.has_moved(past_points):
+            logger.info(
+                f"[scrobbling] new location{location.id} and old location {scrobble.media_obj.id} are different, but close enough to not move"
+            )
+            return scrobble
+
+        logger.info(
+            f"[scrobbling] finishing {scrobble.id} so we can create new one for {location.id}",
+        )
+        scrobble.stop()
+        scrobble = None
+
+        return scrobble
 
     def update(self, scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
