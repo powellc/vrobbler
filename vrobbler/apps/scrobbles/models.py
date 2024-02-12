@@ -558,7 +558,8 @@ class Scrobble(TimeStampedModel):
             self.uuid = uuid4()
 
         # Microseconds mess up Django's filtering, and we don't need be that specific
-        self.timestamp = self.timestamp.replace(microsecond=0)
+        if self.timestamp:
+            self.timestamp = self.timestamp.replace(microsecond=0)
         self.media_type = self.MediaType(self.media_obj.__class__.__name__)
 
         return super(Scrobble, self).save(*args, **kwargs)
