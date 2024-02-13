@@ -5,8 +5,6 @@ import logging
 from typing import Optional
 from uuid import uuid4
 
-from pendulum import DateTime
-
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
@@ -503,7 +501,7 @@ class Scrobble(TimeStampedModel):
     geo_location = models.ForeignKey(
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
-    webpage = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
+    web_page = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -725,8 +723,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.board_game
         if self.geo_location:
             media_obj = self.geo_location
-        if self.webpage:
-            media_obj = self.webpage
+        if self.web_page:
+            media_obj = self.web_page
         return media_obj
 
     def __str__(self):

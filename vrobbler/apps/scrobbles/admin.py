@@ -24,7 +24,7 @@ class ScrobbleInline(admin.TabularInline):
         "sport_event",
         "board_game",
         "geo_location",
-        "webpage",
+        "web_page",
         "user",
     )
     exclude = ("source_id", "scrobble_log")
@@ -110,7 +110,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "video_game",
         "board_game",
         "geo_location",
-        "webpage",
+        "web_page",
     )
     list_filter = (
         "is_paused",
