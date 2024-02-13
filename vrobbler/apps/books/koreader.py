@@ -215,26 +215,34 @@ def build_scrobbles_from_book_map(
         scrobble_page_data = {}
         playback_position_seconds = 0
         prev_page_stats = {}
+        last_page_number = 0
 
         pages_processed = 0
         total_pages = len(book_map[koreader_book_id]["pages"])
 
-        for page_number, stats in book_map[koreader_book_id]["pages"].items():
+        for cur_page_number, stats in book_map[koreader_book_id][
+            "pages"
+        ].items():
             pages_processed += 1
             # Accumulate our page data for this scrobble
-            scrobble_page_data[page_number] = stats
+            scrobble_page_data[cur_page_number] = stats
 
             seconds_from_last_page = 0
             if prev_page_stats:
                 seconds_from_last_page = stats.get(
                     "end_ts"
                 ) - prev_page_stats.get("start_ts")
+
             playback_position_seconds = playback_position_seconds + stats.get(
                 "duration"
             )
 
             end_of_reading = pages_processed == total_pages
-            if seconds_from_last_page > SESSION_GAP_SECONDS or end_of_reading:
+            big_jump_to_this_page = (cur_page_number - last_page_number) > 10
+            if (
+                seconds_from_last_page > SESSION_GAP_SECONDS
+                and not big_jump_to_this_page
+            ):
                 should_create_scrobble = True
 
             if should_create_scrobble:
@@ -271,23 +279,10 @@ def build_scrobbles_from_book_map(
                     book_id=book_id,
                     user_id=user.id,
                 ).first()
-                # if scrobble:
-                #    logger.info(
-                #        f"Found existing scrobble {scrobble}, updating"
-                #    )
-                #    scrobble.book_page_data = scrobble_page_data
-                #    scrobble.playback_position_seconds = (
-                #        scrobble.calc_reading_duration
-                #    )
-                #    scrobble.save(
-                #        update_fields=[
-                #            "book_page_data",
-                #            "playback_position_seconds",
-                #        ]
-                #    )
+
                 if not scrobble:
                     logger.info(
-                        f"Queueing scrobble for {book_id}, page {page_number}"
+                        f"Queueing scrobble for {book_id}, page {cur_page_number}"
                     )
                     scrobbles_to_create.append(
                         Scrobble(
@@ -300,7 +295,7 @@ def build_scrobbles_from_book_map(
                             playback_position_seconds=playback_position_seconds,
                             book_koreader_hash=book_dict.get("hash"),
                             book_page_data=scrobble_page_data,
-                            book_pages_read=page_number,
+                            book_pages_read=cur_page_number,
                             in_progress=False,
                             played_to_completion=True,
                             long_play_complete=False,
@@ -311,6 +306,7 @@ def build_scrobbles_from_book_map(
                     playback_position_seconds = 0
                     scrobble_page_data = {}
 
+            last_page_number = cur_page_number
             prev_page_stats = stats
     return scrobbles_to_create
 
@@ -321,19 +317,13 @@ def fix_long_play_stats_for_scrobbles(scrobbles: list) -> None:
 
     for scrobble in scrobbles:
         # But if there's a next scrobble, set pages read to their starting page
-        #
-        if scrobble.previous:
+        if scrobble.previous and not scrobble.previous.long_play_complete:
             scrobble.long_play_seconds = scrobble.playback_position_seconds + (
                 scrobble.previous.long_play_seconds or 0
             )
-            if not scrobble.book_pages_read:
-                scrobble.book_pages_read = (
-                    scrobble.calc_pages_read()
-                    + scrobble.previous.book_pages_read
-                )
         else:
             scrobble.long_play_seconds = scrobble.playback_position_seconds
-            scrobble.book_pages_read = scrobble.calc_pages_read()
+        scrobble.book_pages_read = scrobble.calc_pages_read()
 
         scrobble.save(update_fields=["book_pages_read", "long_play_seconds"])
 
@@ -355,7 +345,11 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
         cur = con.cursor()
         book_map = build_book_map(cur.execute("SELECT * FROM book"))
         book_map = build_page_data(
-            cur.execute("SELECT * from page_stat_data"), book_map, tz
+            cur.execute(
+                "SELECT * from page_stat_data ORDER BY id_book, start_time"
+            ),
+            book_map,
+            tz,
         )
         new_scrobbles = build_scrobbles_from_book_map(book_map, user)
     else:

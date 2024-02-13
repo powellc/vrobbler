@@ -150,16 +150,15 @@ class Book(LongPlayScrobblableMixin):
                 author_name = self.author.name
 
             if not data:
-                if not data:
-                    logger.warn(f"rChecking openlibrary for {self.title}")
-                    if self.openlibrary_id and force_update:
-                        data = lookup_book_from_openlibrary(
-                            str(self.openlibrary_id)
-                        )
-                    else:
-                        data = lookup_book_from_openlibrary(
-                            str(self.title), author_name
-                        )
+                logger.warn(f"rChecking openlibrary for {self.title}")
+                if self.openlibrary_id and force_update:
+                    data = lookup_book_from_openlibrary(
+                        str(self.openlibrary_id)
+                    )
+                else:
+                    data = lookup_book_from_openlibrary(
+                        str(self.title), author_name
+                    )
 
             if not data:
                 if self.locg_slug:
@@ -183,6 +182,7 @@ class Book(LongPlayScrobblableMixin):
                 self.get_author_from_locg(data.pop("locg_writer_slug", ""))
 
             ol_title = data.get("title", "")
+            data.pop("ol_author_id", "")
 
             # Kick out a little warning if we're about to change KoReader's title
             if (
@@ -288,7 +288,7 @@ class Book(LongPlayScrobblableMixin):
         last_scrobble = get_scrobbles_for_media(self, user).last()
         progress = 0
         if last_scrobble:
-            progress = int((last_scrobble.book_pages_read / self.pages) * 100)
+            progress = int((last_scrobble.last_page_read / self.pages) * 100)
         return progress
 
     @classmethod

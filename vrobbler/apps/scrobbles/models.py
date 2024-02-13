@@ -683,9 +683,6 @@ class Scrobble(TimeStampedModel):
                 ((playback_seconds + long_play_secs) / run_time_secs) * 100
             )
 
-        # if percent > 100:
-        #    percent = 100
-
         return percent
 
     @property
@@ -743,8 +740,22 @@ class Scrobble(TimeStampedModel):
         if self.book_page_data:
             pages = [int(k) for k in self.book_page_data.keys()]
             pages.sort()
-            pages_read = pages[-1] - pages[0]
+            if len(pages) == 1:
+                pages_read = 1
+            elif len(pages) >= 2:
+                pages_read += pages[-1] - pages[0]
+            else:
+                pages_read = pages[-1] - pages[0]
         return pages_read
+
+    @property
+    def last_page_read(self) -> int:
+        last_page = 0
+        if self.book_page_data:
+            pages = [int(k) for k in self.book_page_data.keys()]
+            pages.sort()
+            last_page = pages[-1]
+        return last_page
 
     @classmethod
     def create_or_update(

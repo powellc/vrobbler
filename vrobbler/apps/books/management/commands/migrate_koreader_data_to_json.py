@@ -4,6 +4,7 @@ from datetime import datetime
 from books.models import Book
 from django.core.management.base import BaseCommand
 from scrobbles.models import Scrobble
+from vrobbler.apps.books.koreader import fix_long_play_stats_for_scrobbles
 from vrobbler.apps.scrobbles.utils import timestamp_user_tz_to_utc
 
 
@@ -61,9 +62,14 @@ class Command(BaseCommand):
                 )
 
                 end_of_reading = pages_processed == total_pages
+                big_jump_to_this_page = False
+                if prev_page:
+                    big_jump_to_this_page = (
+                        page.number - prev_page.number
+                    ) > 10
                 if (
                     seconds_from_last_page > SESSION_GAP_SECONDS
-                    or end_of_reading
+                    and not big_jump_to_this_page
                 ):
                     should_create_scrobble = True
 
@@ -146,3 +152,5 @@ class Command(BaseCommand):
                 prev_page = page
 
         created = Scrobble.objects.bulk_create(scrobbles_to_create)
+        for scrobble in created:
+            fix_long_play_stats_for_scrobbles(scrobble)
