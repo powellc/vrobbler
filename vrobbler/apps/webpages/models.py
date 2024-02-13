@@ -64,7 +64,7 @@ class WebPage(ScrobblableMixin):
 
     def scrobbles(self, user):
         Scrobble = apps.get_model("scrobbles", "Scrobble")
-        return Scrobble.objects.filter(user=user, webpage=self).order_by(
+        return Scrobble.objects.filter(user=user, web_page=self).order_by(
             "-timestamp"
         )
 
