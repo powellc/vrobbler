@@ -97,11 +97,11 @@ class GeoLocation(ScrobblableMixin):
             loc_diff = self.loc_diff((point.lat, point.lon))
             logger.info(f"[locations] {self} is {loc_diff} from {point}")
             if (
-                loc_diff[0] > GEOLOC_PROXIMITY
-                or loc_diff[1] > GEOLOC_PROXIMITY
+                loc_diff[0] < GEOLOC_PROXIMITY
+                or loc_diff[1] < GEOLOC_PROXIMITY
             ):
                 logger.info(
-                    f"[locations] {loc_diff} is greater than proximity setting {GEOLOC_PROXIMITY}, moving"
+                    f"[locations] {loc_diff} is less than proximity setting {GEOLOC_PROXIMITY}, we've moved"
                 )
                 has_moved = True
 
