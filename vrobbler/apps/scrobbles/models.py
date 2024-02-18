@@ -817,13 +817,13 @@ class Scrobble(TimeStampedModel):
             logger.info(
                 f"[scrobbling] No existing location scrobbles, location {location.id} should be new scrobble"
             )
-            return scrobble
+            return cls.create(scrobble_data)
 
         if scrobble.media_obj == location:
             logger.info(
                 f"[scrobbling] updating {scrobble.id} - new location {location.id} and old location {scrobble.media_obj.id} are the same"
             )
-            return scrobble.update(scrobble_data)
+            return scrobble
 
         if not location.has_moved(
             self.past_scrobbled_locations(POINTS_FOR_MOVEMENT_HISTORY)
@@ -831,7 +831,7 @@ class Scrobble(TimeStampedModel):
             logger.info(
                 f"[scrobbling] new location{location.id} and old location {scrobble.media_obj.id} are different, but close enough to not move"
             )
-            return scrobble.update(scrobble_data)
+            return scrobble
 
         logger.info(
             f"[scrobbling] finishing {scrobble.id} so we can create new one for {location.id}",
