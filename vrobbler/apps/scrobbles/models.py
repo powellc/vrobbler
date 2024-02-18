@@ -826,7 +826,7 @@ class Scrobble(TimeStampedModel):
             return scrobble
 
         if not location.has_moved(
-            self.past_scrobbled_locations(POINTS_FOR_MOVEMENT_HISTORY)
+            cls.past_scrobbled_locations(user_id, POINTS_FOR_MOVEMENT_HISTORY)
         ):
             logger.info(
                 f"[scrobbling] new location{location.id} and old location {scrobble.media_obj.id} are different, but close enough to not move"
@@ -849,10 +849,13 @@ class Scrobble(TimeStampedModel):
         )
         return cls.create(scrobble_data)
 
-    def past_scrobbled_locations(self, num: int) -> Iterable["Location"]:
-        past_scrobbles = Scrobble.objects.filter(
+    @classmethod
+    def past_scrobbled_locations(
+        cls, user_id: int, num: int
+    ) -> list["Location"]:
+        past_scrobbles = cls.objects.filter(
             media_type="GeoLocation",
-            user_id=self.user_id,
+            user_id=user_id,
         ).order_by("-timestamp")[1:num]
         return [s.geo_location for s in past_scrobbles]
 
