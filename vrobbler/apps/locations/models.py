@@ -107,18 +107,19 @@ class GeoLocation(ScrobblableMixin):
 
         return has_moved
 
-    def named_in_proximity(self):
+    def named_in_proximity(self, named=True) -> models.QuerySet:
         lat_min = Decimal(self.lat) - GEOLOC_PROXIMITY
         lat_max = Decimal(self.lat) + GEOLOC_PROXIMITY
         lon_min = Decimal(self.lon) - GEOLOC_PROXIMITY
         lon_max = Decimal(self.lon) + GEOLOC_PROXIMITY
+        is_title_null = not named
         return GeoLocation.objects.filter(
-            title__isnull=False,
+            title__isnull=is_title_null,
             lat__lte=lat_max,
             lat__gte=lat_min,
             lon__lte=lon_max,
             lon__gte=lon_min,
-        ).first()
+        )
 
 
 class RawGeoLocation(TimeStampedModel):
