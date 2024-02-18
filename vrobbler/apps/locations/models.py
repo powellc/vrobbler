@@ -15,7 +15,7 @@ BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
 GEOLOC_ACCURACY = int(getattr(settings, "GEOLOC_ACCURACY", 4))
-GEOLOC_PROXIMITY = Decimal(getattr(settings, "GEOLOC_ACCURACY", "0.0001"))
+GEOLOC_PROXIMITY = Decimal(getattr(settings, "GEOLOC_PROXIMITY", "0.00001"))
 
 
 class GeoLocation(ScrobblableMixin):
