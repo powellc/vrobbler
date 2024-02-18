@@ -838,7 +838,7 @@ class Scrobble(TimeStampedModel):
         )
         scrobble.stop(force_finish=True)
 
-        if existing_locations := location.named_in_proximity():
+        if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
             logger.info(
                 f"[scrobbling] moved to {location.id} but named location {existing_location.id} found, using it instead"

@@ -15,7 +15,7 @@ BNULL = {"blank": True, "null": True}
 User = get_user_model()
 
 GEOLOC_ACCURACY = int(getattr(settings, "GEOLOC_ACCURACY", 4))
-GEOLOC_PROXIMITY = Decimal(getattr(settings, "GEOLOC_PROXIMITY", "0.00001"))
+GEOLOC_PROXIMITY = Decimal(getattr(settings, "GEOLOC_PROXIMITY", "0.0001"))
 
 
 class GeoLocation(ScrobblableMixin):
@@ -107,7 +107,7 @@ class GeoLocation(ScrobblableMixin):
 
         return has_moved
 
-    def named_in_proximity(self, named=True) -> models.QuerySet:
+    def in_proximity(self, named=True) -> models.QuerySet:
         lat_min = Decimal(self.lat) - GEOLOC_PROXIMITY
         lat_max = Decimal(self.lat) + GEOLOC_PROXIMITY
         lon_min = Decimal(self.lon) - GEOLOC_PROXIMITY
