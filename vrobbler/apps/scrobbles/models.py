@@ -2,7 +2,7 @@ import calendar
 import datetime
 from decimal import Decimal
 import logging
-from typing import Optional
+from typing import Iterable, Optional
 from uuid import uuid4
 
 from boardgames.models import BoardGame
@@ -823,32 +823,38 @@ class Scrobble(TimeStampedModel):
             logger.info(
                 f"[scrobbling] updating {scrobble.id} - new location {location.id} and old location {scrobble.media_obj.id} are the same"
             )
-            return scrobble
+            return scrobble.update(scrobble_data)
 
-        logger.info(
-            f"[scrobbling] new location {location.id} and old location {scrobble.media_obj.id} are different, checking proximity"
-        )
-        past_scrobbles = Scrobble.objects.filter(
-            media_type="GeoLocation",
-            user_id=user_id,
-        ).order_by("-timestamp")[1:POINTS_FOR_MOVEMENT_HISTORY]
-        past_points = [s.media_obj for s in past_scrobbles]
-
-        if not location.has_moved(past_points):
+        if not location.has_moved(
+            self.past_scrobbled_locations(POINTS_FOR_MOVEMENT_HISTORY)
+        ):
             logger.info(
                 f"[scrobbling] new location{location.id} and old location {scrobble.media_obj.id} are different, but close enough to not move"
             )
-            return scrobble
+            return scrobble.update(scrobble_data)
 
         logger.info(
             f"[scrobbling] finishing {scrobble.id} so we can create new one for {location.id}",
         )
-        scrobble.stop()
+        scrobble.stop(force_finish=True)
+
+        if existing_location := location.named_in_proximity():
+            logger.info(
+                f"[scrobbling] moved to {location.id} but named location {existing_location.id} found, using it instead"
+            )
+            scrobble_data["geo_location"] = existing_location
 
         logger.info(
             f"[scrobbling] creating for location {location.id} from GPSLogger"
         )
         return cls.create(scrobble_data)
+
+    def past_scrobbled_locations(self, num: int) -> Iterable["Location"]:
+        past_scrobbles = Scrobble.objects.filter(
+            media_type="GeoLocation",
+            user_id=self.user_id,
+        ).order_by("-timestamp")[1:num]
+        return [s.geo_location for s in past_scrobbles]
 
     def update(self, scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
