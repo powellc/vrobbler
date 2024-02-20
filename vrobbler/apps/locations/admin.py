@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from locations.models import GeoLocation, RawGeoLocation
+from locations.models import GeoLocation
 
 from scrobbles.admin import ScrobbleInline
 
@@ -19,18 +19,3 @@ class GeoLocationAdmin(admin.ModelAdmin):
     inlines = [
         ScrobbleInline,
     ]
-
-
-@admin.register(RawGeoLocation)
-class RawGeoLocationAdmin(admin.ModelAdmin):
-    date_hierarchy = "created"
-    list_display = (
-        "lat",
-        "lon",
-        "altitude",
-        "speed",
-    )
-    ordering = (
-        "lat",
-        "lon",
-    )

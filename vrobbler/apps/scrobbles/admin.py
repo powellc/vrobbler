@@ -7,7 +7,6 @@ from scrobbles.models import (
     LastFmImport,
     RetroarchImport,
     Scrobble,
-    ScrobbledPage,
 )
 from scrobbles.mixins import Genre
 
@@ -126,13 +125,3 @@ class ScrobbleAdmin(admin.ModelAdmin):
 
     def playback_percent(self, obj):
         return obj.percent_played
-
-
-@admin.register(ScrobbledPage)
-class ScrobbledPageAdmin(admin.ModelAdmin):
-    list_display = (
-        "number",
-        "scrobble",
-        "notes",
-    )
-    raw_id_fields = ("scrobble",)

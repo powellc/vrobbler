@@ -120,12 +120,3 @@ class GeoLocation(ScrobblableMixin):
             lon__lte=lon_max,
             lon__gte=lon_min,
         )
-
-
-class RawGeoLocation(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    lat = models.FloatField()
-    lon = models.FloatField()
-    altitude = models.FloatField(**BNULL)
-    speed = models.FloatField(**BNULL)
-    timestamp = models.DateTimeField(**BNULL)
