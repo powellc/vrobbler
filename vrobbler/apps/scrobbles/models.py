@@ -801,6 +801,7 @@ class Scrobble(TimeStampedModel):
                     "media_id": media.id,
                     "source": source,
                     "scrobble_data": scrobble_data,
+                    "percent_played": scrobble.percent_played,
                 },
             )
             return scrobble.update(scrobble_data)
@@ -1003,14 +1004,6 @@ class Scrobble(TimeStampedModel):
 
     def update_ticks(self, data) -> None:
         self.playback_position_seconds = data.get("playback_position_seconds")
-        logger.info(
-            f"[scrobbling] update ticks",
-            extra={
-                "scrobble_id": self.id,
-                "playback_position_seconds": self.playback_position_seconds,
-                "source": self.source,
-            },
-        )
         self.save(update_fields=["playback_position_seconds"])
 
     def finish_long_play(self):
