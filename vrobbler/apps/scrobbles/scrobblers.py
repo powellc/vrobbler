@@ -191,6 +191,15 @@ def manual_scrobble_video(imdb_id: str, user_id: int):
         "source_id": "Manually scrobbled from Vrobbler and looked up via IMDB",
     }
 
+    logger.info(
+        "[webhook] video scrobble request received",
+        extra={
+            "video_id": video.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+        },
+    )
+
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
@@ -217,6 +226,15 @@ def manual_scrobble_video_game(hltb_id: str, user_id: int):
         "long_play_complete": False,
     }
 
+    logger.info(
+        "[webhook] video game scrobble request received",
+        extra={
+            "videogame_id": game.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+        },
+    )
+
     return Scrobble.create_or_update(game, user_id, scrobble_dict)
 
 
@@ -230,6 +248,15 @@ def manual_scrobble_book(openlibrary_id: str, user_id: int):
         "source": "Vrobbler",
         "long_play_complete": False,
     }
+
+    logger.info(
+        "[webhook] book scrobble request received",
+        extra={
+            "book_id": book.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+        },
+    )
 
     return Scrobble.create_or_update(book, user_id, scrobble_dict)
 
@@ -248,6 +275,14 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
         "source": "Vrobbler",
         "source_id": "Manually scrobbled from Vrobbler and looked up via boardgamegeek.com",
     }
+    logger.info(
+        "[webhook] board game scrobble request received",
+        extra={
+            "boardgame_id": boardgame.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+        },
+    )
 
     return Scrobble.create_or_update(boardgame, user_id, scrobble_dict)
 
@@ -262,6 +297,14 @@ def manual_scrobble_webpage(url: str, user_id: int):
         "source": "Vrobbler",
         "source_id": "Manually scrobbled from Vrobbler",
     }
+    logger.info(
+        "[webhook] webpage scrobble request received",
+        extra={
+            "webpage_id": webpage.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+        },
+    )
 
     return Scrobble.create_or_update(webpage, user_id, scrobble_dict)
 
@@ -286,5 +329,15 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
         ).seconds
 
     scrobble.save(update_fields=["notes", "playback_position_seconds"])
+    logger.info(
+        "[webhook] gpslogger scrobble request received",
+        extra={
+            "scrobble_id": scrobble.id,
+            "provider": provider,
+            "user_id": user_id,
+            "timestamp": extra_data.get("timestamp"),
+            "raw_timestamp": data_dict.get("time"),
+        },
+    )
 
     return scrobble
