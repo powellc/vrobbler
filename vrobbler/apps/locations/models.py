@@ -92,18 +92,43 @@ class GeoLocation(ScrobblableMixin):
         )
 
     def has_moved(self, past_points: list["GeoLocation"]) -> bool:
+        """GPS jumps from time to time. This function tries to smooth out
+        when we appear to have flagging our location as having not moved if one of our last
+        3"""
         has_moved = False
+        has_moved_locs = []
         for point in past_points:
             loc_diff = self.loc_diff((point.lat, point.lon))
-            logger.info(f"[locations] {self} is {loc_diff} from {point}")
+            logger.info(
+                f"[locations] checking whether location has moved",
+                extra={"location": self, "loc_diff": loc_diff, "point": point},
+            )
             if (
-                loc_diff[0] < GEOLOC_PROXIMITY
-                or loc_diff[1] < GEOLOC_PROXIMITY
+                loc_diff[0] > GEOLOC_PROXIMITY
+                or loc_diff[1] > GEOLOC_PROXIMITY
             ):
                 logger.info(
-                    f"[locations] {loc_diff} is less than proximity setting {GEOLOC_PROXIMITY}, we've moved"
+                    f"[locations] difference is less than proximity setting, we may have moved",
+                    extra={
+                        "loc_diff": loc_diff,
+                        "point": point,
+                        "geoloc_proximity": GEOLOC_PROXIMITY,
+                    },
                 )
-                has_moved = True
+                has_moved_locs.append(True)
+            else:
+                has_moved_locs.append(False)
+
+        # Sum up all True values, if they're more than half of our locations, we've moved
+        if sum(has_moved_locs) > int(len(past_points) / 2):
+            logger.info(
+                f"[locations] more than half of past points have moved, we've moved",
+                extra={
+                    "has_moved_locs": has_moved_locs,
+                    "past_points": past_points,
+                },
+            )
+            has_moved = True
 
         return has_moved
 
