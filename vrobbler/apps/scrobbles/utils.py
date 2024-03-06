@@ -100,8 +100,10 @@ def check_scrobble_for_finish(
         )
         return
 
+    is_complete = False
     if scrobble.percent_played >= completion_percent or force_finish:
-        logger.info(f"{scrobble.id} finished at {scrobble.percent_played}")
+        is_complete = True
+        # A hack to fix overruns on time ... default to media taking as long as needed to finish
         scrobble.playback_position_seconds = (
             scrobble.media_obj.run_time_seconds
         )
@@ -118,14 +120,16 @@ def check_scrobble_for_finish(
                 "playback_position_seconds",
             ]
         )
-    else:
-        logger.info(
-            f"[scrobbling] not complete",
-            extra={
-                "scrobble_id": scrobble.id,
-                "percent_played": scrobble.percent_played,
-            },
-        )
+    logger.info(
+        f"[scrobbling] checked for completion",
+        extra={
+            "scrobble_id": scrobble.id,
+            "percent_played": scrobble.percent_played,
+            "completion_percent": completion_percent,
+            "is_complete": is_complete,
+            "force_finish": force_finish,
+        },
+    )
 
 
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
