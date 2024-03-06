@@ -691,19 +691,31 @@ class Scrobble(TimeStampedModel):
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(
                 f"[scrobbling] cannot be updated, long play media",
-                extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                },
             )
             updatable = False
         if updatable and self.percent_played >= 100:
             logger.info(
                 f"[scrobbling] cannot be updated, existing scrobble is 100% played",
-                extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                },
             )
             updatable = False
         if updatable and self.is_stale:
             logger.info(
                 f"[scrobbling] cannot be udpated, stale",
-                extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                },
             )
             updatable = False
 
@@ -797,7 +809,7 @@ class Scrobble(TimeStampedModel):
                 f"[scrobbling] updating existing scrobble",
                 extra={
                     "scrobble_id": scrobble.id,
-                    "mtype": mtype,
+                    "media_type": mtype,
                     "media_id": media.id,
                     "source": source,
                     "scrobble_data": scrobble_data,
@@ -811,7 +823,11 @@ class Scrobble(TimeStampedModel):
         scrobble_data.pop("jellyfin_status", None)
         logger.info(
             f"[scrobbling] creating new scrobble",
-            extra={"mtype": mtype, "media_id": media.id, "source": source},
+            extra={
+                "media_type": mtype,
+                "media_id": media.id,
+                "source": source,
+            },
         )
         return cls.create(scrobble_data)
 
@@ -832,7 +848,10 @@ class Scrobble(TimeStampedModel):
         if not scrobble:
             logger.info(
                 f"[scrobbling] no existing location scrobbles, scrobble ahoy!",
-                extra={"new_location_id": location.id},
+                extra={
+                    "new_location_id": location.id,
+                    "media_type": cls.MediaType.GEO_LOCATION,
+                },
             )
             return cls.create(scrobble_data)
 
@@ -841,6 +860,7 @@ class Scrobble(TimeStampedModel):
                 f"[scrobbling] last location and new location are the same, not moving",
                 extra={
                     "scrobble_id": scrobble.id,
+                    "media_type": cls.MediaType.GEO_LOCATION,
                     "new_location_id": location.id,
                 },
             )
@@ -853,6 +873,7 @@ class Scrobble(TimeStampedModel):
                 f"[scrobbling] new location received, but not far from old location, not moving",
                 extra={
                     "new_location_id": location.id,
+                    "media_type": cls.MediaType.GEO_LOCATION,
                     "old_location_id": scrobble.media_obj.id,
                 },
             )
@@ -863,6 +884,7 @@ class Scrobble(TimeStampedModel):
             f"[scrobbling] finish location scrobble, we've moved",
             extra={
                 "scrobble_id": scrobble.id,
+                "media_type": cls.MediaType.GEO_LOCATION,
                 "location_id": location.id,
             },
         )
@@ -873,6 +895,7 @@ class Scrobble(TimeStampedModel):
                 f"[scrobbling] has moved but found existing named location, using it",
                 extra={
                     "location_id": location.id,
+                    "media_type": cls.MediaType.GEO_LOCATION,
                     "existing_location_id": existing_location.id,
                 },
             )
@@ -880,7 +903,11 @@ class Scrobble(TimeStampedModel):
 
         logger.info(
             f"[scrobbling] creating for location from GPSLogger",
-            extra={"location_id": location.id, "scrobble_data": scrobble_data},
+            extra={
+                "location_id": location.id,
+                "scrobble_data": scrobble_data,
+                "media_type": cls.MediaType.GEO_LOCATION,
+            },
         )
         return cls.create(scrobble_data)
 
@@ -967,6 +994,7 @@ class Scrobble(TimeStampedModel):
             f"[scrobbling] stopped",
             extra={
                 "scrobble_id": self.id,
+                "media_type": self.media_type,
                 "source": self.source,
             },
         )
@@ -981,6 +1009,7 @@ class Scrobble(TimeStampedModel):
             f"[scrobbling] paused",
             extra={
                 "scrobble_id": self.id,
+                "media_type": self.media_type,
                 "source": self.source,
             },
         )
@@ -994,6 +1023,7 @@ class Scrobble(TimeStampedModel):
                 f"[scrobbling] resumed",
                 extra={
                     "scrobble_id": self.id,
+                    "media_type": self.media_type,
                     "source": self.source,
                 },
             )

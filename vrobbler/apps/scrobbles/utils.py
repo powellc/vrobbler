@@ -96,7 +96,10 @@ def check_scrobble_for_finish(
     if scrobble.media_type == "GeoLocation" and not force_finish:
         logger.info(
             f"[scrobbling] not complete, locations are ONLY completed when new one is created, use force_finish",
-            extra={"scrobble_id": scrobble.id},
+            extra={
+                "scrobble_id": scrobble.id,
+                "media_type": scrobble.media_type,
+            },
         )
         return
 
@@ -124,6 +127,7 @@ def check_scrobble_for_finish(
         f"[scrobbling] checked for completion",
         extra={
             "scrobble_id": scrobble.id,
+            "media_type": scrobble.media_type,
             "percent_played": scrobble.percent_played,
             "completion_percent": completion_percent,
             "is_complete": is_complete,
