@@ -99,36 +99,35 @@ class GeoLocation(ScrobblableMixin):
         has_moved_locs = []
         for point in past_points:
             loc_diff = self.loc_diff((point.lat, point.lon))
-            logger.info(
-                f"[locations] checking whether location has moved",
-                extra={"location": self, "loc_diff": loc_diff, "point": point},
-            )
+            loc_has_moved = False
             if (
                 loc_diff[0] > GEOLOC_PROXIMITY
                 or loc_diff[1] > GEOLOC_PROXIMITY
             ):
-                logger.info(
-                    f"[locations] difference is less than proximity setting, we may have moved",
-                    extra={
-                        "loc_diff": loc_diff,
-                        "point": point,
-                        "geoloc_proximity": GEOLOC_PROXIMITY,
-                    },
-                )
-                has_moved_locs.append(True)
-            else:
-                has_moved_locs.append(False)
+                loc_has_moved = True
+            logger.info(
+                f"[locations] checked whether location has moved against proximity setting",
+                extra={
+                    "location": self,
+                    "loc_diff": loc_diff,
+                    "loc_has_moved": loc_has_moved,
+                    "point": point,
+                    "geoloc_proximity": GEOLOC_PROXIMITY,
+                },
+            )
+            has_moved_locs.append(loc_has_moved)
 
         # Sum up all True values, if they're more than half of our locations, we've moved
         if sum(has_moved_locs) > int(len(past_points) / 2):
-            logger.info(
-                f"[locations] more than half of past points have moved, we've moved",
-                extra={
-                    "has_moved_locs": has_moved_locs,
-                    "past_points": past_points,
-                },
-            )
             has_moved = True
+        logger.info(
+            f"[locations] finished checking for movement",
+            extra={
+                "has_moved": has_moved,
+                "has_moved_locs": has_moved_locs,
+                "past_points": past_points,
+            },
+        )
 
         return has_moved
 
@@ -138,10 +137,17 @@ class GeoLocation(ScrobblableMixin):
         lon_min = Decimal(self.lon) - GEOLOC_PROXIMITY
         lon_max = Decimal(self.lon) + GEOLOC_PROXIMITY
         is_title_null = not named
-        return GeoLocation.objects.filter(
+        close_locations = GeoLocation.objects.filter(
             title__isnull=is_title_null,
             lat__lte=lat_max,
             lat__gte=lat_min,
             lon__lte=lon_max,
             lon__gte=lon_min,
+        )
+        logger.info(
+            f"[locations] finished looking for proximate locations",
+            extra={
+                "close_locations": close_locations,
+                "is_title_null": is_title_null,
+            },
         )

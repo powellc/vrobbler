@@ -123,29 +123,6 @@ def check_scrobble_for_finish(
         )
 
 
-def check_long_play_for_finish(scrobble):
-    seconds_elapsed = (timezone.now() - scrobble.timestamp).seconds
-    past_seconds = 0
-
-    # Set our playback seconds, and calc long play seconds
-    scrobble.playback_position_seconds = seconds_elapsed
-    if scrobble.previous:
-        past_seconds = scrobble.previous.long_play_seconds
-
-    scrobble.long_play_seconds = past_seconds + seconds_elapsed
-
-    # Long play scrobbles are always finished when we say they are
-    scrobble.played_to_completion = True
-
-    scrobble.save(
-        update_fields=[
-            "playback_position_seconds",
-            "played_to_completion",
-            "long_play_seconds",
-        ]
-    )
-
-
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     Scrobble = apps.get_model(app_label="scrobbles", model_name="Scrobble")
 

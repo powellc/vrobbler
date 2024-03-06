@@ -32,7 +32,6 @@ from profiles.utils import (
 from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.stats import build_charts
 from scrobbles.utils import (
-    check_long_play_for_finish,
     check_scrobble_for_finish,
     media_class_to_foreign_key,
 )
@@ -690,13 +689,22 @@ class Scrobble(TimeStampedModel):
         updatable = True
 
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
-            logger.info(f"No - Long play media")
+            logger.info(
+                f"[scrobbling] cannot be updated, long play media",
+                extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
+            )
             updatable = False
-        if self.percent_played >= 100:
-            logger.info(f"No - 100% played - {self.id} - {self.source}")
+        if updatable and self.percent_played >= 100:
+            logger.info(
+                f"[scrobbling] cannot be updated, 100% played - {self.id} - {self.source}",
+                extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
+            )
             updatable = False
-        if self.is_stale:
-            logger.info(f"No - stale - {self.id} - {self.source}")
+        if updatable and self.is_stale:
+            logger.info(
+                f"[scrobbling] cannot be udpated, stale",
+                extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
+            )
             updatable = False
 
         return updatable
@@ -786,8 +794,14 @@ class Scrobble(TimeStampedModel):
 
         if scrobble and scrobble.can_be_updated:
             logger.info(
-                f"[scrobbling] updating {scrobble.id} for {mtype} {media.id} from {source}",
-                {"scrobble_data": scrobble_data, "media": media},
+                f"[scrobbling] updating existing scrobble",
+                extra={
+                    "scrobble_id": scrobble.id,
+                    "mtype": mtype,
+                    "media_id": media.id,
+                    "source": source,
+                    "scrobble_data": scrobble_data,
+                },
             )
             return scrobble.update(scrobble_data)
 
@@ -795,7 +809,8 @@ class Scrobble(TimeStampedModel):
         scrobble_data.pop("mopidy_status", None)
         scrobble_data.pop("jellyfin_status", None)
         logger.info(
-            f"[scrobbling] creating for {mtype} {media.id} from {source}"
+            f"[scrobbling] creating new scrobble",
+            extra={"mtype": mtype, "media_id": media.id, "source": source},
         )
         return cls.create(scrobble_data)
 
@@ -815,13 +830,18 @@ class Scrobble(TimeStampedModel):
 
         if not scrobble:
             logger.info(
-                f"[scrobbling] No existing location scrobbles, location {location.id} should be new scrobble"
+                f"[scrobbling] no existing location scrobbles, scrobble ahoy!",
+                extra={"new_location_id": location.id},
             )
             return cls.create(scrobble_data)
 
         if scrobble.media_obj == location:
             logger.info(
-                f"[scrobbling] updating {scrobble.id} - new location {location.id} and old location {scrobble.media_obj.id} are the same"
+                f"[scrobbling] last location and new location are the same, not moving",
+                extra={
+                    "scrobble_id": scrobble.id,
+                    "new_location_id": location.id,
+                },
             )
             return scrobble
 
@@ -829,24 +849,37 @@ class Scrobble(TimeStampedModel):
             cls.past_scrobbled_locations(user_id, POINTS_FOR_MOVEMENT_HISTORY)
         ):
             logger.info(
-                f"[scrobbling] new location{location.id} and old location {scrobble.media_obj.id} are different, but close enough to not move"
+                f"[scrobbling] new location received, but not far from old location, not moving",
+                extra={
+                    "new_location_id": location.id,
+                    "old_location_id": scrobble.media_obj.id,
+                },
             )
             return scrobble
 
-        logger.info(
-            f"[scrobbling] finishing {scrobble.id} so we can create new one for {location.id}",
-        )
         scrobble.stop(force_finish=True)
+        logger.info(
+            f"[scrobbling] finish location scrobble, we've moved",
+            extra={
+                "scrobble_id": scrobble.id,
+                "location_id": location.id,
+            },
+        )
 
         if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
             logger.info(
-                f"[scrobbling] moved to {location.id} but named location {existing_location.id} found, using it instead"
+                f"[scrobbling] has moved but found existing named location, using it",
+                extra={
+                    "location_id": location.id,
+                    "existing_location_id": existing_location.id,
+                },
             )
             scrobble_data["geo_location"] = existing_location
 
         logger.info(
-            f"[scrobbling] creating for location {location.id} from GPSLogger"
+            f"[scrobbling] creating for location from GPSLogger",
+            extra={"location_id": location.id, "scrobble_data": scrobble_data},
         )
         return cls.create(scrobble_data)
 
@@ -924,26 +957,45 @@ class Scrobble(TimeStampedModel):
                 "playback_position_seconds",
             ]
         )
-        logger.info(f"stopping {self.id} from {self.source}")
 
         class_name = self.media_obj.__class__.__name__
         if class_name in LONG_PLAY_MEDIA.values():
-            check_long_play_for_finish(self)
+            self.finish_long_play()
+
+        logger.info(
+            f"[scrobbling] stopped",
+            extra={
+                "scrobble_id": self.id,
+                "source": self.source,
+            },
+        )
 
     def pause(self) -> None:
         if self.is_paused:
             logger.warning(f"{self.id} - already paused - {self.source}")
             return
-        logger.info(f"{self.id} - pausing - {self.source}")
         self.is_paused = True
         self.save(update_fields=["is_paused"])
+        logger.info(
+            f"[scrobbling] paused",
+            extra={
+                "scrobble_id": self.id,
+                "source": self.source,
+            },
+        )
 
     def resume(self) -> None:
         if self.is_paused or not self.in_progress:
             self.is_paused = False
             self.in_progress = True
-            logger.info(f"{self.id} - resuming - {self.source}")
-            return self.save(update_fields=["is_paused", "in_progress"])
+            self.save(update_fields=["is_paused", "in_progress"])
+            logger.info(
+                f"[scrobbling] resumed",
+                extra={
+                    "scrobble_id": self.id,
+                    "source": self.source,
+                },
+            )
 
     def cancel(self) -> None:
         check_scrobble_for_finish(self, force_finish=True)
@@ -952,6 +1004,39 @@ class Scrobble(TimeStampedModel):
     def update_ticks(self, data) -> None:
         self.playback_position_seconds = data.get("playback_position_seconds")
         logger.info(
-            f"{self.id} - {self.playback_position_seconds} - {self.source}"
+            f"[scrobbling] update ticks",
+            extra={
+                "scrobble_id": self.id,
+                "playback_position_seconds": self.playback_position_seconds,
+                "source": self.source,
+            },
         )
         self.save(update_fields=["playback_position_seconds"])
+
+    def finish_long_play(self):
+        seconds_elapsed = (timezone.now() - self.timestamp).seconds
+        past_seconds = 0
+
+        # Set our playback seconds, and calc long play seconds
+        self.playback_position_seconds = seconds_elapsed
+        if self.previous:
+            past_seconds = self.previous.long_play_seconds
+
+        self.long_play_seconds = past_seconds + seconds_elapsed
+
+        # Long play scrobbles are always finished when we say they are
+        self.played_to_completion = True
+
+        self.save(
+            update_fields=[
+                "playback_position_seconds",
+                "played_to_completion",
+                "long_play_seconds",
+            ]
+        )
+        logger.info(
+            f"[scrobbling] finishing long play",
+            extra={
+                "scrobble_id": self.id,
+            },
+        )
