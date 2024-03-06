@@ -696,7 +696,7 @@ class Scrobble(TimeStampedModel):
             updatable = False
         if updatable and self.percent_played >= 100:
             logger.info(
-                f"[scrobbling] cannot be updated, 100% played - {self.id} - {self.source}",
+                f"[scrobbling] cannot be updated, existing scrobble is 100% played",
                 extra={"media_id": self.media_obj.id, "scrobble_id": self.id},
             )
             updatable = False
