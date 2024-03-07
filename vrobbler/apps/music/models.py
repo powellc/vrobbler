@@ -404,7 +404,7 @@ class Album(TimeStampedModel):
 
 
 class Track(ScrobblableMixin):
-    COMPLETION_PERCENT = getattr(settings, "MUSIC_COMPLETION_PERCENT", 90)
+    COMPLETION_PERCENT = getattr(settings, "MUSIC_COMPLETION_PERCENT", 95)
 
     class Opinion(models.IntegerChoices):
         DOWN = -1, "Thumbs down"

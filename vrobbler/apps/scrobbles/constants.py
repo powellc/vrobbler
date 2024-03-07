@@ -15,8 +15,7 @@ PLAY_AGAIN_MEDIA = {
 }
 
 MEDIA_END_PADDING_SECONDS = {
-    "Video": 1800,  # 30 min
-    "Track": 1,  # 1 second
+    "Video": 3600,  # 60 min
 }
 
 EXCLUDE_FROM_NOW_PLAYING = ("GeoLocation",)
