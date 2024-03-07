@@ -14,6 +14,10 @@ PLAY_AGAIN_MEDIA = {
     "boardgames": "BoardGame",
 }
 
+MEDIA_END_PADDING_SECONDS = {
+    "Video": 1800,  # 30 min
+    "Track": 1,  # 1 second
+}
 
 EXCLUDE_FROM_NOW_PLAYING = ("GeoLocation",)
 

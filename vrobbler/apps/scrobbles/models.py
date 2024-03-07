@@ -1,12 +1,11 @@
 import calendar
 import datetime
-from decimal import Decimal
 import logging
+from decimal import Decimal
 from typing import Iterable, Optional
 from uuid import uuid4
 
 import pendulum
-
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
@@ -42,6 +41,8 @@ from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
 from webpages.models import WebPage
+
+from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -687,22 +688,41 @@ class Scrobble(TimeStampedModel):
         return percent
 
     @property
+    def probably_still_in_progress(self) -> bool:
+        """Add our start time to our media run time to get when we expect to
+
+        Audio tracks should be given a second or two of grace, videos should
+        be given closer to 30 minutes, because the odds of watching it back to
+        back are very slim.
+
+        """
+        is_in_progress = False
+        padding_seconds = MEDIA_END_PADDING_SECONDS.get(self.media_type)
+        if not padding_seconds:
+            return is_in_progress
+
+        expected_end = self.timestamp + datetime.timedelta(
+            seconds=self.media_obj.run_time_seconds
+        )
+        expected_end_padded = expected_end + datetime.timedelta(
+            seconds=padding_seconds
+        )
+        # Take our start time, add our media length and an extra 30 min (1800s) is it still in the future? keep going
+        is_in_progress = expected_end_padded > pendulum.now()
+        logger.info(
+            "[scrobbling] checking if we're probably still playing",
+            extra={
+                "media_id": self.media_obj.id,
+                "scrobble_id": self.id,
+                "media_type": self.media_type,
+                "probably_still_in_progress": is_in_progress,
+            },
+        )
+        return is_in_progress
+
+    @property
     def can_be_updated(self) -> bool:
         updatable = True
-        probably_still_watching = False
-        if self.media_type == self.MediaType.VIDEO:
-            probably_still_watching = (
-                pendulum.now() - self.timestamp
-            ).seconds < 1800  # 30 min
-            logger.info(
-                "[scrobbling] checking for long played video",
-                extra={
-                    "media_id": self.media_obj.id,
-                    "scrobble_id": self.id,
-                    "media_type": self.media_type,
-                    "probably_still_watching": probably_still_watching,
-                },
-            )
 
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(
@@ -714,11 +734,7 @@ class Scrobble(TimeStampedModel):
                 },
             )
             updatable = False
-        if (
-            updatable
-            and self.percent_played >= 100
-            and not probably_still_watching
-        ):
+        if updatable and self.percent_played >= 100:
             logger.info(
                 f"[scrobbling] cannot be updated, existing scrobble is 100% played",
                 extra={
@@ -738,6 +754,9 @@ class Scrobble(TimeStampedModel):
                 },
             )
             updatable = False
+
+        if self.probably_still_in_progress:
+            updatable = True
 
         return updatable
 
