@@ -5,6 +5,8 @@ import logging
 from typing import Iterable, Optional
 from uuid import uuid4
 
+import pendulum
+
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
@@ -687,6 +689,20 @@ class Scrobble(TimeStampedModel):
     @property
     def can_be_updated(self) -> bool:
         updatable = True
+        probably_still_watching = False
+        if self.media_type == self.MediaType.VIDEO:
+            probably_still_watching = (
+                pendulum.now() - self.timestamp
+            ).seconds < 1800  # 30 min
+            logger.info(
+                "[scrobbling] checking for long played video",
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                    "probably_still_watching": probably_still_watching,
+                },
+            )
 
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(
@@ -698,7 +714,11 @@ class Scrobble(TimeStampedModel):
                 },
             )
             updatable = False
-        if updatable and self.percent_played >= 100:
+        if (
+            updatable
+            and self.percent_played >= 100
+            and not probably_still_watching
+        ):
             logger.info(
                 f"[scrobbling] cannot be updated, existing scrobble is 100% played",
                 extra={
