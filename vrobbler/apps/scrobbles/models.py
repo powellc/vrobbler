@@ -838,8 +838,12 @@ class Scrobble(TimeStampedModel):
                 "media_id": media.id,
                 "source": source,
                 "scrobble_data": scrobble_data,
-                "percent_played": scrobble.percent_played,
-                "can_be_updated": scrobble.can_be_updated,
+                "percent_played": scrobble.percent_played
+                if scrobble
+                else None,
+                "can_be_updated": scrobble.can_be_updated
+                if scrobble
+                else None,
             },
         )
 
@@ -859,7 +863,7 @@ class Scrobble(TimeStampedModel):
         logger.info(
             f"[scrobbling] existing scrobble finished, creating new scrobble",
             extra={
-                "finished_scrobble_id": scrobble.id,
+                "finished_scrobble_id": scrobble.id if scrobble else None,
                 "media_type": mtype,
                 "media_id": media.id,
                 "source": source,
