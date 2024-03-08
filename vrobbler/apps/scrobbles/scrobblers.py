@@ -65,6 +65,16 @@ def mopidy_scrobble_podcast(
         "mopidy_status": data_dict.get("status"),
     }
 
+    logger.info(
+        "[scrobblers] webhook mopidy scrobble request received",
+        extra={
+            "episode_id": episode.id if episode else None,
+            "user_id": user_id,
+            "scrobble_dict": mopidy_data,
+            "media_type": Scrobble.MediaType.PODCAST_EPISODE,
+        },
+    )
+
     scrobble = None
     if episode:
         scrobble = Scrobble.create_or_update(episode, user_id, mopidy_data)
@@ -100,6 +110,16 @@ def mopidy_scrobble_track(
         "source": "Mopidy",
         "mopidy_status": data_dict.get("status"),
     }
+
+    logger.info(
+        "[scrobblers] webhook mopidy scrobble request received",
+        extra={
+            "track_id": track.id,
+            "user_id": user_id,
+            "scrobble_dict": mopidy_data,
+            "media_type": Scrobble.MediaType.TRACK,
+        },
+    )
 
     scrobble = Scrobble.create_or_update(track, user_id, mopidy_data)
 
@@ -173,6 +193,16 @@ def jellyfin_scrobble_video(data_dict: dict, user_id: Optional[int]):
 
     scrobble_dict = build_scrobble_dict(data_dict, user_id)
 
+    logger.info(
+        "[scrobblers] webhook video scrobble request received",
+        extra={
+            "video_id": video.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.VIDEO,
+        },
+    )
+
     return Scrobble.create_or_update(video, user_id, scrobble_dict)
 
 
@@ -192,11 +222,12 @@ def manual_scrobble_video(imdb_id: str, user_id: int):
     }
 
     logger.info(
-        "[webhook] video scrobble request received",
+        "[scrobblers] manual video scrobble request received",
         extra={
             "video_id": video.id,
             "user_id": user_id,
             "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.VIDEO,
         },
     )
 
@@ -227,11 +258,12 @@ def manual_scrobble_video_game(hltb_id: str, user_id: int):
     }
 
     logger.info(
-        "[webhook] video game scrobble request received",
+        "[scrobblers] manual video game scrobble request received",
         extra={
             "videogame_id": game.id,
             "user_id": user_id,
             "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.VIDEO_GAME,
         },
     )
 
@@ -250,11 +282,12 @@ def manual_scrobble_book(openlibrary_id: str, user_id: int):
     }
 
     logger.info(
-        "[webhook] book scrobble request received",
+        "[scrobblers] manual book scrobble request received",
         extra={
             "book_id": book.id,
             "user_id": user_id,
             "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.BOOK,
         },
     )
 
@@ -281,6 +314,7 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
             "boardgame_id": boardgame.id,
             "user_id": user_id,
             "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.BOARD_GAME,
         },
     )
 
@@ -303,6 +337,7 @@ def manual_scrobble_webpage(url: str, user_id: int):
             "webpage_id": webpage.id,
             "user_id": user_id,
             "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.WEBPAGE,
         },
     )
 
@@ -337,6 +372,7 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
             "user_id": user_id,
             "timestamp": extra_data.get("timestamp"),
             "raw_timestamp": data_dict.get("time"),
+            "media_type": Scrobble.MediaType.GEO_LOCATION,
         },
     )
 
