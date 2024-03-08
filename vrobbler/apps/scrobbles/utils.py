@@ -88,54 +88,6 @@ def parse_mopidy_uri(uri: str) -> dict:
     }
 
 
-def check_scrobble_for_finish(
-    scrobble: "Scrobble", force_to_100=False, force_finish=False
-) -> None:
-    completion_percent = scrobble.media_obj.COMPLETION_PERCENT
-
-    if scrobble.media_type == "GeoLocation" and not force_finish:
-        logger.info(
-            f"[scrobbling] not complete, locations are ONLY completed when new one is created, use force_finish",
-            extra={
-                "scrobble_id": scrobble.id,
-                "media_type": scrobble.media_type,
-            },
-        )
-        return
-
-    is_complete = False
-    if scrobble.percent_played >= completion_percent or force_finish:
-        is_complete = True
-        # A hack to fix overruns on time ... default to media taking as long as needed to finish
-        scrobble.playback_position_seconds = (
-            scrobble.media_obj.run_time_seconds
-        )
-
-        scrobble.in_progress = False
-        scrobble.is_paused = False
-        scrobble.played_to_completion = True
-
-        scrobble.save(
-            update_fields=[
-                "in_progress",
-                "is_paused",
-                "played_to_completion",
-                "playback_position_seconds",
-            ]
-        )
-    logger.info(
-        f"[scrobbling] checked for completion",
-        extra={
-            "scrobble_id": scrobble.id,
-            "media_type": scrobble.media_type,
-            "percent_played": scrobble.percent_played,
-            "completion_percent": completion_percent,
-            "is_complete": is_complete,
-            "force_finish": force_finish,
-        },
-    )
-
-
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
     Scrobble = apps.get_model(app_label="scrobbles", model_name="Scrobble")
 

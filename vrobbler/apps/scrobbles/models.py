@@ -32,10 +32,7 @@ from profiles.utils import (
 )
 from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.stats import build_charts
-from scrobbles.utils import (
-    check_scrobble_for_finish,
-    media_class_to_foreign_key,
-)
+from scrobbles.utils import media_class_to_foreign_key
 from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
@@ -961,45 +958,59 @@ class Scrobble(TimeStampedModel):
         return [s.geo_location for s in past_scrobbles]
 
     def update(self, scrobble_data: dict) -> "Scrobble":
-        logger.info(
-            "[scrobbling] update",
-            extra={
-                "scrobble_id": self.id,
-                "scrobble_data": scrobble_data,
-                "media_type": self.media_type,
-            },
-        )
         # Status is a field we get from Mopidy, which refuses to poll us
         scrobble_status = scrobble_data.pop("mopidy_status", None)
         if not scrobble_status:
             scrobble_status = scrobble_data.pop("jellyfin_status", None)
 
-        if self.percent_played < 100:
-            # Only worry about ticks if we haven't gotten to the end
-            self.update_ticks(scrobble_data)
+        logger.info(
+            "[scrobbling] update called",
+            extra={
+                "scrobble_id": self.id,
+                "scrobble_data": scrobble_data,
+                "media_type": self.media_type,
+                "scrobble_status": scrobble_status,
+            },
+        )
 
-        # On stop, stop progress and send it to the check for completion
+        # This is really expensive on the DB ... do we need to track this?
+        # if self.percent_played < 100:
+        #    # Only worry about ticks if we haven't gotten to the end
+        #    self.update_ticks(scrobble_data)
+
+        if self.beyond_completion_percent:
+            scrobble_status = "stopped"
+
         if scrobble_status == "stopped":
             self.stop()
-        # On pause, set is_paused and stop scrobbling
         if scrobble_status == "paused":
             self.pause()
         if scrobble_status == "resumed":
             self.resume()
-
-        check_scrobble_for_finish(self)
 
         if scrobble_status != "resumed":
             scrobble_data["stop_timestamp"] = (
                 scrobble_data.pop("timestamp", None) or timezone.now()
             )
 
+        # timestamp is should be more-or-less immutable
         scrobble_data.pop("timestamp", None)
+
         update_fields = []
         for key, value in scrobble_data.items():
             setattr(self, key, value)
             update_fields.append(key)
         self.save(update_fields=update_fields)
+
+        logger.info(
+            "[scrobbling] update finished",
+            extra={
+                "scrobble_id": self.id,
+                "scrobble_data": scrobble_data,
+                "scrobble_status": scrobble_status,
+                "media_type": self.media_type,
+            },
+        )
 
         return self
 
@@ -1016,9 +1027,9 @@ class Scrobble(TimeStampedModel):
 
     def stop(self, force_finish=False) -> None:
         self.stop_timestamp = timezone.now()
-        if force_finish:
-            self.played_to_completion = True
+        self.played_to_completion = True
         self.in_progress = False
+
         if not self.playback_position_seconds:
             self.playback_position_seconds = int(
                 (self.stop_timestamp - self.timestamp).total_seconds()
@@ -1110,3 +1121,25 @@ class Scrobble(TimeStampedModel):
                 "scrobble_id": self.id,
             },
         )
+
+    @property
+    def beyond_completion_percent(self) -> bool:
+        """Returns true if our media is beyond our completion percent, unless
+        our type is geolocation in which case we always return false
+        """
+        beyond_completion = (
+            self.percent_played >= self.media_obj.COMPLETION_PERCENT
+        )
+
+        if self.media_type == "GeoLocation":
+            logger.info(
+                f"[scrobbling] locations are ONLY completed when new one is created",
+                extra={
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                    "beyond_completion": beyond_completion,
+                },
+            )
+            beyond_completion = False
+
+        return beyond_completion
