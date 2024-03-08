@@ -829,9 +829,6 @@ class Scrobble(TimeStampedModel):
         )
         source = scrobble_data["source"]
         mtype = media.__class__.__name__
-        playback_status = scrobble_data.get(
-            "mopidy_status", scrobble_data.get("jellyfin_status", None)
-        )
 
         logger.info(
             f"[scrobbling] check for existing scrobble to update ",
@@ -856,11 +853,7 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble
 
-        if (
-            scrobble
-            and scrobble.can_be_updated
-            and playback_status != "stopped"
-        ):
+        if scrobble and scrobble.can_be_updated:
             return scrobble.update(scrobble_data)
 
         # Discard status before creating
@@ -869,7 +862,7 @@ class Scrobble(TimeStampedModel):
         logger.info(
             f"[scrobbling] existing scrobble finished, creating new scrobble",
             extra={
-                "finished_scrobble_id": scrobble.id if scrobble else None,
+                "scrobble_id": scrobble.id if scrobble else None,
                 "media_type": mtype,
                 "media_id": media.id,
                 "source": source,
