@@ -854,17 +854,16 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble
 
-        if mopidy_status == "stopped":
-            scrobble.stop()
-
-        if scrobble and scrobble.can_be_updated:
+        if scrobble and (
+            scrobble.can_be_updated or mopidy_status == "stopped"
+        ):
             return scrobble.update(scrobble_data)
 
         # Discard status before creating
         scrobble_data.pop("mopidy_status", None)
         scrobble_data.pop("jellyfin_status", None)
         logger.info(
-            f"[scrobbling] existing scrobble finished, creating new scrobble",
+            f"[scrobbling] creating new scrobble",
             extra={
                 "scrobble_id": scrobble.id if scrobble else None,
                 "media_type": mtype,
