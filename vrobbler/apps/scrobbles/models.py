@@ -829,6 +829,7 @@ class Scrobble(TimeStampedModel):
         )
         source = scrobble_data["source"]
         mtype = media.__class__.__name__
+        mopidy_status = scrobble_data.get("mopidy_status", None)
 
         logger.info(
             f"[scrobbling] check for existing scrobble to update ",
@@ -852,6 +853,9 @@ class Scrobble(TimeStampedModel):
                 media, scrobble_data, user_id
             )
             return scrobble
+
+        if mopidy_status == "stopped":
+            scrobble.stop()
 
         if scrobble and scrobble.can_be_updated:
             return scrobble.update(scrobble_data)
