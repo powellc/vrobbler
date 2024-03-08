@@ -719,43 +719,40 @@ class Scrobble(TimeStampedModel):
 
     @property
     def can_be_updated(self) -> bool:
-        updatable = True
-
         if self.media_obj.__class__.__name__ in LONG_PLAY_MEDIA.values():
             logger.info(
-                f"[scrobbling] cannot be updated, long play media",
+                "[scrobbling] cannot be updated, long play media",
                 extra={
                     "media_id": self.media_obj.id,
                     "scrobble_id": self.id,
                     "media_type": self.media_type,
                 },
             )
-            updatable = False
-        if updatable and self.percent_played >= 100:
-            logger.info(
-                f"[scrobbling] cannot be updated, existing scrobble is 100% played",
-                extra={
-                    "media_id": self.media_obj.id,
-                    "scrobble_id": self.id,
-                    "media_type": self.media_type,
-                },
-            )
-            updatable = False
-        if updatable and self.is_stale:
-            logger.info(
-                f"[scrobbling] cannot be udpated, stale",
-                extra={
-                    "media_id": self.media_obj.id,
-                    "scrobble_id": self.id,
-                    "media_type": self.media_type,
-                },
-            )
-            updatable = False
+            return False
 
-        if self.probably_still_in_progress:
-            updatable = True
+        if self.percent_played >= 100 and not self.probably_still_in_progress:
+            logger.info(
+                "[scrobbling] cannot be updated, existing scrobble is 100% played",
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                },
+            )
+            return False
 
-        return updatable
+        if self.is_stale:
+            logger.info(
+                "[scrobbling] cannot be udpated, stale",
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                },
+            )
+            return False
+
+        updatable = True
 
     @property
     def media_obj(self):
@@ -833,6 +830,19 @@ class Scrobble(TimeStampedModel):
         source = scrobble_data["source"]
         mtype = media.__class__.__name__
 
+        logger.info(
+            f"[scrobbling] check for existing scrobble to update ",
+            extra={
+                "scrobble_id": scrobble.id if scrobble else None,
+                "media_type": mtype,
+                "media_id": media.id,
+                "source": source,
+                "scrobble_data": scrobble_data,
+                "percent_played": scrobble.percent_played,
+                "can_be_updated": scrobble.can_be_updated,
+            },
+        )
+
         # GeoLocations are a special case scrobble
         if mtype == cls.MediaType.GEO_LOCATION:
             scrobble = cls.create_or_update_location(
@@ -841,25 +851,15 @@ class Scrobble(TimeStampedModel):
             return scrobble
 
         if scrobble and scrobble.can_be_updated:
-            logger.info(
-                f"[scrobbling] updating existing scrobble",
-                extra={
-                    "scrobble_id": scrobble.id,
-                    "media_type": mtype,
-                    "media_id": media.id,
-                    "source": source,
-                    "scrobble_data": scrobble_data,
-                    "percent_played": scrobble.percent_played,
-                },
-            )
             return scrobble.update(scrobble_data)
 
         # Discard status before creating
         scrobble_data.pop("mopidy_status", None)
         scrobble_data.pop("jellyfin_status", None)
         logger.info(
-            f"[scrobbling] creating new scrobble",
+            f"[scrobbling] existing scrobble finished, creating new scrobble",
             extra={
+                "finished_scrobble_id": scrobble.id,
                 "media_type": mtype,
                 "media_id": media.id,
                 "source": source,
@@ -993,7 +993,7 @@ class Scrobble(TimeStampedModel):
                 scrobble_data.pop("timestamp", None) or timezone.now()
             )
 
-        # timestamp is should be more-or-less immutable
+        # timestamp should be more-or-less immutable
         scrobble_data.pop("timestamp", None)
 
         update_fields = []
@@ -1087,7 +1087,6 @@ class Scrobble(TimeStampedModel):
             )
 
     def cancel(self) -> None:
-        check_scrobble_for_finish(self, force_finish=True)
         self.delete()
 
     def update_ticks(self, data) -> None:
