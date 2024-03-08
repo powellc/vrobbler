@@ -751,8 +751,15 @@ class Scrobble(TimeStampedModel):
                 },
             )
             return False
-
-        updatable = True
+        logger.info(
+            "[scrobbling] can be updated",
+            extra={
+                "media_id": self.media_obj.id,
+                "scrobble_id": self.id,
+                "media_type": self.media_type,
+            },
+        )
+        return True
 
     @property
     def media_obj(self):
@@ -838,12 +845,10 @@ class Scrobble(TimeStampedModel):
                 "media_type": mtype,
                 "media_id": media.id,
                 "scrobble_data": scrobble_data,
-                "percent_played": scrobble.percent_played
-                if scrobble
-                else None,
+                "percent_played": scrobble.percent_played if scrobble else 0,
                 "can_be_updated": scrobble.can_be_updated
                 if scrobble
-                else None,
+                else False,
             },
         )
 
