@@ -963,7 +963,11 @@ class Scrobble(TimeStampedModel):
     def update(self, scrobble_data: dict) -> "Scrobble":
         logger.info(
             "[scrobbling] update",
-            extra={"scrobble_id": self.id, "scrobble_data": scrobble_data},
+            extra={
+                "scrobble_id": self.id,
+                "scrobble_data": scrobble_data,
+                "media_type": self.media_type,
+            },
         )
         # Status is a field we get from Mopidy, which refuses to poll us
         scrobble_status = scrobble_data.pop("mopidy_status", None)
