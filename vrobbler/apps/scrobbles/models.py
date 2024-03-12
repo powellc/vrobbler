@@ -932,7 +932,7 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble
 
-        has_moved = location.has_moved(scrobble.user.id)
+        has_moved = location.has_moved_for_user(scrobble.user.id)
         logger.info(
             f"[scrobbling] checking - has last location has moved?",
             extra={
