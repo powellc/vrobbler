@@ -913,30 +913,22 @@ class Scrobble(TimeStampedModel):
 
         if not scrobble:
             logger.info(
-                f"[scrobbling] no existing location scrobbles, scrobble ahoy!",
+                f"[scrobbling] creating - no existing location scrobbles found",
                 extra={
-                    "new_location_id": location.id,
+                    "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
                 },
             )
             return cls.create(scrobble_data)
 
-        logger.info(
-            f"[scrobbling] checking if last location matches current location",
-            extra={
-                "scrobble_id": scrobble.id,
-                "media_type": cls.MediaType.GEO_LOCATION,
-                "location_id": location.id,
-                "scrobble_location_id": scrobble.media_obj.id,
-            },
-        )
         if scrobble.media_obj == location:
             logger.info(
-                f"[scrobbling] last location and new location are the same, not moving",
+                f"[scrobbling] finished - same location - not moved",
                 extra={
-                    "scrobble_id": scrobble.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
-                    "new_location_id": location.id,
+                    "media_id": location.id,
+                    "scrobble_id": scrobble.id,
+                    "scrobble_media_id": scrobble.media_obj.id,
                 },
             )
             return scrobble
@@ -946,19 +938,19 @@ class Scrobble(TimeStampedModel):
         )
         has_moved = location.has_moved(jitter_correction_locations)
         logger.info(
-            f"[scrobbling] checking if last location has moved",
+            f"[scrobbling] checking - has last location has moved?",
             extra={
                 "scrobble_id": scrobble.id,
+                "scrobble_media_id": scrobble.media_obj.id,
                 "media_type": cls.MediaType.GEO_LOCATION,
-                "location_id": location.id,
-                "scrobble_location_id": scrobble.media_obj.id,
+                "media_id": location.id,
                 "has_moved": has_moved,
                 "past_locations_used": jitter_correction_locations,
             },
         )
         if not has_moved:
             logger.info(
-                f"[scrobbling] new location received, but not far from old location, not moving",
+                f"[scrobbling] finished - not from old location - not moved",
                 extra={
                     "scrobble_id": scrobble.id,
                     "media_id": location.id,
@@ -969,20 +961,11 @@ class Scrobble(TimeStampedModel):
             return scrobble
 
         scrobble.stop(force_finish=True)
-        logger.info(
-            f"[scrobbling] finish location scrobble, moved from old location",
-            extra={
-                "scrobble_id": scrobble.id,
-                "media_type": cls.MediaType.GEO_LOCATION,
-                "media_id": location.id,
-                "old_media_id": scrobble.media_obj.id,
-            },
-        )
 
         if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
             logger.info(
-                f"[scrobbling] has moved but found existing named location, using it",
+                f"[scrobbling] checking - found existing named location",
                 extra={
                     "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
@@ -993,7 +976,7 @@ class Scrobble(TimeStampedModel):
 
         scrobble = cls.create(scrobble_data)
         logger.info(
-            f"[scrobbling] created for location",
+            f"[scrobbling] finished - created for location",
             extra={
                 "scrobble_id": scrobble.id,
                 "media_id": location.id,
