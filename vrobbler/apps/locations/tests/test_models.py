@@ -50,8 +50,8 @@ def test_found_in_proximity_location():
     close = GeoLocation.objects.create(
         lat=lat + 0.0001, lon=lon - 0.0001, altitude=60
     )
-    assert close not in loc.in_proximity()
-    assert close in loc.in_proximity(named=False)
+    assert close not in loc.in_proximity(named=True)
+    assert close in loc.in_proximity()
 
 
 @pytest.mark.django_db
@@ -63,7 +63,7 @@ def test_not_found_in_proximity_location():
     far = GeoLocation.objects.create(
         lat=lat + 0.0002, lon=lon - 0.0001, altitude=60
     )
-    assert far not in loc.in_proximity(named=False)
+    assert far not in loc.in_proximity()
 
 
 @pytest.mark.django_db

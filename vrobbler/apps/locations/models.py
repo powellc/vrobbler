@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, getcontext
 import logging
 from typing import Dict
 from uuid import uuid4
@@ -91,47 +91,37 @@ class GeoLocation(ScrobblableMixin):
             abs(Decimal(old_lat_lon[1]) - Decimal(self.lon)),
         )
 
-    def has_moved(self, past_points: list["GeoLocation"]) -> bool:
-        """GPS jumps from time to time. This function tries to smooth out
-        when we appear to have flagging our location as having not moved if one of our last
-        3"""
+    def has_moved_for_user(self, user_id: int) -> bool:
         has_moved = False
-        has_moved_locs = []
-        for point in past_points:
-            loc_diff = self.loc_diff((point.lat, point.lon))
-            loc_has_moved = False
-            if (
-                loc_diff[0] > GEOLOC_PROXIMITY
-                or loc_diff[1] > GEOLOC_PROXIMITY
-            ):
-                loc_has_moved = True
-            logger.info(
-                f"[locations] checked whether location has moved against proximity setting",
-                extra={
-                    "location": self,
-                    "loc_diff": loc_diff,
-                    "loc_has_moved": loc_has_moved,
-                    "point": point,
-                    "geoloc_proximity": GEOLOC_PROXIMITY,
-                },
-            )
-            has_moved_locs.append(loc_has_moved)
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return False
 
-        # Sum up all True values, if they're more than half of our locations, we've moved
-        if sum(has_moved_locs) > int(len(past_points) / 2):
+        last_point = (
+            user.scrobble_set.filter(media_type="GeoLocation")
+            .order_by("-timestamp")
+            .first()
+        ).media_obj
+
+        if not last_point:
+            return True
+
+        loc_diff = self.loc_diff((last_point.lat, last_point.lon))
+        if loc_diff[0] > GEOLOC_PROXIMITY or loc_diff[1] > GEOLOC_PROXIMITY:
             has_moved = True
-        logger.info(
-            f"[locations] finished checking for movement",
+        logger.debug(
+            f"[locations] checked whether location has moved against proximity setting",
             extra={
+                "location": self,
+                "loc_diff": loc_diff,
                 "has_moved": has_moved,
-                "has_moved_locs": has_moved_locs,
-                "past_points": past_points,
+                "point": last_point,
+                "geoloc_proximity": GEOLOC_PROXIMITY,
             },
         )
-
         return has_moved
 
-    def in_proximity(self, named=True) -> models.QuerySet:
+    def in_proximity(self, named=False) -> models.QuerySet:
         lat_min = Decimal(self.lat) - GEOLOC_PROXIMITY
         lat_max = Decimal(self.lat) + GEOLOC_PROXIMITY
         lon_min = Decimal(self.lon) - GEOLOC_PROXIMITY
@@ -143,12 +133,5 @@ class GeoLocation(ScrobblableMixin):
             lat__gte=lat_min,
             lon__lte=lon_max,
             lon__gte=lon_min,
-        )
-        logger.info(
-            f"[locations] finished looking for proximate locations",
-            extra={
-                "close_locations": close_locations,
-                "is_title_null": is_title_null,
-            },
-        )
+        ).exclude(id=self.id)
         return close_locations
