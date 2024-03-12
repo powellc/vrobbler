@@ -151,3 +151,4 @@ class GeoLocation(ScrobblableMixin):
                 "is_title_null": is_title_null,
             },
         )
+        return close_locations

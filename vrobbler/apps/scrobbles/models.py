@@ -960,9 +960,10 @@ class Scrobble(TimeStampedModel):
             logger.info(
                 f"[scrobbling] new location received, but not far from old location, not moving",
                 extra={
-                    "new_location_id": location.id,
+                    "scrobble_id": scrobble.id,
+                    "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
-                    "old_location_id": scrobble.media_obj.id,
+                    "old_media__id": scrobble.media_obj.id,
                 },
             )
             return scrobble
@@ -974,6 +975,7 @@ class Scrobble(TimeStampedModel):
                 "scrobble_id": scrobble.id,
                 "media_type": cls.MediaType.GEO_LOCATION,
                 "media_id": location.id,
+                "old_media_id": scrobble.media_obj.id,
             },
         )
 
@@ -984,7 +986,7 @@ class Scrobble(TimeStampedModel):
                 extra={
                     "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
-                    "existing_location_id": existing_location.id,
+                    "old_media_id": existing_location.id,
                 },
             )
             scrobble_data["geo_location"] = existing_location
