@@ -955,20 +955,24 @@ class Scrobble(TimeStampedModel):
             )
             return scrobble
 
-        scrobble.stop(force_finish=True)
-
         if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
+            scrobble.scrobble_log = (
+                scrobble.scrobble_log
+                + "\nLocation {location.id} too close to this scrobble"
+            )
+            scrobble.save(update_fields=[scrobble_log])
             logger.info(
-                f"[scrobbling] checking - found existing named location",
+                f"[scrobbling] finished - found existing named location",
                 extra={
                     "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
                     "old_media_id": existing_location.id,
                 },
             )
-            scrobble_data["geo_location"] = existing_location
+            return scrobble
 
+        scrobble.stop(force_finish=True)
         scrobble = cls.create(scrobble_data)
         logger.info(
             f"[scrobbling] finished - created for location",
