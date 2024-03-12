@@ -840,6 +840,9 @@ class Scrobble(TimeStampedModel):
 
         # GeoLocations are a special case scrobble
         if mtype == cls.MediaType.GEO_LOCATION:
+            logger.warn(
+                f"[scrobbling] use create_or_update_location for GeoLocations"
+            )
             scrobble = cls.create_or_update_location(
                 media, scrobble_data, user_id
             )

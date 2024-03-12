@@ -353,7 +353,11 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
         "source": "GPSLogger",
     }
 
-    scrobble = Scrobble.create_or_update(location, user_id, extra_data)
+    scrobble = Scrobble.create_or_update_location(
+        location,
+        extra_data,
+        user_id,
+    )
 
     provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
 
