@@ -901,7 +901,7 @@ class Scrobble(TimeStampedModel):
         )
 
         logger.info(
-            f"[scrobbling] check for existing scrobble to update ",
+            f"[scrobbling] fetching last location scrobble",
             extra={
                 "scrobble_id": scrobble.id if scrobble else None,
                 "media_type": cls.MediaType.GEO_LOCATION,
@@ -912,7 +912,7 @@ class Scrobble(TimeStampedModel):
 
         if not scrobble:
             logger.info(
-                f"[scrobbling] creating - no existing location scrobbles found",
+                f"[scrobbling] finished - no existing location scrobbles found",
                 extra={
                     "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
