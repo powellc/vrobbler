@@ -91,31 +91,21 @@ class GeoLocation(ScrobblableMixin):
             abs(Decimal(old_lat_lon[1]) - Decimal(self.lon)),
         )
 
-    def has_moved_for_user(self, user_id: int) -> bool:
+    def has_moved(self, previous_location: "GeoLocation") -> bool:
         has_moved = False
-        user = User.objects.filter(id=user_id).first()
-        if not user:
-            return False
 
-        last_point = (
-            user.scrobble_set.filter(media_type="GeoLocation")
-            .order_by("-timestamp")
-            .first()
-        ).media_obj
-
-        if not last_point:
-            return True
-
-        loc_diff = self.loc_diff((last_point.lat, last_point.lon))
+        loc_diff = self.loc_diff(
+            (previous_location.lat, previous_location.lon)
+        )
         if loc_diff[0] > GEOLOC_PROXIMITY or loc_diff[1] > GEOLOC_PROXIMITY:
             has_moved = True
         logger.debug(
             f"[locations] checked whether location has moved against proximity setting",
             extra={
-                "location": self,
+                "location_id": self.id,
                 "loc_diff": loc_diff,
                 "has_moved": has_moved,
-                "point": last_point,
+                "previous_location_id": previous_location.id,
                 "geoloc_proximity": GEOLOC_PROXIMITY,
             },
         )
