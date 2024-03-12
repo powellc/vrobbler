@@ -907,10 +907,6 @@ class Scrobble(TimeStampedModel):
                 "media_type": cls.MediaType.GEO_LOCATION,
                 "media_id": location.id,
                 "scrobble_data": scrobble_data,
-                "percent_played": scrobble.percent_played if scrobble else 0,
-                "can_be_updated": scrobble.can_be_updated
-                if scrobble
-                else False,
             },
         )
 
