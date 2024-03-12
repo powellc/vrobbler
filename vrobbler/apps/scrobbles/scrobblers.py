@@ -351,6 +351,7 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
         "user_id": user_id,
         "timestamp": pendulum.parse(data_dict.get("time", timezone.now())),
         "source": "GPSLogger",
+        "media_type": Scrobble.MediaType.GEO_LOCATION,
     }
 
     scrobble = Scrobble.create_or_update_location(
