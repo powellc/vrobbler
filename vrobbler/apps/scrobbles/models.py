@@ -947,11 +947,11 @@ class Scrobble(TimeStampedModel):
 
         scrobble.stop(force_finish=True)
         logger.info(
-            f"[scrobbling] finish location scrobble, we've moved",
+            f"[scrobbling] finish location scrobble, moved from old location",
             extra={
                 "scrobble_id": scrobble.id,
                 "media_type": cls.MediaType.GEO_LOCATION,
-                "location_id": location.id,
+                "media_id": location.id,
             },
         )
 
@@ -960,22 +960,24 @@ class Scrobble(TimeStampedModel):
             logger.info(
                 f"[scrobbling] has moved but found existing named location, using it",
                 extra={
-                    "location_id": location.id,
+                    "media_id": location.id,
                     "media_type": cls.MediaType.GEO_LOCATION,
                     "existing_location_id": existing_location.id,
                 },
             )
             scrobble_data["geo_location"] = existing_location
 
+        scrobble = cls.create(scrobble_data)
         logger.info(
-            f"[scrobbling] creating for location from GPSLogger",
+            f"[scrobbling] created for location from GPSLogger",
             extra={
-                "location_id": location.id,
+                "scrobble_id": scrobble.id,
+                "media_id": location.id,
                 "scrobble_data": scrobble_data,
                 "media_type": cls.MediaType.GEO_LOCATION,
             },
         )
-        return cls.create(scrobble_data)
+        return scrobble
 
     @classmethod
     def past_scrobbled_locations(
