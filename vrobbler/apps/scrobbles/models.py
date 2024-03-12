@@ -838,6 +838,13 @@ class Scrobble(TimeStampedModel):
         mtype = media.__class__.__name__
         mopidy_status = scrobble_data.get("mopidy_status", None)
 
+        # GeoLocations are a special case scrobble
+        if mtype == cls.MediaType.GEO_LOCATION:
+            scrobble = cls.create_or_update_location(
+                media, scrobble_data, user_id
+            )
+            return scrobble
+
         logger.info(
             f"[scrobbling] check for existing scrobble to update ",
             extra={
@@ -851,13 +858,6 @@ class Scrobble(TimeStampedModel):
                 else False,
             },
         )
-
-        # GeoLocations are a special case scrobble
-        if mtype == cls.MediaType.GEO_LOCATION:
-            scrobble = cls.create_or_update_location(
-                media, scrobble_data, user_id
-            )
-            return scrobble
 
         if scrobble and (
             scrobble.can_be_updated or mopidy_status == "stopped"
@@ -882,6 +882,11 @@ class Scrobble(TimeStampedModel):
     def create_or_update_location(
         cls, location: GeoLocation, scrobble_data: dict, user_id: int
     ) -> "Scrobble":
+        """Location is special type, where the current scrobble for a user is always the
+        current active scrobble, and we only finish it a move on if we get a new location
+        that is far enough (and far enough over the last three past scrobbles) to have
+        actually moved.
+        """
         scrobble = (
             cls.objects.filter(
                 media_type=cls.MediaType.GEO_LOCATION,
@@ -890,6 +895,20 @@ class Scrobble(TimeStampedModel):
             )
             .order_by("-timestamp")
             .first()
+        )
+
+        logger.info(
+            f"[scrobbling] check for existing scrobble to update ",
+            extra={
+                "scrobble_id": scrobble.id if scrobble else None,
+                "media_type": cls.MediaType.GEO_LOCATION,
+                "media_id": location.id,
+                "scrobble_data": scrobble_data,
+                "percent_played": scrobble.percent_played if scrobble else 0,
+                "can_be_updated": scrobble.can_be_updated
+                if scrobble
+                else False,
+            },
         )
 
         if not scrobble:
