@@ -890,6 +890,9 @@ class Scrobble(TimeStampedModel):
         that is far enough (and far enough over the last three past scrobbles) to have
         actually moved.
         """
+        key = media_class_to_foreign_key(location.__class__.__name__)
+        scrobble_data[key + "_id"] = location.id
+
         scrobble = (
             cls.objects.filter(
                 media_type=cls.MediaType.GEO_LOCATION,
