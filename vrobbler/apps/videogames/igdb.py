@@ -46,13 +46,13 @@ def lookup_game_id_from_gdb(name: str) -> str:
     if "(" in name:
         name = name.split(" (")[0]
 
-    body = f'fields name,game,published_at; search "{name}"; limit 20;'
+    body = f'fields name,game,published_at; search "{name}"; limit 100;'
     response = requests.post(SEARCH_URL, data=body, headers=headers)
     results = json.loads(response.content)
     if not results:
         logger.warn(
             f"Search of game on IGDB failed, no results found",
-            extra={"name": name},
+            extra={"search_query": name},
         )
         return ""
 
@@ -65,7 +65,7 @@ def lookup_game_id_from_gdb(name: str) -> str:
             },
         )
     # Sort our result by IDs so we always get the lowest ID, which is likely to be the least esoteric game
-    results = sorted(results, key=itemgetter("id"), reverse=True)
+    results = sorted(results, key=lambda k: k.get("game", 250000))
     return results[0].get("game", "")
 
 
