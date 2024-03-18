@@ -1,11 +1,12 @@
 import json
 import logging
 from datetime import datetime
+from operator import itemgetter
 from typing import Dict, Tuple
 
-from django.conf import settings
 import pytz
 import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 TWITCH_AUTH_BASE = "https://id.twitch.tv/"
@@ -49,9 +50,22 @@ def lookup_game_id_from_gdb(name: str) -> str:
     response = requests.post(SEARCH_URL, data=body, headers=headers)
     results = json.loads(response.content)
     if not results:
-        logger.warn(f"Search of game on IGDB failed for name {name}")
+        logger.warn(
+            f"Search of game on IGDB failed, no results found",
+            extra={"name": name},
+        )
         return ""
 
+    if results[0].get("status") == 406:
+        logger.warn(
+            f"Search of game on IGBD failed, API error",
+            extra={
+                "cause": results.get("cause"),
+                "details": results.get("details"),
+            },
+        )
+    # Sort our result by IDs so we always get the lowest ID, which is likely to be the least esoteric game
+    results = sorted(results, key=itemgetter("id"), reverse=True)
     return results[0].get("game", "")
 
 
