@@ -52,7 +52,7 @@ def lookup_game_id_from_gdb(name: str) -> str:
         logger.warn(f"Search of game on IGDB failed for name {name}")
         return ""
 
-    return results[0]["game"]
+    return results[0].get("game", "")
 
 
 def lookup_game_from_igdb(name_or_igdb_id: str) -> Dict:
