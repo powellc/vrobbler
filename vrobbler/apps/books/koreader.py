@@ -155,12 +155,11 @@ def build_page_data(page_rows: list, book_map: dict, user_tz=None) -> dict:
     scrobbles for our user, loading the page data into the page_data
     field on the scrobble instance.
     """
+    book_ids_not_found = []
     for page_row in page_rows:
         koreader_book_id = page_row[KoReaderPageStatColumn.ID_BOOK.value]
         if koreader_book_id not in book_map.keys():
-            logger.info(
-                f"Found pages for book ID {koreader_book_id} not in our history, skipping"
-            )
+            book_ids_not_found.append(koreader_book_id)
             continue
         if "pages" not in book_map[koreader_book_id].keys():
             book_map[koreader_book_id]["pages"] = {}
@@ -195,6 +194,10 @@ def build_page_data(page_rows: list, book_map: dict, user_tz=None) -> dict:
             "start_ts": start_ts,
             "end_ts": start_ts + duration,
         }
+    if book_ids_not_found:
+        logger.info(
+            f"Found pages for books not in file: {set(book_ids_not_found)}"
+        )
     return book_map
 
 
@@ -205,10 +208,11 @@ def build_scrobbles_from_book_map(
 
     scrobbles_to_create = []
 
+    pages_not_found = []
     for koreader_book_id, book_dict in book_map.items():
         book_id = book_dict["book_id"]
         if "pages" not in book_dict.keys():
-            logger.warn(f"No page data found in book map for {book_id}")
+            pages_not_found.append(book_id)
             continue
 
         should_create_scrobble = False
@@ -242,8 +246,12 @@ def build_scrobbles_from_book_map(
             if (
                 seconds_from_last_page > SESSION_GAP_SECONDS
                 and not big_jump_to_this_page
-            ):
+            ) or end_of_reading:
                 should_create_scrobble = True
+            else:
+                logger.info(
+                    f"{koreader_book_id}, {big_jump_to_this_page}, {seconds_from_last_page}"
+                )
 
             if should_create_scrobble:
                 first_page = scrobble_page_data.get(
@@ -308,6 +316,8 @@ def build_scrobbles_from_book_map(
 
             last_page_number = cur_page_number
             prev_page_stats = stats
+    if pages_not_found:
+        logger.info(f"Pages not found for books: {set(pages_not_found)}")
     return scrobbles_to_create
 
 
