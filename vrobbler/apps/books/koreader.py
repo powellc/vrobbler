@@ -1,7 +1,7 @@
 import logging
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 
 import pytz
@@ -222,14 +222,12 @@ def build_scrobbles_from_book_map(
         last_page_number = 0
 
         pages_processed = 0
-        total_pages = len(book_map[koreader_book_id]["pages"])
+        total_pages_read = len(book_map[koreader_book_id]["pages"])
 
         for cur_page_number, stats in book_map[koreader_book_id][
             "pages"
         ].items():
             pages_processed += 1
-            # Accumulate our page data for this scrobble
-            scrobble_page_data[cur_page_number] = stats
 
             seconds_from_last_page = 0
             if prev_page_stats:
@@ -241,17 +239,13 @@ def build_scrobbles_from_book_map(
                 "duration"
             )
 
-            end_of_reading = pages_processed == total_pages
+            end_of_reading = pages_processed == total_pages_read
             big_jump_to_this_page = (cur_page_number - last_page_number) > 10
+            is_session_gap = seconds_from_last_page > SESSION_GAP_SECONDS
             if (
-                seconds_from_last_page > SESSION_GAP_SECONDS
-                and not big_jump_to_this_page
+                is_session_gap and not big_jump_to_this_page
             ) or end_of_reading:
                 should_create_scrobble = True
-            else:
-                logger.info(
-                    f"{koreader_book_id}, {big_jump_to_this_page}, {seconds_from_last_page}"
-                )
 
             if should_create_scrobble:
                 first_page = scrobble_page_data.get(
@@ -281,6 +275,13 @@ def build_scrobbles_from_book_map(
                     )
                 ):
                     timestamp.replace(tzinfo=pytz.timezone("Europe/Paris"))
+
+                elif (
+                    timestamp.tzinfo._dst.seconds == 0
+                    or stop_timestamp.tzinfo._dst.seconds == 0
+                ):
+                    timestamp = timestamp - timedelta(hours=1)
+                    stop_timestamp = stop_timestamp - timedelta(hours=1)
 
                 scrobble = Scrobble.objects.filter(
                     timestamp=timestamp,
@@ -313,6 +314,9 @@ def build_scrobbles_from_book_map(
                     should_create_scrobble = False
                     playback_position_seconds = 0
                     scrobble_page_data = {}
+
+            # We accumulate pages for the scrobble until we should create a new one
+            scrobble_page_data[cur_page_number] = stats
 
             last_page_number = cur_page_number
             prev_page_stats = stats
