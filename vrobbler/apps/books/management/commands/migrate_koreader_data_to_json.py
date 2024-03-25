@@ -1,6 +1,6 @@
 import logging
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from books.models import Book
 from django.core.management.base import BaseCommand
 from scrobbles.models import Scrobble
@@ -19,8 +19,6 @@ class Command(BaseCommand):
         scrobbles_to_create = []
 
         for book in Book.objects.filter(koreader_id__isnull=False):
-            for scrobble in book.scrobble_set.all():
-                scrobble.scrobbledpage_set.all().delete()
             book.scrobble_set.all().delete()
 
             koreader_data = book.koreader_data_by_hash or {}
@@ -102,6 +100,13 @@ class Command(BaseCommand):
                     ):
                         timestamp.replace(tzinfo=pytz.timezone("Europe/Paris"))
 
+                    elif (
+                        timestamp.tzinfo._dst.seconds == 0
+                        or stop_timestamp.tzinfo._dst.seconds == 0
+                    ):
+                        timestamp = timestamp - timedelta(hours=1)
+                        stop_timestamp = stop_timestamp - timedelta(hours=1)
+
                     scrobble = Scrobble.objects.filter(
                         timestamp=timestamp,
                         book_id=book_id,
@@ -152,5 +157,4 @@ class Command(BaseCommand):
                 prev_page = page
 
         created = Scrobble.objects.bulk_create(scrobbles_to_create)
-        for scrobble in created:
-            fix_long_play_stats_for_scrobbles(scrobble)
+        fix_long_play_stats_for_scrobbles(created)
