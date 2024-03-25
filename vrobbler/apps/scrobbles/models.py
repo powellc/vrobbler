@@ -964,7 +964,7 @@ class Scrobble(TimeStampedModel):
                 scrobble.scrobble_log
                 + "\nLocation {location.id} too close to this scrobble"
             )
-            scrobble.save(update_fields=[scrobble_log])
+            scrobble.save(update_fields=["scrobble_log"])
             logger.info(
                 f"[scrobbling] finished - found existing named location",
                 extra={
