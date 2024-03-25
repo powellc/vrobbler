@@ -70,7 +70,7 @@ class WebPage(ScrobblableMixin):
 
     def _update_data_from_web(self, force=True):
         headers = {
-            "headers": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
+            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
         }
         raw_text = requests.get(self.url, headers=headers).text
         if not self.title or force:
