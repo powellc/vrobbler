@@ -9,6 +9,21 @@
   .webpage-body {width:40em; text-align:justify; padding-top:20px; font-family:serif; font-size:1.25em; line-height:1.6em; border-right: 1px #ccc solid; padding-right: 2em;}
   .webpage-body br { margin-bottom: 1em; }
 </style>
+<link href="{% static 'css/recogito.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/recogito.min.js' %}"></script>
+<script type="text/javascript">
+(function() {
+    var r = Recogito.init({
+    content: document.getElementById('article') // ID or DOM element
+    });
+
+    // Add an event handler
+    r.on('createAnnotation', function(annotation) { /** **/ });
+})();
+</script>
 {% endblock %}
 
 {% block lists %}
