@@ -1,14 +1,16 @@
-import requests
 import logging
 from typing import Dict
-import trafilatura
 from uuid import uuid4
 
+import pendulum
+import requests
+import trafilatura
 from django.apps import apps
-from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
+from htmldate import find_date
 from scrobbles.mixins import ScrobblableMixin
 
 logger = logging.getLogger(__name__)
@@ -21,6 +23,7 @@ class WebPage(ScrobblableMixin):
 
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     url = models.URLField(max_length=500)
+    date = models.DateField(**BNULL)
     domain = models.CharField(max_length=200, **BNULL)
     extract = models.TextField(**BNULL)
 
@@ -77,6 +80,9 @@ class WebPage(ScrobblableMixin):
             self.title = raw_text[
                 raw_text.find("<title>") + 7 : raw_text.find("</title>")
             ]
+        date_str = find_date(str(self.url))
+        if date_str:
+            self.date = pendulum.parse(date_str).date()
 
         if not self.extract or force:
             self.extract = trafilatura.extract(raw_text)
@@ -88,7 +94,13 @@ class WebPage(ScrobblableMixin):
             self.run_time_seconds = self.estimated_time_to_read_in_seconds
 
         self.save(
-            update_fields=["title", "domain", "extract", "run_time_seconds"]
+            update_fields=[
+                "title",
+                "domain",
+                "extract",
+                "run_time_seconds",
+                "date",
+            ]
         )
 
     @classmethod

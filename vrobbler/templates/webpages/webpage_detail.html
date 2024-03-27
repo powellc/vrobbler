@@ -5,21 +5,21 @@
 
 {% block head_extra %}
 <style>
-  .webpage-body {float:left: width:500px; margin-right:10px; font-size:larger;}
+  .webpage-metadata {border: 1px solid #aaa; border-top:none; border-right:none; line-height:0.65em;padding-top:10px;}
+  .webpage-body {width:40em; text-align:justify; padding-top:20px; font-family:serif; font-size:1.25em; line-height:1.6em; border-right: 1px #ccc solid; padding-right: 2em;}
   .webpage-body br { margin-bottom: 1em; }
-  .webpage-metadata {float:left; width:600px; padding:20px 0px 0px 20px; margin-bottom:10px; border: 1px solid #aaa;}
 </style>
 {% endblock %}
 
 {% block lists %}
 <div class="row webpage">
-
     <div class="webpage-metadata">
-      <p>Source: <a href="{{object.url}}">{{object.url}}</a></p>
+      <p>Source: <a href="{{object.url}}">{{object.domain}}</a></p>
+      {% if object.date %}<p>Published: <em>{{object.date}}</em></p>{% endif %}
       <p>Time to read: {{object.estimated_time_to_read_in_minutes}} minutes</p>
     </div>
     {% if object.extract %}
-    <div class="webpage-body">
+    <div class="webpage-body" id="article">
       {{object.extract|linebreaks}}
     </div>
     {% endif %}
