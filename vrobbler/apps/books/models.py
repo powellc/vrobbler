@@ -23,12 +23,18 @@ from scrobbles.mixins import (
 from scrobbles.utils import get_scrobbles_for_media
 from taggit.managers import TaggableManager
 from thefuzz import fuzz
+from vrobbler.apps.books.comicvine import (
+    ComicVineClient,
+    lookup_comic_from_comicvine,
+)
 
 from vrobbler.apps.books.locg import (
     lookup_comic_by_locg_slug,
     lookup_comic_from_locg,
     lookup_comic_writer_by_locg_slug,
 )
+
+COMICVINE_API_KEY = getattr(settings, "COMICVINE_API_KEY", "")
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -150,7 +156,7 @@ class Book(LongPlayScrobblableMixin):
                 author_name = self.author.name
 
             if not data:
-                logger.warn(f"rChecking openlibrary for {self.title}")
+                logger.warn(f"Checking openlibrary for {self.title}")
                 if self.openlibrary_id and force_update:
                     data = lookup_book_from_openlibrary(
                         str(self.openlibrary_id)
@@ -163,12 +169,17 @@ class Book(LongPlayScrobblableMixin):
             if not data:
                 if self.locg_slug:
                     logger.warn(
-                        f"rChecking openlibrary for {self.title} with slug {self.locg_slug}"
+                        f"Checking LOCG for {self.title} with slug {self.locg_slug}"
                     )
                     data = lookup_comic_by_locg_slug(str(self.locg_slug))
                 else:
-                    logger.warn(f"rChecking openlibrary for {self.title}")
+                    logger.warn(f"Checking LOCG for {self.title}")
                     data = lookup_comic_from_locg(str(self.title))
+
+            if not data and COMICVINE_API_KEY:
+                logger.warn(f"Checking ComicVine for {self.title}")
+                cv_client = ComicVineClient(api_key=COMICVINE_API_KEY)
+                data = lookup_comic_from_comicvine(str(self.title))
 
             if not data:
                 logger.warn(f"Book not found in any sources: {self.title}")

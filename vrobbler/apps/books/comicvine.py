@@ -208,25 +208,26 @@ def lookup_comic_from_comicvine(title: str) -> dict:
     client = ComicVineClient(
         api_key=getattr(settings, "COMICVINE_API_KEY", None)
     )
-    return client.search(title)
-    results = [
+    result = [
         r
         for r in client.search(title).get("results")
         if r.get("resource_type") == "volume"
-    ]
+    ][0]
 
-    return results
-    """
-    {
-        "title": top.get("title"),
-        "isbn": isbn,
-        "comicvine_id": ol_id,
-        "first_publish_year": top.get("first_publish_year"),
-        "first_sentence": first_sentence,
-        "pages": top.get("number_of_pages_median", None),
-        "cover_url": COVER_URL.format(id=ol_id),
-        "cv_author_id": ol_author_id,
-        "subject_key_list": top.get("subject_key", []),
+    if "volume" not in result.keys():
+        logger.warn("No result found on ComicVine", extra={"title": title})
+        return {}
+
+    title = " ".join([result.get("volume").get("name"), result.get("name)")])
+    data_dict = {
+        "title": title,
+        "cover_url": result.get("image").get("original_url"),
+        "comicvine_data": {
+            "id": result.get("id"),
+            "site_detail_url": result.get("site_detail_url"),
+            "description": result.get("description"),
+            "image": result.get("image").get("original_url"),
+        },
     }
 
-    """
+    return data_dict
