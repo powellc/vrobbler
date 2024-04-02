@@ -94,6 +94,22 @@ class WebPage(ScrobblableMixin):
             "-timestamp"
         )
 
+    def clean_title(self, title: str, save=True):
+        if len(title.split('|')) > 1:
+            if "The Quietus" in title:
+                title = title.split('|')[-0]
+            else:
+                title = title.split('|')[0]
+        if len(title.split('&#8211;')) > 1:
+            title = title.split('&#8211;')[0]
+        if len(title.split(' - ')) > 1:
+            title = title.split(' - ')[0]
+        self.title = title.strip()
+        if save:
+            self.save(update_fields=["title"])
+
+
+
     def _update_domain_from_url(self):
         domain = self.url.split("//")[-1].split("/")[0].split("www.")[-1]
         self.domain, created = Domain.objects.get_or_create(root=domain)
@@ -104,15 +120,22 @@ class WebPage(ScrobblableMixin):
         }
         raw_text = requests.get(self.url, headers=headers).text
         if not self.title or force:
-            self.title = raw_text[
+            self.set_title(raw_text[
                 raw_text.find("<title>") + 7 : raw_text.find("</title>")
-            ]
-        date_str = find_date(str(self.url))
+            ])
+        try:
+            date_str = find_date(str(self.url))
+        except ValueError:
+            date_str = ""
         if date_str:
             self.date = pendulum.parse(date_str).date()
 
         if not self.extract or force:
             self.extract = trafilatura.extract(raw_text)
+            if not self.title:
+                first_line = self.extract.split("\n")[0]
+                if len(first_line) < 254:
+                    self.title = first_line
 
         if not self.domain or force:
             self._update_domain_from_url()
