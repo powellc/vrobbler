@@ -1,5 +1,5 @@
 from books.models import Book
-from django.core.management.base import BaseCommand, no_translations
+from django.core.management.base import BaseCommand
 from scrobbles.models import ScrobbledPage
 
 
