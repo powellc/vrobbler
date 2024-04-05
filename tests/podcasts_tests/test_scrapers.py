@@ -1,3 +1,4 @@
+import pytest
 from vrobbler.apps.podcasts.scrapers import scrape_data_from_google_podcasts
 
 expected_desc_snippet = (
@@ -8,6 +9,7 @@ expected_img_url = "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcR1F0Cf
 expected_google_url = "https://podcasts.google.com/feed/aHR0cHM6Ly9mZWVkcy5ucHIub3JnLzUxMDMxOC9wb2RjYXN0LnhtbA"
 
 
+@pytest.mark.skip("Google Podcasts is gone")
 def test_get_not_allowed_from_mopidy():
     query = "Up First"
     result_dict = scrape_data_from_google_podcasts(query)
