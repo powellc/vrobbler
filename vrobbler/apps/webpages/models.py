@@ -59,11 +59,9 @@ class WebPage(ScrobblableMixin):
     def _raw_domain(self):
         self.url.split("//")[-1].split("/")[0]
 
-    def _update_extract_from_web(self, force=True):
-        headers = {
-            "headers": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
-        }
-        raw_text = requests.get(self.url, headers=headers).text
+    def _update_extract_from_web(self, raw_text: str = "", force=True):
+        if not raw_text:
+            raw_text = requests.get(self.url, headers=headers).text
         if not self.extract or force:
             self.extract = trafilatura.extract(raw_text)
             self.save(update_fields=["extract"])
@@ -95,34 +93,38 @@ class WebPage(ScrobblableMixin):
         )
 
     def clean_title(self, title: str, save=True):
-        if len(title.split('|')) > 1:
-            if "The Quietus" in title:
-                title = title.split('|')[-0]
-            else:
-                title = title.split('|')[0]
-        if len(title.split('&#8211;')) > 1:
-            title = title.split('&#8211;')[0]
-        if len(title.split(' - ')) > 1:
-            title = title.split(' - ')[0]
+        if len(title.split("|")) > 1:
+            title = title.split("|")[0]
+        if len(title.split("&#8211;")) > 1:
+            title = title.split("&#8211;")[0]
+        if len(title.split(" - ")) > 1:
+            title = title.split(" - ")[0]
         self.title = title.strip()
+
         if save:
             self.save(update_fields=["title"])
 
-
-
-    def _update_domain_from_url(self):
+    def _update_domain_from_url(self, save=False):
         domain = self.url.split("//")[-1].split("/")[0].split("www.")[-1]
         self.domain, created = Domain.objects.get_or_create(root=domain)
 
-    def _update_data_from_web(self, force=True):
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0"
-        }
-        raw_text = requests.get(self.url, headers=headers).text
-        if not self.title or force:
-            self.set_title(raw_text[
-                raw_text.find("<title>") + 7 : raw_text.find("</title>")
-            ])
+        if save:
+            self.save(update_fields=["domain"])
+
+    def _update_title_from_web(self, raw_text: str, save=False):
+        self.title = raw_text[
+            raw_text.find("<title>") + 7 : raw_text.find("</title>")
+        ]
+
+        if not self.title and self.extract:
+            first_line = self.extract.split("\n")[0]
+            if len(first_line) < 254:
+                self.title = first_line
+
+        if save:
+            self.save(update_fields=["title"])
+
+    def _update_date_from_web(self, save=False):
         try:
             date_str = find_date(str(self.url))
         except ValueError:
@@ -130,12 +132,19 @@ class WebPage(ScrobblableMixin):
         if date_str:
             self.date = pendulum.parse(date_str).date()
 
+        if save:
+            self.save(update_fields=["date"])
+
+    def fetch_data_from_web(self, save=True, force=True):
+        raw_text = trafilatura.fetch_url(self.url)
         if not self.extract or force:
             self.extract = trafilatura.extract(raw_text)
-            if not self.title:
-                first_line = self.extract.split("\n")[0]
-                if len(first_line) < 254:
-                    self.title = first_line
+
+        if not self.title or force:
+            self._update_title_from_web(raw_text)
+
+        if not self.date or force:
+            self._update_date_from_web()
 
         if not self.domain or force:
             self._update_domain_from_url()
@@ -143,15 +152,8 @@ class WebPage(ScrobblableMixin):
         if not self.run_time_seconds or force:
             self.run_time_seconds = self.estimated_time_to_read_in_seconds
 
-        self.save(
-            update_fields=[
-                "title",
-                "domain",
-                "extract",
-                "run_time_seconds",
-                "date",
-            ]
-        )
+        if save:
+            self.save()
 
     @classmethod
     def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
@@ -167,6 +169,6 @@ class WebPage(ScrobblableMixin):
         webpage = cls.objects.filter(url=data_dict.get("url")).first()
 
         if not webpage:
-            webpage = cls.objects.create(url=data_dict.get("url"))
-            webpage._update_data_from_web()
+            webpage = cls(url=data_dict.get("url"))
+            webpage.fetch_data_from_web(save=True)
         return webpage
