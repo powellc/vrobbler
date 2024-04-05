@@ -522,7 +522,7 @@ class Scrobble(TimeStampedModel):
     # Metadata
     source = models.CharField(max_length=255, **BNULL)
     source_id = models.TextField(**BNULL)
-    scrobble_log = models.TextField(**BNULL)
+    scrobble_log = models.JSONField(**BNULL)
     notes = models.TextField(**BNULL)
 
     # Fields for keeping track of book data
