@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 updated_scrobble_count += 1
 
                 if not dry_run:
-                    scrobble.save(update_fields="scrobble_log")
+                    scrobble.save(update_fields=["scrobble_log"])
                 else:
                     print(
                         f"Scrobble {scrobble} scrobble_log updated to {old_data}"

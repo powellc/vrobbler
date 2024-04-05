@@ -960,10 +960,9 @@ class Scrobble(TimeStampedModel):
 
         if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
-            scrobble.scrobble_log = (
-                scrobble.scrobble_log
-                + "\nLocation {location.id} too close to this scrobble"
-            )
+            scrobble.scrobble_log[
+                pendulum.now.timestamp
+            ] = f"Location {location.id} too close to this scrobble"
             scrobble.save(update_fields=["scrobble_log"])
             logger.info(
                 f"[scrobbling] finished - found existing named location",
@@ -1051,7 +1050,7 @@ class Scrobble(TimeStampedModel):
         cls,
         scrobble_data: dict,
     ) -> "Scrobble":
-        scrobble_data["scrobble_log"] = ""
+        scrobble_data["scrobble_log"] = {}
         scrobble = cls.objects.create(
             **scrobble_data,
         )
