@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import pytz
+import requests
 from books.models import Author, Book
 from books.openlibrary import get_author_openlibrary_id
 from django.apps import apps
@@ -39,8 +40,8 @@ class KoReaderPageStatColumn(Enum):
 
 
 def _sqlite_bytes(sqlite_url):
-    with httpx.stream("GET", sqlite_url) as r:
-        yield from r.iter_bytes(chunk_size=65_536)
+    with requests.get(sqlite_url, stream=True) as r:
+        yield from r.iter_content(chunk_size=65_536)
 
 
 # Grace period between page reads for it to be a new scrobble
