@@ -4,6 +4,7 @@ from scrobbles import views
 app_name = "scrobbles"
 
 urlpatterns = [
+    path("status/", views.ScrobbleStatusView.as_view(), name="status"),
     path(
         "manual/lookup/",
         views.ManualScrobbleView.as_view(),

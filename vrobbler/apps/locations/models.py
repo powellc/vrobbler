@@ -85,6 +85,12 @@ class GeoLocation(ScrobblableMixin):
             )
         return location
 
+    @property
+    def subtitle(self) -> str:
+        if self.title:
+            return f"{self.lat} x {self.lon}"
+        return ""
+
     def loc_diff(self, old_lat_lon: tuple) -> tuple:
         return (
             abs(Decimal(old_lat_lon[0]) - Decimal(self.lat)),

@@ -67,7 +67,7 @@ class WebPage(ScrobblableMixin):
             self.save(update_fields=["extract"])
 
     def get_absolute_url(self):
-        return reverse("webpages:webpage_detail", kwargs={"slug": self.uuid})
+        return reverse("webpages:webpage-detail", kwargs={"slug": self.uuid})
 
     @property
     def estimated_time_to_read_in_seconds(self):

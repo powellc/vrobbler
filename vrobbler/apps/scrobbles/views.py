@@ -725,3 +725,34 @@ class ChartRecordView(TemplateView):
         context_data["name"] = " ".join(["Top", media_type, "for", name])
         context_data["in_progress"] = in_progress
         return context_data
+
+
+class ScrobbleStatusView(LoginRequiredMixin, TemplateView):
+    model = Scrobble
+    template_name = "scrobbles/status.html"
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        user_scrobble_qs = Scrobble.objects.filter().order_by("-timestamp")
+        progress_plays = user_scrobble_qs.filter(
+            in_progress=True, is_paused=False
+        )
+
+        data["listening"] = progress_plays.filter(track__isnull=False).first()
+        data["watching"] = progress_plays.filter(video__isnull=False).first()
+        data["going"] = progress_plays.filter(
+            geo_location__isnull=False
+        ).first()
+        data["playing"] = progress_plays.filter(
+            board_game__isnull=False
+        ).first()
+
+        long_plays = user_scrobble_qs.filter(
+            long_play_complete=False, played_to_completion=True
+        )
+        data["reading"] = long_plays.filter(book__isnull=False).first()
+        data["sessioning"] = long_plays.filter(
+            video_game__isnull=False
+        ).first()
+
+        return data
