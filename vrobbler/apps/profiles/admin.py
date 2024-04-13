@@ -11,4 +11,5 @@ class UserProfileAdmin(admin.ModelAdmin):
         "twitch_token",
         "twitch_client_secret",
         "lastfm_password",
+        "archivebox_password",
     )
