@@ -561,6 +561,26 @@ class Scrobble(TimeStampedModel):
             self.timestamp = self.timestamp.replace(microsecond=0)
         self.media_type = self.MediaType(self.media_obj.__class__.__name__)
 
+        pushable_media = hasattr(
+            self.media_obj, "push_to_archivebox"
+        ) and callable(self.media_obj.push_to_archivebox)
+
+        if pushable_media and self.user.profile.archivebox_url:
+            try:
+                self.media_obj.push_to_archivebox(
+                    url=self.user.profile.archivebox_url,
+                    username=self.user.profile.archivebox_username,
+                    password=self.user.profile.archivebox_password,
+                )
+            except Exception:
+                logger.info(
+                    "Failed to push URL to archivebox",
+                    extra={
+                        "archivebox_url": user.profile.archivebox_url,
+                        "archivebox_username": user.profile.archivebox_username,
+                    },
+                )
+
         return super(Scrobble, self).save(*args, **kwargs)
 
     @property

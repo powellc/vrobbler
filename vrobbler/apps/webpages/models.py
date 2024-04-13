@@ -135,10 +135,51 @@ class WebPage(ScrobblableMixin):
         if save:
             self.save(update_fields=["date"])
 
+    def push_to_archivebox(self, url: str, username: str, password: str):
+        login_url = requests.compat.urljoin(url, "admin/login/")
+        session = requests.Session()
+        response = session.get(login_url)
+        csrf_token = response.cookies.get_dict().get("csrftoken")
+        response = session.post(
+            login_url,
+            data={
+                "username": username,
+                "password": password,
+                "csrfmiddlewaretoken": csrf_token,
+            },
+        )
+        try:
+            response = session.post(
+                requests.compat.urljoin(url, "add/"),
+                data={
+                    "url": self.url + "\n",
+                    "tags": "vrobbler",
+                    "depth": "0",
+                    "parser": "auto",
+                },
+                timeout=2,
+            )
+        except requests.exceptions.ReadTimeout:
+            return
+
+        if response.status_code == 200:
+            logger.info(
+                "Website already exists in archive", extra={"url": self.url}
+            )
+        else:
+            raise Exception(
+                f"Failed to push URL to archivebox (Response {response.status_code})"
+            )
+
     def fetch_data_from_web(self, save=True, force=True):
         raw_text = trafilatura.fetch_url(self.url)
         if not self.extract or force:
-            self.extract = trafilatura.extract(raw_text)
+            self.extract = trafilatura.extract(
+                raw_text,
+                include_links=True,
+                include_comments=False,
+                output_format="html",
+            )
 
         if not self.title or force:
             self._update_title_from_web(raw_text)

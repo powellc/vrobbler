@@ -26,6 +26,10 @@ class UserProfile(TimeStampedModel):
     retroarch_path = models.CharField(max_length=255, **BNULL)
     retroarch_auto_import = models.BooleanField(default=False)
 
+    archivebox_username = models.CharField(max_length=255, **BNULL)
+    archivebox_password = EncryptedField(**BNULL)
+    archivebox_url = models.CharField(max_length=255, **BNULL)
+
     redirect_to_webpage = models.BooleanField(default=True)
 
     def __str__(self):
