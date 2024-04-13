@@ -1,10 +1,9 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from videos.models import Series, Video
 
-# class VideoIndexView():
 
-
-class MovieListView(generic.ListView):
+class MovieListView(LoginRequiredMixin, generic.ListView):
     model = Video
     template_name = "videos/movie_list.html"
 
@@ -12,11 +11,11 @@ class MovieListView(generic.ListView):
         return Video.objects.filter(video_type=Video.VideoType.MOVIE)
 
 
-class SeriesListView(generic.ListView):
+class SeriesListView(LoginRequiredMixin, generic.ListView):
     model = Series
 
 
-class SeriesDetailView(generic.DetailView):
+class SeriesDetailView(LoginRequiredMixin, generic.DetailView):
     model = Series
     slug_field = "uuid"
 
@@ -34,6 +33,6 @@ class SeriesDetailView(generic.DetailView):
         return context_data
 
 
-class VideoDetailView(generic.DetailView):
+class VideoDetailView(LoginRequiredMixin, generic.DetailView):
     model = Video
     slug_field = "uuid"

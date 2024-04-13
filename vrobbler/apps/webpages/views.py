@@ -1,9 +1,10 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.views import generic
 from webpages.models import WebPage
 
 
-class WebPageListView(generic.ListView):
+class WebPageListView(LoginRequiredMixin, generic.ListView):
     model = WebPage
     paginate_by = 20
 
@@ -16,7 +17,7 @@ class WebPageListView(generic.ListView):
         )
 
 
-class WebPageDetailView(generic.DetailView):
+class WebPageDetailView(LoginRequiredMixin, generic.DetailView):
     model = WebPage
     slug_field = "uuid"
 
