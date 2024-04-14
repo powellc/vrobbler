@@ -16,9 +16,8 @@
     <body>
         <h3>Listening</h3>
         <div class="now-playing">
-            <div class="titles">
             {% if listening %}
-                <p><em>{{listening.media_type}}</em></p>
+            <div class="titles">
                 <p><a href="{{listening.media_obj.get_absolute_url}}">{{listening.media_obj.title}}</a></p>
                 {% if listening.media_obj.subtitle %}<p><em><a href="{{listening.media_obj.subtitle.get_absolute_url}}">{{listening.media_obj.subtitle}}</a></em></p>{% endif %}
             </div>
@@ -33,13 +32,12 @@
         <hr />
         <h3>Watching</h3>
         <div class="watching">
+            {% if watching %}
             <div class="titles">
-                {% if watching %}
-                <p><em>{{watching.media_type}}</em></p>
                 <p><a href="{{watching.media_obj.get_absolute_url}}">{{watching.media_obj.title}}</a></p>
                 {% if watching.media_obj.subtitle %}<p><em><a href="{{watching.media_obj.subtitle.get_absolute_url}}">{{watching.media_obj.subtitle}}</a></em></p>{% endif %}
-            <p><small>{{watching.timestamp|naturaltime}} from {{watching.source}}</small></p>
             </div>
+            <p><small>{{watching.timestamp|naturaltime}} from {{watching.source}}</small></p>
             {% else %}
             <div class="titles">
                 <p>Nothing</p>
@@ -49,13 +47,12 @@
         <hr />
         <h3>Going</h3>
         <div class="going">
+            {% if going %}
             <div class="titles">
-                {% if going %}
-                <p><em>{{going.media_type}}</em></p>
                 <p><a href="{{going.media_obj.get_absolute_url}}">{{going.media_obj}}</a></p>
                 {% if going.media_obj.subtitle %}<p><em><a href="{{going.media_obj.subtitle.get_absolute_url}}">{{going.media_obj.subtitle}}</a></em></p>{% endif %}
-            <p><small>{{going.timestamp|naturaltime}} from {{going.source}}</small></p>
             </div>
+            <p><small>{{going.timestamp|naturaltime}} from {{going.source}}</small></p>
             {% else %}
             <div class="titles">
                 <p>Nowhere</p>
@@ -65,13 +62,12 @@
         <hr />
         <h3>Playing</h3>
         <div class="playing">
+            {% if playing %}
             <div class="titles">
-                {% if playing %}
-                <p><em>{{playing.media_type}}</em></p>
                 <p><a href="{{playing.media_obj.get_absolute_url}}">{{playing.media_obj}}</a></p>
                 {% if playing.media_obj.subtitle %}<p><em><a href="{{playing.media_obj.subtitle.get_absolute_url}}">{{playing.media_obj.subtitle}}</a></em></p>{% endif %}
-            <p><small>{{playing.timestamp|naturaltime}} from {{playing.source}}</small></p>
             </div>
+            <p><small>{{playing.timestamp|naturaltime}} from {{playing.source}}</small></p>
             {% else %}
             <div class="titles">
                 <p>Nothing</p>
@@ -81,13 +77,12 @@
         <hr />
         <h3>Reading</h3>
         <div class="reading">
+            {% if reading %}
             <div class="titles">
-                {% if reading %}
-                <p><em>{{reading.media_type}}</em></p>
                 <p><a href="{{reading.media_obj.get_absolute_url}}">{{reading.media_obj}}</a></p>
                 {% if reading.media_obj.subtitle %}<p><em><a href="{{reading.media_obj.subtitle.get_absolute_url}}">{{reading.media_obj.subtitle}}</a></em></p>{% endif %}
-            <p><small>{{reading.timestamp|naturaltime}} from {{reading.source}}</small></p>
             </div>
+            <p><small>{{reading.timestamp|naturaltime}} from {{reading.source}}</small></p>
             {% else %}
             <div class="titles">
                 <p>Nothing</p>
@@ -97,13 +92,12 @@
         <hr />
         <h3>Sessioning</h3>
         <div class="sessioning">
+            {% if sessioning %}
             <div class="titles">
-                {% if sessioning %}
-                <p><em>{{sessioning.media_type}}</em></p>
                 <p><a href="{{sessioning.media_obj.get_absolute_url}}">{{sessioning.media_obj}}</a></p>
                 {% if sessioning.media_obj.subtitle %}<p><em><a href="{{sessioning.media_obj.subtitle.get_absolute_url}}">{{sessioning.media_obj.subtitle}}</a></em></p>{% endif %}
-            <p><small>{{sessioning.timestamp|naturaltime}} from {{sessioning.source}}</small></p>
             </div>
+            <p><small>{{sessioning.timestamp|naturaltime}} from {{sessioning.source}}</small></p>
             {% else %}
             <div class="titles">
                 <p>Nothing</p>
