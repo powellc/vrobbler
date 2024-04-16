@@ -63,10 +63,23 @@ logger = logging.getLogger(__name__)
 class RecentScrobbleList(ListView):
     model = Scrobble
 
+    def get(self, *args, **kwargs):
+        user = self.request.user
+        if user.is_authenticated:
+            if scrobble_url := self.request.GET.get("scrobble_url"):
+                scrobble = manual_scrobble_webpage(scrobble_url, self.request.user.id)
+                if self.request.user.profile.redirect_to_webpage:
+                    logger.info(f"Redirecting to {scrobble.media_obj} detail page")
+                    return HttpResponseRedirect(scrobble.media_obj.get_absolute_url())
+                else:
+                    return HttpResponseRedirect(reverse_lazy("vrobbler-home"))
+        return super().get(*args, **kwargs)
+
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         user = self.request.user
         if user.is_authenticated:
+
             completed_for_user = Scrobble.objects.filter(
                 played_to_completion=True, user=user
             )

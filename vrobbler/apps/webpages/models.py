@@ -176,9 +176,8 @@ class WebPage(ScrobblableMixin):
         if not self.extract or force:
             self.extract = trafilatura.extract(
                 raw_text,
-                include_links=True,
+                include_links=False,
                 include_comments=False,
-                output_format="html",
             )
 
         if not self.title or force:
