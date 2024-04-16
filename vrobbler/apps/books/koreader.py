@@ -225,7 +225,10 @@ def build_scrobbles_from_book_map(
 
         pages_processed = 0
         total_pages_read = len(book_map[koreader_book_id]["pages"])
-        ordered_pages = sorted(book_map[koreader_book_id]["pages"].items(), key=lambda x: x[1]["start_ts"])
+        ordered_pages = sorted(
+            book_map[koreader_book_id]["pages"].items(),
+            key=lambda x: x[1]["start_ts"],
+        )
 
         for cur_page_number, stats in ordered_pages:
             pages_processed += 1
@@ -249,13 +252,25 @@ def build_scrobbles_from_book_map(
                 should_create_scrobble = True
 
             if should_create_scrobble:
-                scrobble_page_data = OrderedDict(sorted(scrobble_page_data.items(), key=lambda x: x[1]["start_ts"]))
-                first_page = scrobble_page_data.get(
-                    list(scrobble_page_data.keys())[0]
+                scrobble_page_data = OrderedDict(
+                    sorted(
+                        scrobble_page_data.items(),
+                        key=lambda x: x[1]["start_ts"],
+                    )
                 )
-                last_page = scrobble_page_data.get(
-                    list(scrobble_page_data.keys())[-1]
-                )
+                try:
+                    first_page = scrobble_page_data.get(
+                        list(scrobble_page_data.keys())[0]
+                    )
+                    last_page = scrobble_page_data.get(
+                        list(scrobble_page_data.keys())[-1]
+                    )
+                except IndexError:
+                    logger.error(
+                        "Could not process book, no page data found",
+                        extra={"scrobble_page_data": scrobble_page_data},
+                    )
+                    continue
                 start_ts = int(stats.get("start_ts"))
                 end_ts = int(last_page.get("end_ts"))
 
