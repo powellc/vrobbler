@@ -21,7 +21,6 @@ GEOLOC_PROXIMITY = Decimal(getattr(settings, "GEOLOC_PROXIMITY", "0.0001"))
 class GeoLocation(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, "LOCATION_COMPLETION_PERCENT", 100)
 
-    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     lat = models.FloatField()
     lon = models.FloatField()
     truncated_lat = models.FloatField(**BNULL)
