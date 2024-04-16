@@ -1,5 +1,6 @@
+from collections import OrderedDict
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from uuid import uuid4
 
 import requests
@@ -276,6 +277,22 @@ class Book(LongPlayScrobblableMixin):
                 fname = f"{author.name}_{author.uuid}.jpg"
                 author.headshot.save(fname, ContentFile(r.content), save=True)
         self.authors.add(author)
+
+
+    def page_data_for_user(self, user_id: int, convert_timestamps: bool=True) -> dict:
+        scrobbles = self.scrobble_set.filter(user=user_id)
+
+        pages = {}
+        for scrobble in scrobbles:
+            if scrobble.book_page_data:
+                for page, data in scrobble.book_page_data.items():
+                    if convert_timestamps:
+                        data["start_ts"] = datetime.fromtimestamp(data["start_ts"])
+                        data["end_ts"] = datetime.fromtimestamp(data["end_ts"])
+                    pages[page] = data
+        sorted_pages = OrderedDict(sorted(pages.items(), key=lambda x: x[1]["start_ts"]))
+
+        return sorted_pages
 
     @property
     def author(self):
