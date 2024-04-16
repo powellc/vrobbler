@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 import re
 import sqlite3
@@ -224,10 +225,9 @@ def build_scrobbles_from_book_map(
 
         pages_processed = 0
         total_pages_read = len(book_map[koreader_book_id]["pages"])
+        ordered_pages = sorted(book_map[koreader_book_id]["pages"].items(), key=lambda x: x[1]["start_ts"])
 
-        for cur_page_number, stats in book_map[koreader_book_id][
-            "pages"
-        ].items():
+        for cur_page_number, stats in ordered_pages:
             pages_processed += 1
 
             seconds_from_last_page = 0
@@ -249,14 +249,15 @@ def build_scrobbles_from_book_map(
                 should_create_scrobble = True
 
             if should_create_scrobble:
+                scrobble_page_data = OrderedDict(sorted(scrobble_page_data.items(), key=lambda x: x[1]["start_ts"]))
                 first_page = scrobble_page_data.get(
                     list(scrobble_page_data.keys())[0]
                 )
                 last_page = scrobble_page_data.get(
                     list(scrobble_page_data.keys())[-1]
                 )
-                start_ts = int(first_page.get("start_ts"))
-                end_ts = start_ts + playback_position_seconds
+                start_ts = int(stats.get("start_ts"))
+                end_ts = int(last_page.get("end_ts"))
 
                 timestamp = datetime.fromtimestamp(start_ts).replace(
                     tzinfo=user.profile.tzinfo
