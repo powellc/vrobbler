@@ -104,5 +104,19 @@
             </div>
             {% endif %}
         </div>
+        <h3>Sporting</h3>
+        <div class="sporting">
+            {% if sporting %}
+            <div class="titles">
+                <p><a href="{{sporting.media_obj.get_absolute_url}}">{{sporting.media_obj}}</a></p>
+                {% if sporting.media_obj.subtitle %}<p><em><a href="{{sporting.media_obj.subtitle.get_absolute_url}}">{{sporting.media_obj.subtitle}}</a></em></p>{% endif %}
+            </div>
+            <p><small>{{sporting.timestamp|naturaltime}} from {{sporting.source}}</small></p>
+            {% else %}
+            <div class="titles">
+                <p>Nothing</p>
+            </div>
+            {% endif %}
+        </div>
     </body>
 </html>
