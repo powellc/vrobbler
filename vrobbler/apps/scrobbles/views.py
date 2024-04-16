@@ -762,6 +762,9 @@ class ScrobbleStatusView(LoginRequiredMixin, TemplateView):
         data["sporting"] = progress_plays.filter(
             sport_event__isnull=False
         ).first()
+        data["browsing"] = progress_plays.filter(
+            web_page__isnull=False
+        ).first()
 
         long_plays = user_scrobble_qs.filter(
             long_play_complete=False, played_to_completion=True

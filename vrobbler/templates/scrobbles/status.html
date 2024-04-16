@@ -118,5 +118,19 @@
             </div>
             {% endif %}
         </div>
+        <h3>Browsing</h3>
+        <div class="browsing">
+            {% if browsing %}
+            <div class="titles">
+                <p><a href="{{browsing.media_obj.get_absolute_url}}">{{browsing.media_obj}}</a></p>
+                {% if browsing.media_obj.subtitle %}<p><em><a href="{{browsing.media_obj.subtitle.get_absolute_url}}">{{browsing.media_obj.subtitle}}</a></em></p>{% endif %}
+            </div>
+            <p><small>{{browsing.timestamp|naturaltime}} from {{browsing.source}}</small></p>
+            {% else %}
+            <div class="titles">
+                <p>Nothing</p>
+            </div>
+            {% endif %}
+        </div>
     </body>
 </html>
