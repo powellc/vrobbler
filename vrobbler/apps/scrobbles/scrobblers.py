@@ -346,9 +346,10 @@ def manual_scrobble_webpage(url: str, user_id: int):
 def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
     location = GeoLocation.find_or_create(data_dict)
 
+    timestamp = pendulum.parse(data_dict.get("time", timezone.now()))
     extra_data = {
         "user_id": user_id,
-        "timestamp": pendulum.parse(data_dict.get("time", timezone.now())),
+        "timestamp": timestamp,
         "source": "GPSLogger",
         "media_type": Scrobble.MediaType.GEO_LOCATION,
     }
@@ -361,13 +362,16 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
 
     provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
 
-    scrobble.notes = f"Last position provided by {provider}"
+    scrobble.scrobble_log["update"] = {
+        "timestamp": timestamp,
+        "position_provider": provider,
+    }
     if scrobble.timestamp:
         scrobble.playback_position_seconds = (
             timezone.now() - scrobble.timestamp
         ).seconds
 
-    scrobble.save(update_fields=["notes", "playback_position_seconds"])
+    scrobble.save(update_fields=["scrobble_log", "playback_position_seconds"])
     logger.info(
         "[webhook] gpslogger scrobble request received",
         extra={
