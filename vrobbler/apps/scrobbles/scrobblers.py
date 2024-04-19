@@ -341,7 +341,10 @@ def manual_scrobble_webpage(url: str, user_id: int):
         },
     )
 
-    return Scrobble.create_or_update(webpage, user_id, scrobble_dict)
+    scrobble = Scrobble.create_or_update(webpage, user_id, scrobble_dict)
+    # possibly async this?
+    scrobble.push_to_archivebox()
+    return scrobble
 
 
 def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
