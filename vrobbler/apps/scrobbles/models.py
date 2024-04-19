@@ -512,7 +512,6 @@ class Scrobble(TimeStampedModel):
     # Time keeping
     timestamp = models.DateTimeField(**BNULL)
     stop_timestamp = models.DateTimeField(**BNULL)
-    playback_position_ticks = models.PositiveBigIntegerField(**BNULL)
     playback_position_seconds = models.IntegerField(**BNULL)
 
     # Status indicators
@@ -523,7 +522,6 @@ class Scrobble(TimeStampedModel):
     # Metadata
     source = models.CharField(max_length=255, **BNULL)
     scrobble_log = models.JSONField(**BNULL)
-    notes = models.TextField(**BNULL)
     timezone = models.CharField(max_length=50, **BNULL)
 
     # Fields for keeping track of book data
