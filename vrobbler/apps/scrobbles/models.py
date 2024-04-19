@@ -554,7 +554,7 @@ class Scrobble(TimeStampedModel):
     long_play_seconds = models.BigIntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
 
-    def save(self, *args, **kwargs):
+    def save(self, push_media=True, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid4()
 
@@ -569,9 +569,11 @@ class Scrobble(TimeStampedModel):
             self.timestamp = self.timestamp.replace(microsecond=0)
         self.media_type = self.MediaType(self.media_obj.__class__.__name__)
 
-        pushable_media = hasattr(
-            self.media_obj, "push_to_archivebox"
-        ) and callable(self.media_obj.push_to_archivebox)
+        pushable_media = (
+            hasattr(self.media_obj, "push_to_archivebox")
+            and callable(self.media_obj.push_to_archivebox)
+            and push_media
+        )
 
         if pushable_media and self.user.profile.archivebox_url:
             try:

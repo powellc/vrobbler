@@ -27,7 +27,7 @@ def set_default_timezone(apps, schema_editor):
                 )
             ):
                 s.timezone = "Europe/Paris"
-            s.save(update_fields=["timezone"])
+            s.save(update_fields=["timezone"], push_media=False)
 
 
 class Migration(migrations.Migration):
