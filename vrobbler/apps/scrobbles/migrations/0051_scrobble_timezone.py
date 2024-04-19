@@ -33,7 +33,7 @@ def set_default_timezone(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("scrobbles", "0051_alter_scrobble_scrobble_log"),
+        ("scrobbles", "0050_delete_scrobbledpage"),
     ]
 
     operations = [

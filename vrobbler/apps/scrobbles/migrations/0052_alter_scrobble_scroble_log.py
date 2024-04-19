@@ -17,7 +17,7 @@ def convert_log_to_json(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("scrobbles", "0050_delete_scrobbledpage"),
+        ("scrobbles", "0051_scrobble_timezone"),
     ]
 
     operations = [
