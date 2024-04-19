@@ -560,7 +560,7 @@ class Scrobble(TimeStampedModel):
 
         if not self.timezone:
             timezone = settings.TIME_ZONE
-            if self.user.profile:
+            if self.user and self.user.profile:
                 timezone = self.user.profile.timezone
             self.timzeone = timezone
 
