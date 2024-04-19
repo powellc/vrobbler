@@ -26,7 +26,15 @@ class ScrobbleInline(admin.TabularInline):
         "web_page",
         "user",
     )
-    exclude = ("scrobble_log",)
+    exclude = (
+        "scrobble_log",
+        "timezone",
+        "book_koreader_hash",
+        "book_page_data",
+        "book_pages_read",
+        "videogame_save_data",
+        "videogame_screenshot",
+    )
 
 
 class ImportBaseAdmin(admin.ModelAdmin):
