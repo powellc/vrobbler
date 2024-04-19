@@ -7,10 +7,7 @@ from django.db import migrations, models
 def convert_log_to_json(apps, schema_editor):
     Scrobble = apps.get_model("scrobbles", "Scrobble")
     for s in Scrobble.objects.filter(scrobble_log__isnull=False):
-        try:
-            s.scrobble_log = json.loads(s.scrobble_log)
-        except json.JSONDecodeError:
-            s.scrobble_log = json.dumps({"migrated_data": s.scrobble_log})
+        s.scrobble_log = json.dumps({"migrated_data": s.scrobble_log})
         s.save(update_fields=["scrobble_log"])
 
 
