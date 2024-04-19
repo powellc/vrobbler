@@ -678,11 +678,8 @@ class Scrobble(TimeStampedModel):
 
     @property
     def session_pages_read(self) -> Optional[int]:
-        """Look one scrobble back, if it isn't complete,"""
         if not self.book_pages_read:
-            return
-        if self.previous:
-            return self.book_pages_read - self.previous.book_pages_read
+            return 0
         return self.book_pages_read
 
     @property
