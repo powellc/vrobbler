@@ -26,7 +26,7 @@ class ScrobbleInline(admin.TabularInline):
         "web_page",
         "user",
     )
-    exclude = ("source_id", "scrobble_log")
+    exclude = ("scrobble_log",)
 
 
 class ImportBaseAdmin(admin.ModelAdmin):

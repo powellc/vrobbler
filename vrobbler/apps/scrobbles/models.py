@@ -522,7 +522,6 @@ class Scrobble(TimeStampedModel):
 
     # Metadata
     source = models.CharField(max_length=255, **BNULL)
-    source_id = models.TextField(**BNULL)
     scrobble_log = models.JSONField(**BNULL)
     notes = models.TextField(**BNULL)
     timezone = models.CharField(max_length=50, **BNULL)
@@ -864,7 +863,7 @@ class Scrobble(TimeStampedModel):
             .order_by("-timestamp")
             .first()
         )
-        source = scrobble_data["source"]
+        source = scrobble_data.get("source")
         mtype = media.__class__.__name__
         mopidy_status = scrobble_data.get("mopidy_status", None)
 

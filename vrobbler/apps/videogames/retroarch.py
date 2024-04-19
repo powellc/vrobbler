@@ -169,7 +169,6 @@ def import_retroarch_lrtl_files(playlog_path: str, user_id: int) -> List[dict]:
                 long_play_complete=long_play_complete,
                 user_id=user_id,
                 source="Retroarch",
-                source_id="Imported from Retroarch play log file",
                 media_type=Scrobble.MediaType.VIDEO_GAME,
             )
         )

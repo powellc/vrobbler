@@ -46,7 +46,6 @@ class LastFM:
 
         new_scrobbles = []
         source = "Last.fm"
-        source_id = ""
         lastfm_scrobbles = self.get_last_scrobbles(time_from=last_processed)
 
         for lfm_scrobble in lastfm_scrobbles:
@@ -64,7 +63,6 @@ class LastFM:
                 user=self.vrobbler_user,
                 timestamp=timestamp,
                 source=source,
-                source_id=source_id,
                 track=track,
                 played_to_completion=True,
                 in_progress=False,

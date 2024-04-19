@@ -141,7 +141,7 @@ def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
         "timestamp": parse(data_dict.get("UtcTimestamp")),
         "playback_position_seconds": playback_seconds,
         "source": data_dict.get("ClientName", "Vrobbler"),
-        "source_id": data_dict.get("MediaSourceId"),
+        "scrobble_log": {"media_source_id": data_dict.get("MediaSourceId")},
         "jellyfin_status": jellyfin_status,
     }
 
@@ -218,7 +218,6 @@ def manual_scrobble_video(imdb_id: str, user_id: int):
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
         "source": source,
-        "source_id": "Manually scrobbled from Vrobbler and looked up via IMDB",
     }
 
     logger.info(
@@ -253,7 +252,6 @@ def manual_scrobble_video_game(hltb_id: str, user_id: int):
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
         "source": "Vrobbler",
-        "source_id": "Manually scrobbled from Vrobbler and looked up via HLTB.com",
         "long_play_complete": False,
     }
 
@@ -306,7 +304,6 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
         "source": "Vrobbler",
-        "source_id": "Manually scrobbled from Vrobbler and looked up via boardgamegeek.com",
     }
     logger.info(
         "[webhook] board game scrobble request received",
@@ -329,7 +326,6 @@ def manual_scrobble_webpage(url: str, user_id: int):
         "timestamp": timezone.now(),
         "playback_position_seconds": 0,
         "source": "Vrobbler",
-        "source_id": "Manually scrobbled from Vrobbler",
     }
     logger.info(
         "[webhook] webpage scrobble request received",

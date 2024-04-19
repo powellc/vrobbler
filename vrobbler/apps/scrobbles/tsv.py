@@ -35,12 +35,12 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
     source = "Audioscrobbler File"
     rows = csv.reader(tsv_data, delimiter="\t")
 
-    source_id = ""
+    rockbox_info = ""
     for row_num, row in enumerate(rows):
         if row_num in [0, 1, 2]:
             if "Rockbox" in row[0]:
                 source = "Rockbox"
-            source_id += row[0] + "\n"
+            rockbox_info += row[0] + "\n"
             continue
         if len(row) > 8:
             logger.warning(
@@ -75,7 +75,7 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
             user_id=user_id,
             timestamp=timestamp,
             source=source,
-            source_id=source_id,
+            scrobble_log={"rockbox_info": rockbox_info}
             track=track,
             played_to_completion=True,
             in_progress=False,
