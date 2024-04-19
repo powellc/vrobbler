@@ -363,7 +363,7 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
     provider = f"data source: {LOCATION_PROVIDERS[data_dict.get('prov')]}"
 
     scrobble.scrobble_log["update"] = {
-        "timestamp": timestamp,
+        "timestamp": data_dict.get("time"),
         "position_provider": provider,
     }
     if scrobble.timestamp:
