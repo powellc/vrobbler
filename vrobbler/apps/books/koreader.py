@@ -252,15 +252,13 @@ def build_scrobbles_from_book_map(
                         extra={"scrobble_page_data": scrobble_page_data},
                     )
                     continue
-                start_ts = int(first_page.get("start_ts"))
-                end_ts = int(last_page.get("end_ts"))
 
-                timestamp = datetime.fromtimestamp(start_ts).replace(
-                    tzinfo=user.profile.tzinfo
-                )
-                stop_timestamp = datetime.fromtimestamp(end_ts).replace(
-                    tzinfo=user.profile.tzinfo
-                )
+                timezone = user.profile.timezone
+
+                timestamp = datetime.fromtimestamp(
+                    int(first_page.get("start_ts"))
+                ).replace(tzinfo=pytz.timezone(timezone))
+
                 # Add a shim here temporarily to fix imports while we were in France
                 # if date is between 10/15 and 12/15, cast it to Europe/Central
                 if (
@@ -272,9 +270,13 @@ def build_scrobbles_from_book_map(
                         tzinfo=pytz.timezone("Europe/Paris")
                     )
                 ):
-                    timestamp.replace(tzinfo=pytz.timezone("Europe/Paris"))
+                    timezone = "Europe/Paris"
 
-                elif (
+                stop_timestamp = datetime.fromtimestamp(
+                    int(last_page.get("end_ts"))
+                ).replace(tzinfo=pytz.timezone(timezone))
+
+                if (
                     timestamp.tzinfo._dst.seconds == 0
                     or stop_timestamp.tzinfo._dst.seconds == 0
                 ):
@@ -306,6 +308,7 @@ def build_scrobbles_from_book_map(
                             in_progress=False,
                             played_to_completion=True,
                             long_play_complete=False,
+                            timezone=timezone,
                         )
                     )
                     # Then start over
@@ -355,7 +358,12 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
     if is_os_file:
         con = sqlite3.connect(file_path)
         cur = con.cursor()
-        book_map = build_book_map(cur.execute("SELECT * FROM book"))
+        try:
+            book_map = build_book_map(cur.execute("SELECT * FROM book"))
+        except sqlite3.OperationalError:
+            logger.warning("KOReader sqlite file had not table: book")
+            return new_scrobbles
+
         book_map = build_page_data(
             cur.execute(
                 "SELECT * from page_stat_data ORDER BY id_book, start_time"

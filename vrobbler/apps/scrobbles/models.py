@@ -1,3 +1,4 @@
+import pytz
 import calendar
 import datetime
 import logging
@@ -524,6 +525,7 @@ class Scrobble(TimeStampedModel):
     source_id = models.TextField(**BNULL)
     scrobble_log = models.JSONField(**BNULL)
     notes = models.TextField(**BNULL)
+    timezone = models.CharField(max_length=50, **BNULL)
 
     # Fields for keeping track of book data
     book_koreader_hash = models.CharField(max_length=50, **BNULL)
@@ -556,6 +558,9 @@ class Scrobble(TimeStampedModel):
         if not self.uuid:
             self.uuid = uuid4()
 
+        if not self.timezone:
+            self.timezone = self.user.profile.timezone
+
         # Microseconds mess up Django's filtering, and we don't need be that specific
         if self.timestamp:
             self.timestamp = self.timestamp.replace(microsecond=0)
@@ -576,12 +581,16 @@ class Scrobble(TimeStampedModel):
                 logger.info(
                     "Failed to push URL to archivebox",
                     extra={
-                        "archivebox_url": user.profile.archivebox_url,
-                        "archivebox_username": user.profile.archivebox_username,
+                        "archivebox_url": self.user.profile.archivebox_url,
+                        "archivebox_username": self.user.profile.archivebox_username,
                     },
                 )
 
         return super(Scrobble, self).save(*args, **kwargs)
+
+    @property
+    def tzinfo(self):
+        return pytz.timezone(self.timezone)
 
     @property
     def scrobble_media_key(self) -> str:
