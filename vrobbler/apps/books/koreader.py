@@ -160,36 +160,17 @@ def build_page_data(page_rows: list, book_map: dict, user_tz=None) -> dict:
     book_ids_not_found = []
     for page_row in page_rows:
         koreader_book_id = page_row[KoReaderPageStatColumn.ID_BOOK.value]
+
         if koreader_book_id not in book_map.keys():
             book_ids_not_found.append(koreader_book_id)
             continue
+
         if "pages" not in book_map[koreader_book_id].keys():
             book_map[koreader_book_id]["pages"] = {}
-
-        if koreader_book_id not in book_map.keys():
-            logger.warn(
-                f"Found a page without a corresponding book ID ({koreader_book_id}) in KoReader DB",
-                {"page_row": page_row},
-            )
-            continue
 
         page_number = page_row[KoReaderPageStatColumn.PAGE.value]
         duration = page_row[KoReaderPageStatColumn.DURATION.value]
         start_ts = page_row[KoReaderPageStatColumn.START_TIME.value]
-        # TODO Not sure if this is doing nothing, as timestamps are already assumed in user TZ
-        # Maybe we want to save datetime strings with TZ info here?
-        # if user_tz:
-        #    start_ts = (
-        #        datetime.utcfromtimestamp(
-        #            int(page_row[KoReaderPageStatColumn.START_TIME.value])
-        #        )
-        #        .replace(tzinfo=user_tz)
-        #        .timestamp()
-        #    )
-        # else:
-        #    logger.warning(
-        #        f"Page data built with out user timezone, defaulting to UTC"
-        #    )
 
         book_map[koreader_book_id]["pages"][page_number] = {
             "duration": duration,
@@ -271,7 +252,7 @@ def build_scrobbles_from_book_map(
                         extra={"scrobble_page_data": scrobble_page_data},
                     )
                     continue
-                start_ts = int(stats.get("start_ts"))
+                start_ts = int(first_page.get("start_ts"))
                 end_ts = int(last_page.get("end_ts"))
 
                 timestamp = datetime.fromtimestamp(start_ts).replace(
