@@ -559,7 +559,7 @@ class Scrobble(TimeStampedModel):
             timezone = settings.TIME_ZONE
             if self.user and self.user.profile:
                 timezone = self.user.profile.timezone
-            self.timzeone = timezone
+            self.timezone = timezone
 
         # Microseconds mess up Django's filtering, and we don't need be that specific
         if self.timestamp:
