@@ -889,11 +889,13 @@ class Scrobble(TimeStampedModel):
             },
         )
 
-        playback_status = scrobble_data.pop(
-            "mopidy_status", scrobble_data.pop("jellyfin_status", None)
+        scrobble_data["playback_status"] = scrobble_data.get(
+            "mopidy_status", scrobble_data.get("jellyfin_status", None)
         )
+        # If it's marked as stopped, send it through our update mechanism, which will complete it
         if scrobble and (
-            scrobble.can_be_updated or playback_status == "stopped"
+            scrobble.can_be_updated
+            or scrobble_data["playback_status"] == "stopped"
         ):
             return scrobble.update(scrobble_data)
 
@@ -1019,9 +1021,7 @@ class Scrobble(TimeStampedModel):
 
     def update(self, scrobble_data: dict) -> "Scrobble":
         # Status is a field we get from Mopidy, which refuses to poll us
-        scrobble_status = scrobble_data.pop("mopidy_status", None)
-        if not scrobble_status:
-            scrobble_status = scrobble_data.pop("jellyfin_status", None)
+        playback_status = scrobble_data.pop("playback_status", None)
 
         logger.info(
             "[scrobbling] update called",
@@ -1029,26 +1029,20 @@ class Scrobble(TimeStampedModel):
                 "scrobble_id": self.id,
                 "scrobble_data": scrobble_data,
                 "media_type": self.media_type,
-                "scrobble_status": scrobble_status,
+                "playback_status": playback_status,
             },
         )
-
-        # This is really expensive on the DB ... do we need to track this?
-        # if self.percent_played < 100:
-        #    # Only worry about ticks if we haven't gotten to the end
-        #    self.update_ticks(scrobble_data)
-
         if self.beyond_completion_percent:
-            scrobble_status = "stopped"
+            playback_status = "stopped"
 
-        if scrobble_status == "stopped":
+        if playback_status == "stopped":
             self.stop()
-        if scrobble_status == "paused":
+        if playback_status == "paused":
             self.pause()
-        if scrobble_status == "resumed":
+        if playback_status == "resumed":
             self.resume()
 
-        if scrobble_status != "resumed":
+        if playback_status != "resumed":
             scrobble_data["stop_timestamp"] = (
                 scrobble_data.pop("timestamp", None) or timezone.now()
             )
@@ -1067,7 +1061,7 @@ class Scrobble(TimeStampedModel):
             extra={
                 "scrobble_id": self.id,
                 "scrobble_data": scrobble_data,
-                "scrobble_status": scrobble_status,
+                "playback_status": playback_status,
                 "media_type": self.media_type,
             },
         )
