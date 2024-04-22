@@ -59,11 +59,16 @@ class LastFM:
                 lfm_scrobble["album"] = album
             track = get_or_create_track(**lfm_scrobble)
 
+            timezone = settings.TIME_ZONE
+            if self.vrobbler_user.profile:
+                timezone = self.vrobbler_user.profile.timezone
+
             new_scrobble = Scrobble(
                 user=self.vrobbler_user,
                 timestamp=timestamp,
                 source=source,
                 track=track,
+                timezone=timezone,
                 played_to_completion=True,
                 in_progress=False,
                 media_type=Scrobble.MediaType.TRACK,
