@@ -154,7 +154,7 @@
                     <thead>
                         <tr>
                             <th scope="col">Date</th>
-                            <th scope="col">Cover</th>
+                            <th scope="col">Cover/Screenshot</th>
                             <th scope="col">Title</th>
                             <th scope="col">Time played (mins)</th>
                             <th scope="col">Percent complete</th>
@@ -167,8 +167,8 @@
                             {% if scrobble.videogame_screenshot %}
                             <td><img src="{{scrobble.videogame_screenshot_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                             {% else %}
-                            {% if scrobble.videogame.hltb_cover %}
-                            <td><img src="{{scrobble.videogame.hltb_cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                            {% if scrobble.media_obj.hltb_cover %}
+                            <td><img src="{{scrobble.media_obj.hltb_cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                             {% endif %}
                             {% endif %}
                             <td><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></td>
