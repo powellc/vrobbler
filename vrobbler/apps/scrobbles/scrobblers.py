@@ -362,9 +362,15 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
 
     provider = LOCATION_PROVIDERS[data_dict.get("prov")]
 
-    scrobble.log[data_dict.get("time")] = {
-        "position_provider": provider,
-    }
+    if "gps_updates" not in scrobble.log.keys():
+        scrobble.log["gps_updates"] = []
+
+    scrobble.log["gps_updates"].append(
+        {
+            "timestamp": data_dict.get("time"),
+            "position_provider": provider,
+        }
+    )
     if scrobble.timestamp:
         scrobble.playback_position_seconds = (
             timezone.now() - scrobble.timestamp
