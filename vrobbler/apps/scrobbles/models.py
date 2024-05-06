@@ -521,7 +521,7 @@ class Scrobble(TimeStampedModel):
 
     # Metadata
     source = models.CharField(max_length=255, **BNULL)
-    scrobble_log = models.JSONField(**BNULL)
+    log = models.JSONField(**BNULL)
     timezone = models.CharField(max_length=50, **BNULL)
 
     # Fields for keeping track of book data
@@ -992,10 +992,10 @@ class Scrobble(TimeStampedModel):
 
         if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
-            scrobble.scrobble_log[
+            scrobble.log[
                 pendulum.now().timestamp
             ] = f"Location {location.id} too close to this scrobble"
-            scrobble.save(update_fields=["scrobble_log"])
+            scrobble.save(update_fields=["log"])
             logger.info(
                 f"[scrobbling] finished - found existing named location",
                 extra={
@@ -1074,7 +1074,7 @@ class Scrobble(TimeStampedModel):
         cls,
         scrobble_data: dict,
     ) -> "Scrobble":
-        scrobble_data["scrobble_log"] = {}
+        scrobble_data["log"] = {}
         scrobble = cls.objects.create(
             **scrobble_data,
         )

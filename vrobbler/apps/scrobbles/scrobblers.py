@@ -141,7 +141,7 @@ def build_scrobble_dict(data_dict: dict, user_id: int) -> dict:
         "timestamp": parse(data_dict.get("UtcTimestamp")),
         "playback_position_seconds": playback_seconds,
         "source": data_dict.get("ClientName", "Vrobbler"),
-        "scrobble_log": {"media_source_id": data_dict.get("MediaSourceId")},
+        "log": {"media_source_id": data_dict.get("MediaSourceId")},
         "jellyfin_status": jellyfin_status,
     }
 
@@ -362,8 +362,7 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
 
     provider = LOCATION_PROVIDERS[data_dict.get("prov")]
 
-    scrobble.scrobble_log["update"] = {
-        "timestamp": data_dict.get("time"),
+    scrobble.log[data_dict.get("time")] = {
         "position_provider": provider,
     }
     if scrobble.timestamp:
@@ -371,7 +370,7 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
             timezone.now() - scrobble.timestamp
         ).seconds
 
-    scrobble.save(update_fields=["scrobble_log", "playback_position_seconds"])
+    scrobble.save(update_fields=["log", "playback_position_seconds"])
     logger.info(
         "[webhook] gpslogger scrobble request received",
         extra={
