@@ -38,6 +38,10 @@ from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
+from scrobbles.dataclasses import (
+    ScrobbleMetadataDecoder,
+    ScrobbleMetadataEncoder,
+)
 from webpages.models import WebPage
 from lifeevents.models import LifeEvent
 
@@ -526,7 +530,11 @@ class Scrobble(TimeStampedModel):
 
     # Metadata
     source = models.CharField(max_length=255, **BNULL)
-    log = models.JSONField(**BNULL)
+    log = models.JSONField(
+        **BNULL,
+        encoder=ScrobbleMetadataEncoder,
+        decoder=ScrobbleMetadataDecoder,
+    )
     timezone = models.CharField(max_length=50, **BNULL)
 
     # Fields for keeping track of book data

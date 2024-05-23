@@ -13,6 +13,9 @@ class LifeEvent(ScrobblableMixin):
 
     description = models.TextField(**BNULL)
 
+    def __str__(self):
+        return self.title
+
     def get_absolute_url(self):
         return reverse(
             "life-events:life-event_detail", kwargs={"slug": self.uuid}

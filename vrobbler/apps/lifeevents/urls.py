@@ -1,14 +1,16 @@
 from django.urls import path
 from lifeevents import views
 
-app_name = "events"
+app_name = "lifeevents"
 
 
 urlpatterns = [
-    path("events/", views.EventListView.as_view(), name="event_list"),
     path(
-        "event/<slug:slug>/",
-        views.EventDetailView.as_view(),
-        name="event_detail",
+        "lifeevents/", views.LifeEventListView.as_view(), name="lifeevent_list"
+    ),
+    path(
+        "lifeevent/<slug:slug>/",
+        views.LifeEventDetailView.as_view(),
+        name="life-event_detail",
     ),
 ]

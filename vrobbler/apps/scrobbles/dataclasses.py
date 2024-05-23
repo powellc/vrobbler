@@ -4,6 +4,16 @@ from dataclasses import dataclass, asdict
 from typing import Optional
 
 
+class ScrobbleMetadataEncoder(json.JSONEncoder):
+    def default(self, o):
+        return o.__dict__
+
+
+class ScrobbleMetadataDecoder(json.JSONDecoder):
+    def default(self, o):
+        return o.__dict__
+
+
 class JSONMetadata(object):
     @property
     def asdict(self):
