@@ -24,6 +24,7 @@ class ScrobbleInline(admin.TabularInline):
         "board_game",
         "geo_location",
         "web_page",
+        "life_event",
         "user",
     )
     exclude = (
@@ -118,6 +119,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "board_game",
         "geo_location",
         "web_page",
+        "life_event",
     )
     list_filter = (
         "is_paused",

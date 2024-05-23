@@ -124,6 +124,7 @@ INSTALLED_APPS = [
     "videogames",
     "locations",
     "webpages",
+    "lifeevents",
     "mathfilters",
     "rest_framework",
     "allauth",

@@ -39,6 +39,7 @@ from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
 from webpages.models import WebPage
+from lifeevents.models import LifeEvent
 
 from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
 
@@ -481,6 +482,7 @@ class Scrobble(TimeStampedModel):
         BOARD_GAME = "BoardGame", "Board game"
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         WEBPAGE = "WebPage", "Web Page"
+        LIFE_EVENT = "LifeEvent", "Life event"
 
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
@@ -502,6 +504,9 @@ class Scrobble(TimeStampedModel):
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
     web_page = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
+    life_event = models.ForeignKey(
+        LifeEvent, on_delete=models.DO_NOTHING, **BNULL
+    )
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -809,6 +814,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.geo_location
         if self.web_page:
             media_obj = self.web_page
+        if self.life_event:
+            media_obj = self.life_event
         return media_obj
 
     def __str__(self):
