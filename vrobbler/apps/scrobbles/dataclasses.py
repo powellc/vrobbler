@@ -27,20 +27,20 @@ class JSONMetadata(object):
 @dataclass
 class BoardGameScore(JSONMetadata):
     user_id: int
-    score: Optional[int]
-    win: Optional[bool]
+    score: Optional[int] = None
+    win: Optional[bool] = None
 
 
 @dataclass
 class BoardGameMetadata(JSONMetadata):
-    players: Optional[list[BoardGameScore]]
+    players: Optional[list[BoardGameScore]] = None
 
 
 @dataclass
 class LifeEventMetadata(JSONMetadata):
-    location: Optional[str]
-    geo_location_id: Optional[int]
-    participant_user_ids: Optional[list[int]]
+    location: Optional[str] = None
+    geo_location_id: Optional[int] = None
+    participant_user_ids: Optional[list[int]] = None
 
     @property
     def __dict__(self):

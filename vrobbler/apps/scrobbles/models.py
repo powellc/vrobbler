@@ -39,8 +39,11 @@ from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
 from scrobbles.dataclasses import (
+    BoardGameMetadata,
+    LifeEventMetadata,
     ScrobbleMetadataDecoder,
     ScrobbleMetadataEncoder,
+    VideoMetadata,
 )
 from webpages.models import WebPage
 from lifeevents.models import LifeEvent
@@ -601,6 +604,25 @@ class Scrobble(TimeStampedModel):
                         "archivebox_username": self.user.profile.archivebox_username,
                     },
                 )
+
+    @property
+    def metadata(self):
+        metadata_cls = None
+        if self.media_type == self.MediaType.LIFE_EVENT:
+            metadata_cls = LifeEventMetadata
+        if self.media_type == self.MediaType.BOARD_GAME:
+            metadata_cls = BoardGameMetadata
+        if self.media_type == self.MediaType.VIDEO:
+            metadata_cls = VideoMetadata
+
+        if not metadata_cls:
+            logger.warn(
+                f"Media type has no metadata class",
+                extra={"media_type": self.media_type, "scrobble_id": self.id},
+            )
+            return None
+
+        return metadata_cls(**self.log)
 
     @property
     def tzinfo(self):
