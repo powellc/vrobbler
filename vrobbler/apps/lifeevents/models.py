@@ -2,7 +2,7 @@ from django.apps import apps
 from django.db import models
 from django.urls import reverse
 import pendulum
-from lifeevents.dataclasses import LifeEventMetadata
+from scrobbles.dataclasses import LifeEventMetadata
 from scrobbles.mixins import ScrobblableMixin
 
 BNULL = {"blank": True, "null": True}
