@@ -622,7 +622,7 @@ class Scrobble(TimeStampedModel):
             )
             return None
 
-        return metadata_cls(**self.log)
+        return metadata_cls.from_dict(self.log)
 
     @property
     def tzinfo(self):
