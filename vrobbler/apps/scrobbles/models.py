@@ -624,6 +624,20 @@ class Scrobble(TimeStampedModel):
 
         return metadata_cls.from_dict(self.log)
 
+    def redirect_url(self, user_id) -> str:
+        user = User.objects.filter(id=user_id).first()
+        redirect_url = self.media_obj.get_absolute_url()
+
+        if (
+            self.media_type == self.MediaType.WEBPAGE
+            and user
+            and user.profile.redirect_to_webpage
+        ):
+            logger.info(f"Redirecting to {self.media_obj.url}")
+            redirect_url = self.media_obj.url
+
+        return redirect_url
+
     @property
     def tzinfo(self):
         return pytz.timezone(self.timezone)

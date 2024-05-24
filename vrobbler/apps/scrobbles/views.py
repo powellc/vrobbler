@@ -67,12 +67,10 @@ class RecentScrobbleList(ListView):
         user = self.request.user
         if user.is_authenticated:
             if scrobble_url := self.request.GET.get("scrobble_url"):
-                scrobble = manual_scrobble_webpage(scrobble_url, self.request.user.id)
-                if self.request.user.profile.redirect_to_webpage:
-                    logger.info(f"Redirecting to {scrobble.media_obj} detail page")
-                    return HttpResponseRedirect(scrobble.media_obj.get_absolute_url())
-                else:
-                    return HttpResponseRedirect(reverse_lazy("vrobbler-home"))
+                scrobble = manual_scrobble_webpage(
+                    scrobble_url, self.request.user.id
+                )
+                return HttpResponseRedirect(scrobble.redirect_url(user.id))
         return super().get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -237,11 +235,9 @@ class ManualScrobbleView(FormView):
         scrobble_fn = MANUAL_SCROBBLE_FNS[key]
         scrobble = eval(scrobble_fn)(item_id, self.request.user.id)
 
-        if self.request.user.profile.redirect_to_webpage and key == "-w":
-            logger.info(f"Redirecting to {scrobble.media_obj} detail page")
-            return HttpResponseRedirect(scrobble.media_obj.get_absolute_url())
-
-        return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
+        return HttpResponseRedirect(
+            scrobble.redirect_url(self.request.user.id)
+        )
 
 
 class JsonableResponseMixin:
@@ -473,7 +469,8 @@ def scrobble_start(request, uuid):
         and media_obj.__class__.__name__ == Scrobble.MediaType.WEBPAGE
     ):
         logger.info(f"Redirecting to {media_obj} detail apge")
-        return HttpResponseRedirect(media_obj.get_absolute_url())
+        return HttpResponseRedirect(media_obj.url)
+
     return HttpResponseRedirect(success_url)
 
 
