@@ -1043,8 +1043,9 @@ class Scrobble(TimeStampedModel):
 
         if existing_locations := location.in_proximity(named=True):
             existing_location = existing_locations.first()
+            ts = int(pendulum.now().timestamp())
             scrobble.log[
-                pendulum.now().timestamp
+                ts
             ] = f"Location {location.id} too close to this scrobble"
             scrobble.save(update_fields=["log"])
             logger.info(
