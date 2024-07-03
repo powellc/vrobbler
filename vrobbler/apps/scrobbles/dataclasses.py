@@ -3,6 +3,13 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Optional
 
+from dataclass_wizard import JSONWizard
+from django.contrib.auth import get_user_model
+
+from vrobbler.apps.locations.models import GeoLocation
+
+User = get_user_model()
+
 
 class ScrobbleMetadataEncoder(json.JSONEncoder):
     def default(self, o):
@@ -14,7 +21,7 @@ class ScrobbleMetadataDecoder(json.JSONDecoder):
         return o.__dict__
 
 
-class JSONMetadata(object):
+class BaseJSONMetadata(JSONWizard):
     @property
     def asdict(self):
         return asdict(self)
@@ -23,34 +30,34 @@ class JSONMetadata(object):
     def json(self):
         return json.dumps(self.asdict)
 
-    @classmethod
-    def from_dict(cls, env):
-        return cls(
-            **{
-                k: v
-                for k, v in env.items()
-                if k in inspect.signature(cls).parameters
-            }
-        )
-
 
 @dataclass
-class BoardGameScore(JSONMetadata):
-    user_id: int
+class BoardGameScore(BaseJSONMetadata):
+    user_id: Optional[int] = None
+    name: Optional[str] = None
+    color: Optional[str] = None
     score: Optional[int] = None
     win: Optional[bool] = None
-
-
-@dataclass
-class BoardGameMetadata(JSONMetadata):
-    players: Optional[list[BoardGameScore]] = None
-
-
-@dataclass
-class LifeEventMetadata(JSONMetadata):
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
+
+    def user(self):
+        return User.objects.filter(id=self.user_id).first()
+
+
+@dataclass
+class BoardGameMetadata(BaseJSONMetadata):
+    players: Optional[list[BoardGameScore]] = None
+
+    def geo_location(self):
+        return GeoLocation.objects.filter(id=self.geo_location_id).first()
+
+
+@dataclass
+class LifeEventMetadata(BaseJSONMetadata):
     participant_user_ids: Optional[list[int]] = None
+    location: Optional[str] = None
+    geo_location_id: Optional[int] = None
 
     @property
     def __dict__(self):
@@ -60,9 +67,19 @@ class LifeEventMetadata(JSONMetadata):
     def json(self):
         return json.dumps(self.__dict__)
 
+    def participants(self) -> list[User]:
+        participants = []
+        if self.participant_user_ids:
+            for id in self.participant_user_ids:
+                participants.append(User.objects.filter(id=id).first())
+        return participants
+
+    def geo_location(self):
+        return GeoLocation.objects.filter(id=self.geo_location_id).first()
+
 
 @dataclass
-class VideoMetadata(JSONMetadata):
+class VideoMetadata(BaseJSONMetadata):
     title: str
     video_type: str
     run_time_seconds: int
