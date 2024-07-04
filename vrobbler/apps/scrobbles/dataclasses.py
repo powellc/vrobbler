@@ -5,8 +5,7 @@ from typing import Optional
 
 from dataclass_wizard import JSONWizard
 from django.contrib.auth import get_user_model
-
-from vrobbler.apps.locations.models import GeoLocation
+from locations.models import GeoLocation
 
 User = get_user_model()
 
@@ -21,7 +20,7 @@ class ScrobbleMetadataDecoder(json.JSONDecoder):
         return o.__dict__
 
 
-class BaseJSONMetadata(JSONWizard):
+class JSONMetadata(JSONWizard):
     @property
     def asdict(self):
         return asdict(self)
@@ -32,21 +31,16 @@ class BaseJSONMetadata(JSONWizard):
 
 
 @dataclass
-class BoardGameScore(BaseJSONMetadata):
+class BoardGameScore(JSONMetadata):
     user_id: Optional[int] = None
     name: Optional[str] = None
     color: Optional[str] = None
     score: Optional[int] = None
     win: Optional[bool] = None
-    location: Optional[str] = None
-    geo_location_id: Optional[int] = None
-
-    def user(self):
-        return User.objects.filter(id=self.user_id).first()
 
 
 @dataclass
-class BoardGameMetadata(BaseJSONMetadata):
+class BoardGameMetadata(JSONMetadata):
     players: Optional[list[BoardGameScore]] = None
 
     def geo_location(self):
@@ -54,18 +48,25 @@ class BoardGameMetadata(BaseJSONMetadata):
 
 
 @dataclass
-class LifeEventMetadata(BaseJSONMetadata):
+class BookPageMetadata(JSONMetadata):
+    page_number: Optional[int] = None
+    end_ts: Optional[int] = None
+    start_ts: Optional[int] = None
+    duration: Optional[int] = None
+
+
+@dataclass
+class BookMetadata(JSONMetadata):
+    koreader_hash: Optional[str]
+    pages_read: Optional[int]
+    page_data: Optional[list[BookPageMetadata]]
+
+
+@dataclass
+class LifeEventMetadata(JSONMetadata):
     participant_user_ids: Optional[list[int]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
-
-    @property
-    def __dict__(self):
-        return asdict(self)
-
-    @property
-    def json(self):
-        return json.dumps(self.__dict__)
 
     def participants(self) -> list[User]:
         participants = []
@@ -79,7 +80,7 @@ class LifeEventMetadata(BaseJSONMetadata):
 
 
 @dataclass
-class VideoMetadata(BaseJSONMetadata):
+class VideoMetadata(JSONMetadata):
     title: str
     video_type: str
     run_time_seconds: int
