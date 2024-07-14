@@ -30,7 +30,7 @@ steps:
         - vrobbler.service
       username: root
       ssh_key:
-        from_secret: ssh_key
+        from_secret: jail_key
       command_timeout: 2m
       script:
         - pip uninstall -y vrobbler
@@ -42,7 +42,7 @@ steps:
       branch:
       - main
   - name: build success notification
-    image: parrazam/drone-ntfy
+    image: parrazam/drone-ntfy:0.3-linux-amd64
     when:
         status: [success]
     settings:
@@ -50,11 +50,10 @@ steps:
       topic: drone
       priority: low
       tags:
-        - cd
         - failure
         - vrobbler
   - name: build failure notification
-    image: parrazam/drone-ntfy
+    image: parrazam/drone-ntfy:0.3-linux-amd64
     when:
         status: [failure]
     settings:
@@ -62,7 +61,6 @@ steps:
       topic: drone
       priority: high
       tags:
-        - cd
         - success
         - vrobbler
 volumes:
