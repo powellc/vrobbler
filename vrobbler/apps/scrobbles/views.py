@@ -108,33 +108,6 @@ class RecentScrobbleList(ListView):
                 processed_finished__isnull=True,
                 user=self.request.user,
             )
-
-            limit = 14
-            artist = {"user": user, "media_type": "Artist", "limit": limit}
-            # This is weird. They don't display properly as QuerySets, so we cast to lists
-            data["chart_keys"] = {
-                "today": "Today",
-                "last7": "Last 7 days",
-                "last30": "Last 30 days",
-                "year": "This year",
-                "all": "All time",
-            }
-            data["current_artist_charts"] = {
-                "today": list(live_charts(**artist, chart_period="today")),
-                "last7": list(live_charts(**artist, chart_period="last7")),
-                "last30": list(live_charts(**artist, chart_period="last30")),
-                "year": list(live_charts(**artist, chart_period="year")),
-                "all": list(live_charts(**artist)),
-            }
-
-            track = {"user": user, "media_type": "Track", "limit": limit}
-            data["current_track_charts"] = {
-                "today": list(live_charts(**track, chart_period="today")),
-                "last7": list(live_charts(**track, chart_period="last7")),
-                "last30": list(live_charts(**track, chart_period="last30")),
-                "year": list(live_charts(**track, chart_period="year")),
-                "all": list(live_charts(**track)),
-            }
             data["counts"] = scrobble_counts(user)
         else:
             data["weekly_data"] = week_of_scrobbles()
