@@ -3,6 +3,11 @@
 {% block title %}{{name}}{% endblock %}
 
 {% block lists %}
+
+<div "calss="row>
+    {% include "scrobbles/_top_charts.html" %}
+</div>
+
 <div class="row">
     {% if artist_charts %}
     <div class="col-md">

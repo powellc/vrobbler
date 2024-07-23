@@ -664,6 +664,33 @@ class ChartRecordView(TemplateView):
                 ),
                 "all": live_charts(**track_params, limit=limit),
             }
+
+            limit = 14
+            artist = {"user": user, "media_type": "Artist", "limit": limit}
+            # This is weird. They don't display properly as QuerySets, so we cast to lists
+            context_data["chart_keys"] = {
+                "today": "Today",
+                "last7": "Last 7 days",
+                "last30": "Last 30 days",
+                "year": "This year",
+                "all": "All time",
+            }
+            context_data["current_artist_charts"] = {
+                "today": list(live_charts(**artist, chart_period="today")),
+                "last7": list(live_charts(**artist, chart_period="last7")),
+                "last30": list(live_charts(**artist, chart_period="last30")),
+                "year": list(live_charts(**artist, chart_period="year")),
+                "all": list(live_charts(**artist)),
+            }
+
+            track = {"user": user, "media_type": "Track", "limit": limit}
+            context_data["current_track_charts"] = {
+                "today": list(live_charts(**track, chart_period="today")),
+                "last7": list(live_charts(**track, chart_period="last7")),
+                "last30": list(live_charts(**track, chart_period="last30")),
+                "year": list(live_charts(**track, chart_period="year")),
+                "all": list(live_charts(**track)),
+            }
             return context_data
 
         # Date provided, lookup past charts, returning nothing if it's now or in the future.

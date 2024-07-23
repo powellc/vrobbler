@@ -82,19 +82,14 @@
     {% if not user.is_authenticated %}
     <p>Today <b>{{counts.today}}</b> | This Week <b>{{counts.week}}</b> | This Month <b>{{counts.month}}</b> | This Year <b>{{counts.year}}</b> | All Time <b>{{counts.alltime}}</b></p>
     <canvas class="my-4 w-100" id="myChart" width="900" height="300"></canvas>
-    {% endif %}
-
+    {% else %}
     <div class="container">
-        {% if user.is_authenticated %}
-        <div class="row">
-            {% include "scrobbles/_top_charts.html" %}
-        </div>
-
         <div class="row">
             {% include "scrobbles/_last_scrobbles.html" %}
         </div>
-        {% endif %}
     </div>
+    {% endif %}
+
 </main>
 
 <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel"
