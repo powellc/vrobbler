@@ -1,0 +1,16 @@
+<html>
+<style>label { display:none; } textarea {height:8em; width:100%}</style>
+	<body>
+		<form method=post>{% csrf_token %}
+			{{form.as_p}}
+			<input type="hidden" id="object_id" value="object.uuid">
+			<input type="submit" value="Finish" />
+		</form>
+		<a href="{{object.url}}" target="_blank">Open in new window</a>
+		<iframe style="height:78%; width:100%" src="{{object.url}}" title="{{object.url}}" allowfullscreen sandbox>
+			<p>
+				Page could not be opened, use link above to read.
+			</p>
+		</iframe>
+	</body>
+</html>
