@@ -63,6 +63,4 @@ class WebPageReadView(
             latest_scrobble.log["notes"] = self.request.POST.get("notes")
             latest_scrobble.save(update_fields=["log"])
 
-        return HttpResponseRedirect(
-            reverse("webpages:webpage-detail", kwargs={"slug": webpage.uuid})
-        )
+        return HttpResponseRedirect(webpage.url)
