@@ -634,7 +634,7 @@ class Scrobble(TimeStampedModel):
             and user.profile.redirect_to_webpage
         ):
             logger.info(f"Redirecting to {self.media_obj.url}")
-            redirect_url = self.media_obj.url
+            redirect_url = self.media_obj.get_read_url()
 
         return redirect_url
 

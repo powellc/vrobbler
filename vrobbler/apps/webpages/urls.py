@@ -11,4 +11,9 @@ urlpatterns = [
         views.WebPageDetailView.as_view(),
         name="webpage-detail",
     ),
+    path(
+        "webpage/<slug:slug>/read/",
+        views.WebPageReadView.as_view(),
+        name="webpage-read",
+    ),
 ]
