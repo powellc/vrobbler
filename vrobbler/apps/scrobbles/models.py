@@ -40,6 +40,7 @@ from videogames.models import VideoGame
 from videos.models import Series, Video
 from scrobbles.dataclasses import (
     BoardGameMetadata,
+    JSONMetadata,
     LifeEventMetadata,
     ScrobbleMetadataDecoder,
     ScrobbleMetadataEncoder,
@@ -606,7 +607,7 @@ class Scrobble(TimeStampedModel):
                 )
 
     @property
-    def metadata(self):
+    def metadata(self) -> Optional[JSONMetadata]:
         metadata_cls = None
         if self.media_type == self.MediaType.LIFE_EVENT:
             metadata_cls = LifeEventMetadata

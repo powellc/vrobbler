@@ -44,7 +44,10 @@ class JSONMetadata(JSONWizard):
 class BoardGameScore(JSONMetadata):
     user_id: Optional[int] = None
     name: Optional[str] = None
+    bgg_username: Optional[str] = None
     color: Optional[str] = None
+    character: Optional[str] = None
+    team: Optional[str] = None
     score: Optional[int] = None
     win: Optional[bool] = None
 
@@ -52,6 +55,9 @@ class BoardGameScore(JSONMetadata):
 @dataclass
 class BoardGameMetadata(JSONMetadata):
     players: Optional[list[BoardGameScore]] = None
+    difficulty: Optional[int] = None
+    solo: Optional[bool] = None
+    two_handed: Optional[bool] = None
 
     def geo_location(self):
         return GeoLocation.objects.filter(id=self.geo_location_id).first()
