@@ -104,6 +104,7 @@
             </div>
             {% endif %}
         </div>
+        <hr />
         <h3>Sporting</h3>
         <div class="sporting">
             {% if sporting %}
@@ -118,6 +119,7 @@
             </div>
             {% endif %}
         </div>
+        <hr />
         <h3>Browsing</h3>
         <div class="browsing">
             {% if browsing %}
@@ -132,12 +134,13 @@
             </div>
             {% endif %}
         </div>
+        <hr />
         <h3>Participating</h3>
         <div class="participating">
             {% if participating %}
             <div class="titles">
                 <p><a href="{{participating.media_obj.get_absolute_url}}">{{participating.media_obj}}</a></p>
-                {% if participating.media_obj.subtitle %}<p><em><a href="{{participating.media_obj.subtitle.get_absolute_url}}">{{participaing.media_obj.subtitle}}</a></em></p>{% endif %}
+                {% if participating.metadata.details %}<p><em>{{participaing.media_obj.details }}</em></p>{% endif %}
             </div>
             <p><small>{{participating.timestamp|naturaltime}} from {{participating.source}}</small></p>
             {% else %}

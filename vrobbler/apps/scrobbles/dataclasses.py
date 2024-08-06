@@ -58,6 +58,7 @@ class BoardGameMetadata(JSONMetadata):
     difficulty: Optional[int] = None
     solo: Optional[bool] = None
     two_handed: Optional[bool] = None
+    location: Optional[str] = None
 
     def geo_location(self):
         return GeoLocation.objects.filter(id=self.geo_location_id).first()
@@ -80,11 +81,22 @@ class BookMetadata(JSONMetadata):
 
 @dataclass
 class LifeEventMetadata(JSONMetadata):
+    details = Optional[str]
     participant_user_ids: Optional[list[int]] = None
+    participant_names: Optional[list[str]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
 
-    def participants(self) -> list[User]:
+    def participants(self) -> list[str]:
+        participants = []
+        if self.participant_user_ids:
+            participants += [u.full_name for u in self.participant_users]
+        if self.participant_names:
+            participants += self.participant_names
+        return participants
+
+    @property
+    def participant_users(self) -> list[User]:
         participants = []
         if self.participant_user_ids:
             for id in self.participant_user_ids:
