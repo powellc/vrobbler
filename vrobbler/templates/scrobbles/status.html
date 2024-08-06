@@ -140,7 +140,7 @@
             {% if participating %}
             <div class="titles">
                 <p><a href="{{participating.media_obj.get_absolute_url}}">{{participating.media_obj}}</a></p>
-                {% if participating.metadata.details %}<p><em>{{participaing.media_obj.details }}</em></p>{% endif %}
+                {% if participating.metadata.details %}<p><em>{{participating.metadata.details }}</em></p>{% endif %}
             </div>
             <p><small>{{participating.timestamp|naturaltime}} from {{participating.source}}</small></p>
             {% else %}
