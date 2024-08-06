@@ -81,11 +81,11 @@ class BookMetadata(JSONMetadata):
 
 @dataclass
 class LifeEventMetadata(JSONMetadata):
-    details = Optional[str]
     participant_user_ids: Optional[list[int]] = None
     participant_names: Optional[list[str]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
+    details: Optional[str]
 
     def participants(self) -> list[str]:
         participants = []
