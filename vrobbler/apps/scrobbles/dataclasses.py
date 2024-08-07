@@ -85,7 +85,7 @@ class LifeEventMetadata(JSONMetadata):
     participant_names: Optional[list[str]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
-    details: Optional[str]
+    details: Optional[str] = None
 
     def participants(self) -> list[str]:
         participants = []

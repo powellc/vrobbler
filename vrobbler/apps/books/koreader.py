@@ -293,6 +293,11 @@ def build_scrobbles_from_book_map(
                     logger.info(
                         f"Queueing scrobble for {book_id}, page {cur_page_number}"
                     )
+                    log_data = {
+                        "koreader_hash": book_dict.get("hash"),
+                        "page_data": scrobble_page_data,
+                        "pages_read": cur_page_number,
+                    }
                     scrobbles_to_create.append(
                         Scrobble(
                             book_id=book_id,
@@ -300,11 +305,9 @@ def build_scrobbles_from_book_map(
                             source="KOReader",
                             media_type=Scrobble.MediaType.BOOK,
                             timestamp=timestamp,
+                            log=log_data,
                             stop_timestamp=stop_timestamp,
                             playback_position_seconds=playback_position_seconds,
-                            book_koreader_hash=book_dict.get("hash"),
-                            book_page_data=scrobble_page_data,
-                            book_pages_read=cur_page_number,
                             in_progress=False,
                             played_to_completion=True,
                             long_play_complete=False,
@@ -338,9 +341,9 @@ def fix_long_play_stats_for_scrobbles(scrobbles: list) -> None:
             )
         else:
             scrobble.long_play_seconds = scrobble.playback_position_seconds
-        scrobble.book_pages_read = scrobble.calc_pages_read()
+        scrobble.log["book_pages_read"] = scrobble.calc_pages_read()
 
-        scrobble.save(update_fields=["book_pages_read", "long_play_seconds"])
+        scrobble.save(update_fields=["log", "long_play_seconds"])
 
 
 def process_koreader_sqlite_file(file_path, user_id) -> list:

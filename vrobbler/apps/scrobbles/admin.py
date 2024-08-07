@@ -30,9 +30,6 @@ class ScrobbleInline(admin.TabularInline):
     exclude = (
         "scrobble_log",
         "timezone",
-        "book_koreader_hash",
-        "book_page_data",
-        "book_pages_read",
         "videogame_save_data",
         "videogame_screenshot",
     )

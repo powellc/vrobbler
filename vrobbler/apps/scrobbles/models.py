@@ -40,6 +40,7 @@ from videogames.models import VideoGame
 from videos.models import Series, Video
 from scrobbles.dataclasses import (
     BoardGameMetadata,
+    BookMetadata,
     JSONMetadata,
     LifeEventMetadata,
     ScrobbleMetadataDecoder,
@@ -541,7 +542,7 @@ class Scrobble(TimeStampedModel):
     )
     timezone = models.CharField(max_length=50, **BNULL)
 
-    # Fields for keeping track of book data
+    # Fields for keeping track of book data DEPRECATED, remove after migration
     book_koreader_hash = models.CharField(max_length=50, **BNULL)
     book_pages_read = models.IntegerField(**BNULL)
     book_page_data = models.JSONField(**BNULL)
@@ -615,6 +616,8 @@ class Scrobble(TimeStampedModel):
             metadata_cls = BoardGameMetadata
         if self.media_type == self.MediaType.VIDEO:
             metadata_cls = VideoMetadata
+        if self.media_type == self.MediaType.BOOK:
+            metadata_cls = BookMetadata
 
         if not metadata_cls:
             logger.warn(
@@ -725,9 +728,9 @@ class Scrobble(TimeStampedModel):
 
     @property
     def session_pages_read(self) -> Optional[int]:
-        if not self.book_pages_read:
+        if not self.log.get("pages_read"):
             return 0
-        return self.book_pages_read
+        return self.log.get("pages_read")
 
     @property
     def is_long_play(self) -> bool:
