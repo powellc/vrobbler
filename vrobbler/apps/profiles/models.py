@@ -30,6 +30,8 @@ class UserProfile(TimeStampedModel):
     archivebox_password = EncryptedField(**BNULL)
     archivebox_url = models.CharField(max_length=255, **BNULL)
 
+    bgg_username = models.CharField(max_length=255, **BNULL)
+
     redirect_to_webpage = models.BooleanField(default=True)
 
     def __str__(self):
