@@ -89,6 +89,28 @@ class WebPage(ScrobblableMixin):
     def subtitle(self):
         return self.domain
 
+    @property
+    def primary_image_url(self) -> str:
+        # TODO Figure out how to add a preview?
+        return ""
+
+    def scrobble_for_user(self, user_id):
+        Scrobble = apps.get_model("scrobbles", "Scrobble")
+        scrobble_data = self.basic_scrobble_data(user_id)
+        logger.info(
+            "[scrobble_for_user] called for webpage",
+            extra={
+                "webpage_id": self.id,
+                "user_id": user_id,
+                "scrobble_data": scrobble_data,
+                "media_type": Scrobble.MediaType.WEBPAGE,
+            },
+        )
+        scrobble = Scrobble.create_or_update(self, user_id, scrobble_data)
+        # TODO Possibly make this async?
+        scrobble.push_to_archivebox()
+        return scrobble
+
     def scrobbles(self, user):
         Scrobble = apps.get_model("scrobbles", "Scrobble")
         return Scrobble.objects.filter(user=user, web_page=self).order_by(

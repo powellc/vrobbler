@@ -904,7 +904,7 @@ class Scrobble(TimeStampedModel):
             .order_by("-timestamp")
             .first()
         )
-        source = scrobble_data.get("source")
+        source = scrobble_data.get("source", "Vrobbler")
         mtype = media.__class__.__name__
         mopidy_status = scrobble_data.get("mopidy_status", None)
 

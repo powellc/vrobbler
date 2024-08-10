@@ -12,6 +12,7 @@ PLAY_AGAIN_MEDIA = {
     "videogames": "VideoGame",
     "books": "Book",
     "boardgames": "BoardGame",
+    "moods": "Mood",
 }
 
 MEDIA_END_PADDING_SECONDS = {

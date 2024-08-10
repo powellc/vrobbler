@@ -1,0 +1,42 @@
+{% extends "base_list.html" %}
+
+{% block title %}Moods{% endblock %}
+
+{% block head_extra %}
+<style>
+ dl { width: 210px; float:left; margin-right: 10px; }
+ dt a { color:white; text-decoration: none; font-size:smaller; }
+ img { height:200px; width: 200px; object-fit: cover; }
+ dd .right { float:right; }
+</style>
+{% endblock  %}
+
+{% block lists %}
+<div class="row">
+
+    <div class="col-md">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Scrobbles</th>
+                        <th scope="col">Start</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mood in object_list %}
+                    <tr>
+                        <td><a href="{{mood.get_absolute_url}}">{{mood}}</a></td>
+                        {% if request.user.is_authenticated %}
+                        <td>{{mood.scrobble_count}}</td>
+                        <td><a type="button" class="btn btn-sm btn-primary" href="{{mood.get_start_url}}">Scrobble</a></td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -69,12 +69,13 @@ class ScrobbleableListView(ListView):
         if not self.request.user.is_anonymous:
             queryset = queryset.annotate(
                 scrobble_count=Count("scrobble"),
-                filter=Q(user=self.request.user),
+                filter=Q(scrobble__user=self.request.user),
             ).order_by("-scrobble_count")
         else:
             queryset = queryset.annotate(
                 scrobble_count=Count("scrobble")
             ).order_by("-scrobble_count")
+        return queryset
 
 
 class ScrobbleableDetailView(DetailView):
@@ -85,8 +86,8 @@ class ScrobbleableDetailView(DetailView):
         context_data = super().get_context_data(**kwargs)
         context_data["scrobbles"] = list()
         if not self.request.user.is_anonymous:
-            context_data["scrobbles"] = self.object.scrobbles(
-                self.request.user
+            context_data["scrobbles"] = self.object.scrobble_set.filter(
+                user=self.request.user
             )
         return context_data
 
@@ -429,6 +430,10 @@ def import_audioscrobbler_file(request):
 @permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def scrobble_start(request, uuid):
+    logger.info(
+        "[scrobble_start] called",
+        extra={"request": request, "uuid": uuid},
+    )
     user = request.user
     success_url = request.META.get("HTTP_REFERER")
 
@@ -443,19 +448,17 @@ def scrobble_start(request, uuid):
             break
 
     if not media_obj:
+        logger.info(
+            "[scrobble_start] media object not found",
+            extra={"uuid": uuid, "user_id": user.id},
+        )
+        # TODO Log that we couldn't find a media obj to scrobble
         return
 
     scrobble = None
     user_id = request.user.id
     if media_obj:
-        if media_obj.__class__.__name__ == Scrobble.MediaType.BOOK:
-            scrobble = manual_scrobble_book(media_obj.openlibrary_id, user_id)
-        if media_obj.__class__.__name__ == Scrobble.MediaType.VIDEO_GAME:
-            scrobble = manual_scrobble_video_game(media_obj.hltb_id, user_id)
-        if media_obj.__class__.__name__ == Scrobble.MediaType.BOARD_GAME:
-            scrobble = manual_scrobble_board_game(media_obj.bggeek_id, user_id)
-        if media_obj.__class__.__name__ == Scrobble.MediaType.WEBPAGE:
-            scrobble = manual_scrobble_webpage(media_obj.url, user_id)
+        media_obj.scrobble_for_user(user_id)
 
     if scrobble:
         messages.add_message(
