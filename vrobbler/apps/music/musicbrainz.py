@@ -108,9 +108,12 @@ def lookup_track_from_mb(
 ) -> str:
     musicbrainzngs.set_useragent("vrobbler", "0.3.0")
 
-    top_result = musicbrainzngs.search_recordings(
-        query=track_name, artist=artist_mbid, release=album_mbid
-    )["recording-list"][0]
+    try:
+        top_result = musicbrainzngs.search_recordings(
+            query=track_name, artist=artist_mbid, release=album_mbid
+        )["recording-list"][0]
+    except IndexError:
+        return ""
     score = int(top_result.get("ext:score"))
     if score < 85:
         logger.debug(
