@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     "locations",
     "webpages",
     "lifeevents",
+    "moods",
     "mathfilters",
     "rest_framework",
     "allauth",
