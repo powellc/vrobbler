@@ -98,13 +98,17 @@ def get_or_create_track(
 ) -> Track:
     track = None
     if not mbid and album:
-        mbid = lookup_track_from_mb(
-            title,
-            artist.musicbrainz_id,
-            album.musicbrainz_id,
-        )["id"]
+        try:
+            mbid = lookup_track_from_mb(
+                title,
+                artist.musicbrainz_id,
+                album.musicbrainz_id,
+            ).get("id", 0)
+        except TypeError:
+            pass
 
-    track = Track.objects.filter(musicbrainz_id=mbid).first()
+    if mbid:
+        track = Track.objects.filter(musicbrainz_id=mbid).first()
 
     if not track:
         track = Track.objects.create(
