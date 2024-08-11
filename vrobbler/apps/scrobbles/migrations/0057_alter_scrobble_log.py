@@ -16,8 +16,8 @@ class Migration(migrations.Migration):
             name="log",
             field=models.JSONField(
                 blank=True,
-                decoder=scrobbles.dataclasses.ScrobbleMetadataDecoder,
-                encoder=scrobbles.dataclasses.ScrobbleMetadataEncoder,
+                decoder=scrobbles.dataclasses.ScrobbleLogDataDecoder,
+                encoder=scrobbles.dataclasses.ScrobbleLogDataEncoder,
                 null=True,
             ),
         ),
