@@ -2,7 +2,7 @@ from django.apps import apps
 from django.db import models
 from django.urls import reverse
 import pendulum
-from scrobbles.dataclasses import LifeEventMetadata
+from scrobbles.dataclasses import LifeEventLogData
 from scrobbles.mixins import ScrobblableMixin
 
 BNULL = {"blank": True, "null": True}
@@ -22,8 +22,8 @@ class LifeEvent(ScrobblableMixin):
         )
 
     @property
-    def metadata_class(self):
-        return LifeEventMetadata
+    def logdata_cls(self):
+        return LifeEventLogData
 
     @classmethod
     def find_or_create(cls, title: str) -> "LifeEvent":

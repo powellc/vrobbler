@@ -8,7 +8,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.db.models.query import QuerySet
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
@@ -58,6 +58,37 @@ from scrobbles.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class ScrobbleableListView(ListView):
+    model = None
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not self.request.user.is_anonymous:
+            queryset = queryset.annotate(
+                scrobble_count=Count("scrobble"),
+                filter=Q(user=self.request.user),
+            ).order_by("-scrobble_count")
+        else:
+            queryset = queryset.annotate(
+                scrobble_count=Count("scrobble")
+            ).order_by("-scrobble_count")
+
+
+class ScrobbleableDetailView(DetailView):
+    model = None
+    slug_field = "uuid"
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data["scrobbles"] = list()
+        if not self.request.user.is_anonymous:
+            context_data["scrobbles"] = self.object.scrobbles(
+                self.request.user
+            )
+        return context_data
 
 
 class RecentScrobbleList(ListView):

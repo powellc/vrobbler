@@ -1,4 +1,3 @@
-import pytz
 import calendar
 import datetime
 import logging
@@ -7,6 +6,7 @@ from typing import Iterable, Optional
 from uuid import uuid4
 
 import pendulum
+import pytz
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
@@ -19,7 +19,9 @@ from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
+from lifeevents.models import LifeEvent
 from locations.models import GeoLocation
+from moods.models import Mood
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import PodcastEpisode
@@ -31,6 +33,7 @@ from profiles.utils import (
     start_of_month,
     start_of_week,
 )
+from scrobbles import dataclasses as logdata
 from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.stats import build_charts
 from scrobbles.utils import media_class_to_foreign_key
@@ -38,17 +41,7 @@ from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
-from scrobbles.dataclasses import (
-    BoardGameMetadata,
-    BookMetadata,
-    JSONMetadata,
-    LifeEventMetadata,
-    ScrobbleMetadataDecoder,
-    ScrobbleMetadataEncoder,
-    VideoMetadata,
-)
 from webpages.models import WebPage
-from lifeevents.models import LifeEvent
 
 from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
 
@@ -492,6 +485,7 @@ class Scrobble(TimeStampedModel):
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         WEBPAGE = "WebPage", "Web Page"
         LIFE_EVENT = "LifeEvent", "Life event"
+        MOOD = "Mood", "Mood"
 
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
@@ -516,6 +510,7 @@ class Scrobble(TimeStampedModel):
     life_event = models.ForeignKey(
         LifeEvent, on_delete=models.DO_NOTHING, **BNULL
     )
+    mood = models.ForeignKey(Mood, on_delete=models.DO_NOTHING, **BNULL)
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -537,8 +532,8 @@ class Scrobble(TimeStampedModel):
     source = models.CharField(max_length=255, **BNULL)
     log = models.JSONField(
         **BNULL,
-        encoder=ScrobbleMetadataEncoder,
-        decoder=ScrobbleMetadataDecoder,
+        encoder=logdata.ScrobbleLogDataEncoder,
+        decoder=logdata.ScrobbleLogDataDecoder,
     )
     timezone = models.CharField(max_length=50, **BNULL)
 
@@ -582,7 +577,8 @@ class Scrobble(TimeStampedModel):
         # Microseconds mess up Django's filtering, and we don't need be that specific
         if self.timestamp:
             self.timestamp = self.timestamp.replace(microsecond=0)
-        self.media_type = self.MediaType(self.media_obj.__class__.__name__)
+        if self.media_obj:
+            self.media_type = self.MediaType(self.media_obj.__class__.__name__)
 
         return super(Scrobble, self).save(*args, **kwargs)
 
@@ -608,25 +604,15 @@ class Scrobble(TimeStampedModel):
                 )
 
     @property
-    def metadata(self) -> Optional[JSONMetadata]:
-        metadata_cls = None
-        if self.media_type == self.MediaType.LIFE_EVENT:
-            metadata_cls = LifeEventMetadata
-        if self.media_type == self.MediaType.BOARD_GAME:
-            metadata_cls = BoardGameMetadata
-        if self.media_type == self.MediaType.VIDEO:
-            metadata_cls = VideoMetadata
-        if self.media_type == self.MediaType.BOOK:
-            metadata_cls = BookMetadata
-
-        if not metadata_cls:
+    def logdata(self) -> dict:
+        if not self.media_obj.logdata_cls:
             logger.warn(
-                f"Media type has no metadata class",
+                f"Media type has no log data class",
                 extra={"media_type": self.media_type, "scrobble_id": self.id},
             )
-            return None
+            return {}
 
-        return metadata_cls.from_dict(self.log)
+        return self.media_obj.logdata_cls.from_dict(self.log)
 
     def redirect_url(self, user_id) -> str:
         user = User.objects.filter(id=user_id).first()
@@ -864,6 +850,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.web_page
         if self.life_event:
             media_obj = self.life_event
+        if self.mood:
+            media_obj = self.mood
         return media_obj
 
     def __str__(self):

@@ -13,6 +13,7 @@ from vrobbler.apps.boardgames import urls as boardgame_urls
 from vrobbler.apps.locations import urls as locations_urls
 from vrobbler.apps.lifeevents import urls as lifeevents_urls
 from vrobbler.apps.webpages import urls as webpages_urls
+from vrobbler.apps.moods import urls as moods_urls
 from vrobbler.apps.music.api.views import (
     AlbumViewSet,
     ArtistViewSet,
@@ -73,6 +74,7 @@ urlpatterns = [
     path("", include(webpages_urls, namespace="webpages")),
     path("", include(podcast_urls, namespace="podcasts")),
     path("", include(lifeevents_urls, namespace="life-events")),
+    path("", include(moods_urls, namespace="moods")),
     path("", include(scrobble_urls, namespace="scrobbles")),
     path(
         "", scrobbles_views.RecentScrobbleList.as_view(), name="vrobbler-home"

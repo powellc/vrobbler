@@ -12,8 +12,8 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
+from scrobbles.dataclasses import BoardGameLogData
 from scrobbles.mixins import ScrobblableMixin
-from vrobbler.apps.boardgames.bgg import lookup_boardgame_id_from_bgg
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -95,6 +95,10 @@ class BoardGame(ScrobblableMixin):
         return reverse(
             "boardgames:boardgame_detail", kwargs={"slug": self.uuid}
         )
+
+    @property
+    def logdata_cls(self):
+        return BoardGameLogData
 
     def primary_image_url(self) -> str:
         url = ""

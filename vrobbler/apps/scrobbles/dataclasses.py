@@ -1,3 +1,4 @@
+from functools import cached_property
 import inspect
 import json
 from dataclasses import asdict, dataclass
@@ -10,17 +11,17 @@ from locations.models import GeoLocation
 User = get_user_model()
 
 
-class ScrobbleMetadataEncoder(json.JSONEncoder):
+class ScrobbleLogDataEncoder(json.JSONEncoder):
     def default(self, o):
         return o.__dict__
 
 
-class ScrobbleMetadataDecoder(json.JSONDecoder):
+class ScrobbleLogDataDecoder(json.JSONDecoder):
     def default(self, o):
         return o.__dict__
 
 
-class JSONMetadata(JSONWizard):
+class JSONDataclass(JSONWizard):
     @property
     def asdict(self):
         return asdict(self)
@@ -29,19 +30,9 @@ class JSONMetadata(JSONWizard):
     def json(self):
         return json.dumps(self.asdict)
 
-    @classmethod
-    def from_dict(cls, env):
-        return cls(
-            **{
-                k: v
-                for k, v in env.items()
-                if k in inspect.signature(cls).parameters
-            }
-        )
-
 
 @dataclass
-class BoardGameScore(JSONMetadata):
+class BoardGameScoreLogData(JSONDataclass):
     user_id: Optional[int] = None
     name: Optional[str] = None
     bgg_username: Optional[str] = None
@@ -53,19 +44,22 @@ class BoardGameScore(JSONMetadata):
 
 
 @dataclass
-class BoardGameMetadata(JSONMetadata):
-    players: Optional[list[BoardGameScore]] = None
+class BoardGameLogData(JSONDataclass):
+    players: Optional[list[BoardGameScoreLogData]] = None
+    location: Optional[str] = None
+    geo_location_id: Optional[int] = None
     difficulty: Optional[int] = None
     solo: Optional[bool] = None
     two_handed: Optional[bool] = None
-    location: Optional[str] = None
 
-    def geo_location(self):
-        return GeoLocation.objects.filter(id=self.geo_location_id).first()
+    @cached_property
+    def geo_location(self) -> Optional[GeoLocation]:
+        if self.geo_location_id:
+            return GeoLocation.objects.filter(id=self.geo_location_id).first()
 
 
 @dataclass
-class BookPageMetadata(JSONMetadata):
+class BookPageLogData(JSONDataclass):
     page_number: Optional[int] = None
     end_ts: Optional[int] = None
     start_ts: Optional[int] = None
@@ -73,14 +67,14 @@ class BookPageMetadata(JSONMetadata):
 
 
 @dataclass
-class BookMetadata(JSONMetadata):
+class BookLogData(JSONDataclass):
     koreader_hash: Optional[str]
     pages_read: Optional[int]
-    page_data: Optional[list[BookPageMetadata]]
+    page_data: Optional[list[BookPageLogData]]
 
 
 @dataclass
-class LifeEventMetadata(JSONMetadata):
+class LifeEventLogData(JSONDataclass):
     participant_user_ids: Optional[list[int]] = None
     participant_names: Optional[list[str]] = None
     location: Optional[str] = None
@@ -108,7 +102,12 @@ class LifeEventMetadata(JSONMetadata):
 
 
 @dataclass
-class VideoMetadata(JSONMetadata):
+class MoodLogData(JSONDataclass):
+    reasons: Optional[str]
+
+
+@dataclass
+class VideoMetadata(JSONDataclass):
     title: str
     video_type: str
     run_time_seconds: int
