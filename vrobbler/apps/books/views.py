@@ -1,15 +1,15 @@
 from django.views import generic
 from books.models import Book, Author
 
+from scrobbles.views import ScrobbleableListView, ScrobbleableDetailView
 
-class BookListView(generic.ListView):
+
+class BookListView(ScrobbleableListView):
     model = Book
-    paginate_by = 20
 
 
-class BookDetailView(generic.DetailView):
+class BookDetailView(ScrobbleableDetailView):
     model = Book
-    slug_field = "uuid"
 
 
 class AuthorDetailView(generic.DetailView):

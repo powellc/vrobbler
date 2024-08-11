@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from videos.models import Series, Video
+from scrobbles.views import ScrobbleableListView, ScrobbleableDetailView
 
 
 class MovieListView(LoginRequiredMixin, generic.ListView):
@@ -33,6 +34,9 @@ class SeriesDetailView(LoginRequiredMixin, generic.DetailView):
         return context_data
 
 
-class VideoDetailView(LoginRequiredMixin, generic.DetailView):
+class VideoListView(ScrobbleableListView):
     model = Video
-    slug_field = "uuid"
+
+
+class VideoDetailView(ScrobbleableDetailView):
+    model = Video

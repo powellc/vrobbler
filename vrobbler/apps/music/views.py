@@ -4,20 +4,15 @@ from music.models import Album, Artist, Track
 from scrobbles.models import ChartRecord
 from scrobbles.stats import get_scrobble_count_qs
 
+from scrobbles.views import ScrobbleableListView, ScrobbleableDetailView
 
-class TrackListView(generic.ListView):
+
+class TrackListView(ScrobbleableListView):
     model = Track
-    paginate_by = 200
-
-    def get_queryset(self):
-        return get_scrobble_count_qs(user=self.request.user).order_by(
-            "-scrobble_count"
-        )
 
 
-class TrackDetailView(generic.DetailView):
+class TrackDetailView(ScrobbleableDetailView):
     model = Track
-    slug_field = "uuid"
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
