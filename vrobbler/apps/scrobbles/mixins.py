@@ -47,21 +47,27 @@ class ScrobblableMixin(TimeStampedModel):
     class Meta:
         abstract = True
 
-    def basic_scrobble_data(self, user_id) -> dict:
-        return {
+    def scrobble_for_user(
+        self,
+        user_id,
+        source: str = "Vrobbler",
+        playback_position_seconds: int = 0,
+        status: str = "started",
+    ):
+        Scrobble = apps.get_model("scrobbles", "Scrobble")
+        scrobble_data = {
             "user_id": user_id,
             "timestamp": timezone.now(),
-            "playback_position_seconds": 0,
-            "source": "Vrobbler",
+            "source": source,
+            "playback_position_seconds": playback_position_seconds,
+            "status": status,
         }
 
-    def scrobble_for_user(self, user_id):
-        Scrobble = apps.get_model("scrobbles", "Scrobble")
-        scrobble_data = self.basic_scrobble_data(user_id)
         logger.info(
             "[scrobble_for_user] called",
             extra={
-                "webpage_id": self.id,
+                "id": self.id,
+                "media_type": self.__class__,
                 "user_id": user_id,
                 "scrobble_data": scrobble_data,
                 "media_type": Scrobble.MediaType.WEBPAGE,
@@ -89,12 +95,6 @@ class ScrobblableMixin(TimeStampedModel):
     @classmethod
     def find_or_create(cls) -> None:
         logger.warn("find_or_create() not implemented yet")
-
-    def scrobble(self, user_id, **kwargs):
-        """Given a user ID and a dictionary of data, attempts to scrobble it"""
-        from scrobbles.models import Scrobble
-
-        Scrobble.create_or_update(self, user_id, **kwargs)
 
 
 class LongPlayScrobblableMixin(ScrobblableMixin):

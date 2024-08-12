@@ -104,22 +104,37 @@ def lookup_artist_from_mb(artist_name: str) -> dict:
 
 
 def lookup_track_from_mb(
-    track_name: str, artist_mbid: str, album_mbid: str
-) -> str:
+    track_name: str, artist_mb_id: str, album_mb_id: str
+) -> dict:
+    logger.info(
+        "[lookup_track_from_mb] called",
+        extra={
+            "track_name": track_name,
+            "artist_mb_id": artist_mb_id,
+            "album_mb_id": album_mb_id,
+        },
+    )
     musicbrainzngs.set_useragent("vrobbler", "0.3.0")
 
     try:
-        top_result = musicbrainzngs.search_recordings(
-            query=track_name, artist=artist_mbid, release=album_mbid
-        )["recording-list"][0]
+        results = musicbrainzngs.search_recordings(
+            query=track_name, artist=artist_mb_id, release=album_mb_id
+        )["recording-list"]
+        logger.info(
+            "[lookup_track_from_mb] musicbrainz recordings search results",
+            extra={"results": results},
+        )
+        top_result = results[0]
     except IndexError:
-        return ""
+        logger.error("[lookup_track_from_mb] no results found")
+        return {}
+
     score = int(top_result.get("ext:score"))
     if score < 85:
-        logger.debug(
-            "Track lookup score below 85 threshold",
-            extra={"result": top_result},
+        logger.info(
+            "[lookup_track_from_mb] no results above 85% certainty ",
+            extra={"results": results},
         )
-        return ""
+        return {}
 
     return top_result

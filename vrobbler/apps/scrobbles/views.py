@@ -320,29 +320,24 @@ def lastfm_import(request):
 @permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def jellyfin_webhook(request):
-    data_dict = request.data
+    post_data = request.data
+    logger.info(
+        "[jellyfin_webhook] called",
+        extra={"post_data": post_data},
+    )
 
-    # For making things easier to build new input processors
-    if getattr(settings, "DUMP_REQUEST_DATA", False):
-        json_data = json.dumps(data_dict, indent=4)
-        logger.info(f"{json_data}")
-
-    in_progress = data_dict.get("NotificationType", "") == "PlaybackProgress"
-    is_music = data_dict.get("ItemType", "") == "Audio"
+    in_progress = post_data.get("NotificationType", "") == "PlaybackProgress"
+    is_music = post_data.get("ItemType", "") == "Audio"
 
     # Disregard progress updates
     if in_progress and is_music:
-        logger.debug("Disregarding playback update from Jellyfin")
+        logger.info(
+            "[jellyfin_webhook] ignoring update of music in progress",
+            extra={"post_data": post_data},
+        )
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
-    scrobble = None
-    media_type = data_dict.get("ItemType", "")
-
-    if media_type in JELLYFIN_AUDIO_ITEM_TYPES:
-        scrobble = jellyfin_scrobble_track(data_dict, request.user.id)
-
-    if media_type in JELLYFIN_VIDEO_ITEM_TYPES:
-        scrobble = jellyfin_scrobble_video(data_dict, request.user.id)
+    scrobble = jellyfin_scrobble_media(post_data, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
@@ -359,15 +354,7 @@ def mopidy_webhook(request):
     except TypeError:
         data_dict = request.data
 
-    # For making things easier to build new input processors
-    if getattr(settings, "DUMP_REQUEST_DATA", False):
-        json_data = json.dumps(data_dict, indent=4)
-        logger.debug(f"{json_data}")
-
-    if "podcast" in data_dict.get("mopidy_uri"):
-        scrobble = mopidy_scrobble_podcast(data_dict, request.user.id)
-    else:
-        scrobble = mopidy_scrobble_track(data_dict, request.user.id)
+    scrobble = mopidy_scrobble_media(data_dict, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)

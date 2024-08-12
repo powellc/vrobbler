@@ -45,7 +45,7 @@ def test_scrobble_mopidy_track(
     assert scrobble.media_obj.title == "Same in the End"
 
 
-@pytest.mark.skip(reason="API is unstable")
+@pytest.mark.skip(reason="Allmusic API is unstable")
 @pytest.mark.django_db
 def test_scrobble_mopidy_same_track_different_album(
     client,

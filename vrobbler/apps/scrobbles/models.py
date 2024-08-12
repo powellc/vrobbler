@@ -648,7 +648,10 @@ class Scrobble(TimeStampedModel):
 
     @property
     def is_stale(self) -> bool:
-        """Mark scrobble as stale if it's been more than an hour since it was updated"""
+        """Mark scrobble as stale if it's been more than an hour since it was updated
+
+        Effectively, this allows 'resuming' a video scrobble within an hour of starting it.
+        """
         is_stale = False
         now = timezone.now()
         seconds_since_last_update = (now - self.modified).seconds
@@ -911,7 +914,7 @@ class Scrobble(TimeStampedModel):
         # GeoLocations are a special case scrobble
         if mtype == cls.MediaType.GEO_LOCATION:
             logger.warn(
-                f"[scrobbling] use create_or_update_location for GeoLocations"
+                f"[create_or_update] geoloc requires create_or_update_location"
             )
             scrobble = cls.create_or_update_location(
                 media, scrobble_data, user_id
@@ -919,22 +922,16 @@ class Scrobble(TimeStampedModel):
             return scrobble
 
         logger.info(
-            f"[scrobbling] check for existing scrobble to update ",
+            f"[create_or_update] check for existing scrobble to update ",
             extra={
                 "scrobble_id": scrobble.id if scrobble else None,
                 "media_type": mtype,
                 "media_id": media.id,
                 "scrobble_data": scrobble_data,
-                "percent_played": scrobble.percent_played if scrobble else 0,
-                "can_be_updated": scrobble.can_be_updated
-                if scrobble
-                else False,
             },
         )
 
-        scrobble_data["playback_status"] = scrobble_data.pop(
-            "mopidy_status", scrobble_data.pop("jellyfin_status", None)
-        )
+        scrobble_data["playback_status"] = scrobble_data.pop("status", None)
         # If it's marked as stopped, send it through our update mechanism, which will complete it
         if scrobble and (
             scrobble.can_be_updated
@@ -1069,7 +1066,7 @@ class Scrobble(TimeStampedModel):
         playback_status = scrobble_data.pop("playback_status", None)
 
         logger.info(
-            "[scrobbling] update called",
+            "[update] called",
             extra={
                 "scrobble_id": self.id,
                 "scrobble_data": scrobble_data,
@@ -1100,16 +1097,6 @@ class Scrobble(TimeStampedModel):
             setattr(self, key, value)
             update_fields.append(key)
         self.save(update_fields=update_fields)
-
-        logger.info(
-            "[scrobbling] update finished",
-            extra={
-                "scrobble_id": self.id,
-                "scrobble_data": scrobble_data,
-                "playback_status": playback_status,
-                "media_type": self.media_type,
-            },
-        )
 
         return self
 

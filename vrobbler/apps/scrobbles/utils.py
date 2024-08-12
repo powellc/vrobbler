@@ -1,11 +1,8 @@
 import logging
-import os
 import re
 from datetime import datetime, timedelta, tzinfo
-from urllib.parse import unquote
 
 import pytz
-from dateutil.parser import ParserError, parse
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -17,9 +14,6 @@ from scrobbles.tasks import process_lastfm_import, process_retroarch_import
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
-
-
-PODCAST_DATE_FORMAT = "YYYY-MM-DD"
 
 
 def timestamp_user_tz_to_utc(timestamp: int, user_tz: tzinfo) -> datetime:
@@ -43,49 +37,6 @@ def convert_to_seconds(run_time: str) -> int:
         seconds = int(run_time_list[2])
         run_time_int = int((((hours * 60) + minutes) * 60) + seconds)
     return run_time_int
-
-
-def parse_mopidy_uri(uri: str) -> dict:
-    logger.debug(f"Parsing URI: {uri}")
-    parsed_uri = os.path.splitext(unquote(uri))[0].split("/")
-
-    episode_str = parsed_uri[-1]
-    podcast_name = parsed_uri[-2].strip()
-    episode_num = None
-    episode_num_pad = 0
-
-    try:
-        # Without episode numbers the date will lead
-        pub_date = parse(episode_str[0:10])
-    except ParserError:
-        episode_num = int(episode_str.split("-")[0])
-        episode_num_pad = len(str(episode_num)) + 1
-
-        try:
-            # Beacuse we have epsiode numbers on
-            pub_date = parse(
-                episode_str[
-                    episode_num_pad : len(PODCAST_DATE_FORMAT)
-                    + episode_num_pad
-                ]
-            )
-        except ParserError:
-            pub_date = ""
-
-    gap_to_strip = 0
-    if pub_date:
-        gap_to_strip += len(PODCAST_DATE_FORMAT)
-    if episode_num:
-        gap_to_strip += episode_num_pad
-
-    episode_name = episode_str[gap_to_strip:].replace("-", " ").strip()
-
-    return {
-        "episode_filename": episode_name,
-        "episode_num": episode_num,
-        "podcast_name": podcast_name,
-        "pub_date": pub_date,
-    }
 
 
 def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:

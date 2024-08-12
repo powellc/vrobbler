@@ -29,12 +29,6 @@ class LifeEvent(ScrobblableMixin):
     def find_or_create(cls, title: str) -> "LifeEvent":
         return cls.objects.filter(title=title).first()
 
-    def scrobble_for_user(self, user_id):
-        Scrobble = apps.get_model("scrobbles", "Scrobble")
-        return Scrobble.objects.create(
-            user_id=user_id, life_event=self, timestamp=pendulum.now()
-        )
-
     def scrobbles(self, user_id):
         Scrobble = apps.get_model("scrobbles", "Scrobble")
         return Scrobble.objects.filter(

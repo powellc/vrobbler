@@ -8,6 +8,7 @@ from music.musicbrainz import (
     lookup_track_from_mb,
 )
 from music.constants import VARIOUS_ARTIST_DICT
+from scrobbles.utils import convert_to_seconds
 
 logger = logging.getLogger(__name__)
 
@@ -89,36 +90,49 @@ def get_or_create_album(
     return album
 
 
-def get_or_create_track(
-    title: str,
-    artist: Artist,
-    album: Album = None,
-    mbid: str = None,
-    run_time_seconds=None,
-) -> Track:
+def get_or_create_track(post_data: dict, post_keys: dict):
+    artist_name = post_data.get(post_keys.get("ARTIST_NAME"), "")
+    artist_mb_id = post_data.get(post_keys.get("ARTIST_MB_ID"), "")
+    album_title = post_data.get(post_keys.get("ALBUM_NAME"), "")
+    album_mb_id = post_data.get(post_keys.get("ALBUM_MB_ID"), "")
+    track_run_time_seconds = convert_to_seconds(
+        post_data.get(post_keys.get("RUN_TIME"), 0)
+    )
+    track_title = post_data.get(post_keys.get("TRACK_TITLE"), "")
+    track_mb_id = post_data.get(post_keys.get("TRACK_MB_ID"), "")
+
+    artist = get_or_create_artist(
+        artist_name,
+        mbid=artist_mb_id,
+    )
+    album = get_or_create_album(
+        album_title,
+        artist=artist,
+        mbid=album_mb_id,
+    )
+
     track = None
-    if not mbid and album:
+    if not track_mb_id and album:
         try:
-            mbid = lookup_track_from_mb(
-                title,
+            track_mb_id = lookup_track_from_mb(
+                track_title,
                 artist.musicbrainz_id,
                 album.musicbrainz_id,
             ).get("id", 0)
         except TypeError:
             pass
 
-    if mbid:
-        track = Track.objects.filter(musicbrainz_id=mbid).first()
+    if track_mb_id:
+        track = Track.objects.filter(musicbrainz_id=track_mb_id).first()
 
     if not track:
         track = Track.objects.create(
-            title=title,
+            title=track_title,
             artist=artist,
             album=album,
-            musicbrainz_id=mbid,
-            run_time_seconds=run_time_seconds,
+            musicbrainz_id=track_mb_id,
+            run_time_seconds=track_run_time_seconds,
         )
-
     return track
 
 
