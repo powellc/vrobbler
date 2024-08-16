@@ -55,9 +55,7 @@ def scrape_data_from_amazon(url) -> dict:
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         soup = BeautifulSoup(r.text, "html.parser")
-        import pdb
-
-        pdb.set_trace()
+        # TODO Fix this scraper
         data_dict["rating"] = get_rating_from_soup(soup)
         data_dict["review"] = get_review_from_soup(soup)
     return data_dict

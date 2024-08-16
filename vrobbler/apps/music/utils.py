@@ -90,7 +90,7 @@ def get_or_create_album(
     return album
 
 
-def get_or_create_track(post_data: dict, post_keys: dict):
+def get_or_create_track(post_data: dict, post_keys: dict) -> Track:
     artist_name = post_data.get(post_keys.get("ARTIST_NAME"), "")
     artist_mb_id = post_data.get(post_keys.get("ARTIST_MB_ID"), "")
     album_title = post_data.get(post_keys.get("ALBUM_NAME"), "")

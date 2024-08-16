@@ -1,8 +1,8 @@
 import json
-import pytest
 
-from rest_framework.authtoken.models import Token
+import pytest
 from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -13,7 +13,7 @@ class MopidyRequest:
     album = "Sublime"
     track_number = 4
     run_time_ticks = 156604
-    run_time = "156"
+    run_time = 60
     playback_time_ticks = 15045
     musicbrainz_track_id = "54214d63-5adf-4909-87cd-c65c37a6d558"
     musicbrainz_album_id = "03b864cd-7761-314c-a892-05a89ddff00d"
@@ -63,10 +63,9 @@ def valid_auth_token():
     user = User.objects.create(email="test@exmaple.com")
     return Token.objects.create(user=user).key
 
-
 @pytest.fixture
-def mopidy_track_request_data():
-    return MopidyRequest().request_json
+def mopidy_track():
+    return MopidyRequest()
 
 
 @pytest.fixture
@@ -78,6 +77,61 @@ def mopidy_track_diff_album_request_data(**kwargs):
 
 
 @pytest.fixture
-def mopidy_podcast_request_data():
+def mopidy_podcast():
     mopidy_uri = "local:podcast:Up%20First/2022-01-01%20Up%20First.mp3"
-    return MopidyRequest(mopidy_uri=mopidy_uri).request_json
+    return MopidyRequest(mopidy_uri=mopidy_uri)
+
+
+class JellyfinTrackRequest:
+    name = "Emotion"
+    artist = "Carly Rae Jepsen"
+    album = "Emotion"
+    track_number = 1
+    item_type = "Audio"
+    timestamp = "2024-01-14 12:00:19"
+    run_time_ticks = 156604
+    run_time = "00:00:60"
+    playback_time_ticks = 15045
+    musicbrainz_track_id = "54214d63-5adf-4909-87cd-c65c37a6d558"
+    musicbrainz_album_id = "03b864cd-7761-314c-a892-05a89ddff00d"
+    musicbrainz_artist_id = "95f5b748-d370-47fe-85bd-0af2dc450bc0"
+    status = "resumed"
+
+    def __init__(self, **kwargs):
+        self.request_data = {
+            "Name": kwargs.get("name", self.name),
+            "Artist": kwargs.get("artist", self.artist),
+            "Album": kwargs.get("album", self.album),
+            "TrackNumber": int(kwargs.get("track_number", self.track_number)),
+            "RunTime": kwargs.get("run_time", self.run_time),
+            "ItemType": kwargs.get("item_type", self.item_type),
+            "UtcTimestamp": kwargs.get("timestamp", self.timestamp),
+            "PlaybackPositionTicks": int(
+                kwargs.get("playback_time_ticks", self.playback_time_ticks)
+            ),
+            "Provider_musicbrainztrack": kwargs.get(
+                "musicbrainz_track_id", self.musicbrainz_track_id
+            ),
+            "Provider_musicbrainzalbum": kwargs.get(
+                "musicbrainz_album_id", self.musicbrainz_album_id
+            ),
+            "Provider_musicbrainzartist": kwargs.get(
+                "musicbrainz_artist_id", self.musicbrainz_artist_id
+            ),
+            "Status": kwargs.get("status", self.status),
+        }
+
+    def __eq__(self, other):
+        for key in self.request_data.keys():
+            if self.request_data[key] != getattr(self, key):
+                return False
+        return True
+
+    @property
+    def request_json(self):
+        return json.dumps(self.request_data)
+
+
+@pytest.fixture
+def jellyfin_track():
+    return JellyfinTrackRequest()

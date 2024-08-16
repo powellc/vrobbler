@@ -54,7 +54,7 @@ def parse_mopidy_uri(uri: str) -> dict:
     }
 
 
-def get_or_create_podcast(post_data: dict):
+def get_or_create_podcast(post_data: dict) -> PodcastEpisode:
     mopidy_uri = post_data.get("mopidy_uri", "")
     parsed_data = parse_mopidy_uri(mopidy_uri)
 

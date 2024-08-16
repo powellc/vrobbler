@@ -1,8 +1,10 @@
 import json
 import logging
+from datetime import datetime
 from typing import Optional
 
 import pendulum
+import pytz
 from boardgames.models import BoardGame
 from books.models import Book
 from dateutil.parser import parse
@@ -45,15 +47,13 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
     else:
         media_obj = get_or_create_track(post_data, MOPIDY_POST_KEYS)
 
-    # Now we run off a scrobble
-    playback_seconds = post_data.get("playback_time_ticks", 1) / 1000
-    playback_status = post_data.get(MOPIDY_POST_KEYS.get("STATUS"), "")
-
     return media_obj.scrobble_for_user(
         user_id,
         source="Mopidy",
-        playback_position_seconds=playback_seconds,
-        status=playback_status,
+        playback_position_seconds=int(
+            post_data.get("playback_time_ticks", 1) / 1000
+        ),
+        status=post_data.get(MOPIDY_POST_KEYS.get("STATUS"), ""),
     )
 
 
@@ -78,12 +78,6 @@ def jellyfin_scrobble_media(
         and post_data.get("NotificationType") == "PlaybackProgress"
     )
 
-    playback_status = "resumed"
-    if post_data.get("IsPaused"):
-        playback_status = "paused"
-    elif post_data.get("NotificationType") == "PlaybackStop":
-        playback_status = "stopped"
-
     # Jellyfin has some race conditions with it's webhooks, these hacks fix some of them
     if null_position_on_progress:
         logger.info(
@@ -92,10 +86,6 @@ def jellyfin_scrobble_media(
         )
         return
 
-    playback_position_seconds = convert_to_seconds(
-        post_data.get(JELLYFIN_POST_KEYS.get("RUN_TIME"), 0)
-    )
-
     if media_type == Scrobble.MediaType.VIDEO:
         media_obj = Video.find_or_create(post_data)
     else:
@@ -103,9 +93,20 @@ def jellyfin_scrobble_media(
             post_data, post_keys=JELLYFIN_POST_KEYS
         )
 
-    return media_obj.scrobble_for_user_id(
+    timestamp = parse(
+        post_data.get(JELLYFIN_POST_KEYS.get("TIMESTAMP"))
+    ).replace(tzinfo=pytz.utc)
+    playback_status = "resumed"
+    if post_data.get("IsPaused"):
+        playback_status = "paused"
+    elif post_data.get("NotificationType") == "PlaybackStop":
+        playback_status = "stopped"
+
+    # TODO Add some logging here, maybe?
+
+    return media_obj.scrobble_for_user(
         user_id,
-        playback_position_seconds=playback_position_seconds,
+        playback_position_seconds=(timezone.now() - timestamp).seconds,
         status=playback_status,
     )
 
