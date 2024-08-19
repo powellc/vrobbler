@@ -11,22 +11,17 @@ User = get_user_model()
 
 
 @pytest.fixture
-def boardgame():
-    user = User.objects.create(email="test@exmaple.com")
-    return Token.objects.create(user=user).key
-
-
-@pytest.fixture
 def boardgame_scrobble():
+    user = User.objects.create(
+        email="test@exmaple.com", first_name="Test", last_name="User"
+    )
     return Scrobble.objects.create(
         board_game=BoardGame.objects.create(title="Test Board Game"),
         media_type="BoardGame",
         played_to_completion=True,
-        log={
-            "players": [
-                {"user_id": 1, "win": True, "score": 30, "color": "Blue"}
-            ]
-        },
+        log='{"players": [{"user_id": '
+        + str(user.id)
+        + ', "win": true, "score": 30, "color": "Blue"}]}',
     )
 
 
