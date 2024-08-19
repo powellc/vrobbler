@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-from unittest import mock
-from unittest.mock import patch
 
 import pytest
 import time_machine
@@ -13,13 +11,13 @@ from profiles.models import UserProfile
 from scrobbles.models import Scrobble
 
 
-def build_scrobbles(client, request_data, num=7, spacing=2):
+def build_scrobbles(client, request_json, num=7, spacing=2):
     url = reverse("scrobbles:mopidy-webhook")
     user = get_user_model().objects.create(username="Test User")
     user.profile.timezone = "US/Eastern"
     user.profile.save()
     for i in range(num):
-        client.post(url, request_data, content_type="application/json")
+        client.post(url, request_json, content_type="application/json")
         s = Scrobble.objects.last()
         s.user = user
         s.timestamp = timezone.now() - timedelta(days=i * spacing)
@@ -29,8 +27,8 @@ def build_scrobbles(client, request_data, num=7, spacing=2):
 
 @pytest.mark.django_db
 @time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_scrobble_counts_data(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data)
+def test_scrobble_counts_data(client, mopidy_track):
+    build_scrobbles(client, mopidy_track.request_json)
     user = get_user_model().objects.first()
     count_dict = scrobble_counts(user)
     assert count_dict == {
@@ -44,8 +42,8 @@ def test_scrobble_counts_data(client, mopidy_track_request_data):
 
 @pytest.mark.django_db
 @time_machine.travel(datetime(2022, 3, 4, 1, 24))
-def test_live_charts(client, mopidy_track_request_data):
-    build_scrobbles(client, mopidy_track_request_data, 7, 1)
+def test_live_charts(client, mopidy_track):
+    build_scrobbles(client, mopidy_track.request_json, 7, 1)
     user = get_user_model().objects.first()
 
     week = week_of_scrobbles(user)

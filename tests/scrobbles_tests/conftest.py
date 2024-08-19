@@ -4,7 +4,30 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 
+from scrobbles.models import Scrobble
+from boardgames.models import BoardGame
+
 User = get_user_model()
+
+
+@pytest.fixture
+def boardgame():
+    user = User.objects.create(email="test@exmaple.com")
+    return Token.objects.create(user=user).key
+
+
+@pytest.fixture
+def boardgame_scrobble():
+    return Scrobble.objects.create(
+        board_game=BoardGame.objects.create(title="Test Board Game"),
+        media_type="BoardGame",
+        played_to_completion=True,
+        log={
+            "players": [
+                {"user_id": 1, "win": True, "score": 30, "color": "Blue"}
+            ]
+        },
+    )
 
 
 class MopidyRequest:
@@ -62,6 +85,7 @@ class MopidyRequest:
 def valid_auth_token():
     user = User.objects.create(email="test@exmaple.com")
     return Token.objects.create(user=user).key
+
 
 @pytest.fixture
 def mopidy_track():
