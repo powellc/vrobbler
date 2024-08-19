@@ -34,13 +34,38 @@ class JSONDataclass(JSONWizard):
 @dataclass
 class BoardGameScoreLogData(JSONDataclass):
     user_id: Optional[int] = None
-    name: Optional[str] = None
-    bgg_username: Optional[str] = None
+    name_str: str = ""
+    bgg_username: str = ""
     color: Optional[str] = None
     character: Optional[str] = None
     team: Optional[str] = None
     score: Optional[int] = None
     win: Optional[bool] = None
+    new: Optional[bool] = None
+
+    @property
+    def user(self) -> Optional[User]:
+        user = None
+        if self.user_id:
+            user = User.objects.filter(id=self.user_id).first()
+        return user
+
+    @property
+    def name(self) -> str:
+        name = self.name_str
+        if self.user_id:
+            name = self.user.first_name
+        return name
+
+    def __str__(self) -> str:
+        out = self.name
+        if self.score:
+            out += f" {self.score}"
+        if self.color:
+            out += f" ({self.color})"
+        if self.win:
+            out += f" [W]"
+        return out
 
 
 @dataclass
