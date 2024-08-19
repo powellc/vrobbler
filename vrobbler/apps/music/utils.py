@@ -91,13 +91,16 @@ def get_or_create_album(
 
 
 def get_or_create_track(post_data: dict, post_keys: dict) -> Track:
+    track_run_time_seconds = post_data.get(post_keys.get("RUN_TIME"), 0)
+    if post_keys.get("RUN_TIME") == "RunTime":
+        track_run_time_seconds = convert_to_seconds(
+            post_data.get(post_keys.get("RUN_TIME"), 0)
+        )
+
     artist_name = post_data.get(post_keys.get("ARTIST_NAME"), "")
     artist_mb_id = post_data.get(post_keys.get("ARTIST_MB_ID"), "")
     album_title = post_data.get(post_keys.get("ALBUM_NAME"), "")
     album_mb_id = post_data.get(post_keys.get("ALBUM_MB_ID"), "")
-    track_run_time_seconds = convert_to_seconds(
-        post_data.get(post_keys.get("RUN_TIME"), 0)
-    )
     track_title = post_data.get(post_keys.get("TRACK_TITLE"), "")
     track_mb_id = post_data.get(post_keys.get("TRACK_MB_ID"), "")
 

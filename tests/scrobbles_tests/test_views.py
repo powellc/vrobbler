@@ -30,17 +30,36 @@ def test_bad_mopidy_request_data(client, valid_auth_token):
     )
 
 
+@pytest.mark.parametrize(
+    "seconds, expected_percent_played, expected_scrobble_id",
+    [
+        (1, 1, 1),
+        (58, 96, 1),
+        (59, 98, 1),
+        (60, 100, 1),
+        (1, 1, 2),
+        (1, 1, 3),
+    ],
+)
 @pytest.mark.django_db
 def test_scrobble_mopidy_track(
-    client, mopidy_track, valid_auth_token
+    client,
+    mopidy_track,
+    valid_auth_token,
+    seconds,
+    expected_percent_played,
+    expected_scrobble_id,
 ):
     url = reverse("scrobbles:mopidy-webhook")
     headers = {"Authorization": f"Token {valid_auth_token}"}
 
     # Start new scrobble
-    seconds = 1
-    scrobble_id = 1
-    with time_machine.travel(datetime(2024, 1, 14, 12, 0, seconds)):
+    minutes = 0
+    calc_seconds = seconds
+    if seconds >= 60:
+        minutes = 1
+        calc_seconds = calc_seconds % 10
+    with time_machine.travel(datetime(2024, 1, 14, 12, minutes, calc_seconds)):
         mopidy_track.request_data["playback_time_ticks"] = seconds * 1000
         response = client.post(
             url,
@@ -49,45 +68,10 @@ def test_scrobble_mopidy_track(
             headers=headers,
         )
         assert response.status_code == 200
-        assert response.data == {"scrobble_id": scrobble_id}
+        assert response.data == {"scrobble_id": expected_scrobble_id}
 
         scrobble = Scrobble.objects.get(id=1)
-        assert scrobble.media_obj.__class__ == Track
-        assert scrobble.media_obj.title == "Same in the End"
-
-    # Continue existingscrobble
-    seconds = 58
-    scrobble_id = 1
-    with time_machine.travel(datetime(2024, 1, 14, 12, 0, seconds)):
-        mopidy_track.request_data["playback_time_ticks"] = seconds * 1000
-        response = client.post(
-            url,
-            mopidy_track.request_json,
-            content_type="application/json",
-            headers=headers,
-        )
-        assert response.status_code == 200
-        assert response.data == {"scrobble_id": scrobble_id}
-
-        scrobble = Scrobble.objects.get(id=1)
-        assert scrobble.media_obj.__class__ == Track
-        assert scrobble.media_obj.title == "Same in the End"
-
-    # Continue new scrobble
-    seconds = 61
-    scrobble_id = 2
-    with time_machine.travel(datetime(2024, 1, 14, 12, 1, seconds)):
-        mopidy_track.request_data["playback_time_ticks"] = seconds * 1000
-        response = client.post(
-            url,
-            mopidy_track.request_json,
-            content_type="application/json",
-            headers=headers,
-        )
-        assert response.status_code == 200
-        assert response.data == {"scrobble_id": scrobble_id}
-
-        scrobble = Scrobble.objects.get(id=1)
+        assert scrobble.percent_played == expected_percent_played
         assert scrobble.media_obj.__class__ == Track
         assert scrobble.media_obj.title == "Same in the End"
 
@@ -149,29 +133,34 @@ def test_scrobble_mopidy_podcast(
 
 @pytest.mark.django_db
 @patch("music.utils.lookup_artist_from_mb", return_value={})
-@patch("music.utils.lookup_album_dict_from_mb", return_value={"year": "1999", "mb_group_id": 1})
+@patch(
+    "music.utils.lookup_album_dict_from_mb",
+    return_value={"year": "1999", "mb_group_id": 1},
+)
 @patch("music.utils.lookup_track_from_mb", return_value={})
 @patch("music.models.lookup_artist_from_tadb", return_value={})
 @patch("music.models.lookup_album_from_tadb", return_value={"year": "1999"})
 @patch("music.models.Album.fetch_artwork", return_value=None)
 @patch("music.models.Album.scrape_allmusic", return_value=None)
 def test_scrobble_jellyfin_track(
-        mock_lookup_artist,
-        mock_lookup_album,
-        mock_lookup_track,
-        mock_lookup_artist_tadb,
-        mock_lookup_album_tadb,
-        mock_fetch_artwork,
-        mock_scrape_allmusic,
-        client,
-        jellyfin_track,
-        valid_auth_token,
+    mock_lookup_artist,
+    mock_lookup_album,
+    mock_lookup_track,
+    mock_lookup_artist_tadb,
+    mock_lookup_album_tadb,
+    mock_fetch_artwork,
+    mock_scrape_allmusic,
+    client,
+    jellyfin_track,
+    valid_auth_token,
 ):
     url = reverse("scrobbles:jellyfin-webhook")
     headers = {"Authorization": f"Token {valid_auth_token}"}
 
     with time_machine.travel(datetime(2024, 1, 14, 12, 00, 1)):
-        jellyfin_track.request_data["UtcTimestamp"] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+        jellyfin_track.request_data["UtcTimestamp"] = timezone.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         response = client.post(
             url,
             jellyfin_track.request_json,
@@ -186,7 +175,9 @@ def test_scrobble_jellyfin_track(
         assert scrobble.media_obj.title == "Emotion"
 
     with time_machine.travel(datetime(2024, 1, 14, 12, 0, 58)):
-        jellyfin_track.request_data["UtcTimestamp"] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+        jellyfin_track.request_data["UtcTimestamp"] = timezone.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         response = client.post(
             url,
             jellyfin_track.request_json,
@@ -202,7 +193,9 @@ def test_scrobble_jellyfin_track(
         assert scrobble.media_obj.title == "Emotion"
 
     with time_machine.travel(datetime(2024, 1, 14, 12, 1, 1)):
-        jellyfin_track.request_data["UtcTimestamp"] = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+        jellyfin_track.request_data["UtcTimestamp"] = timezone.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         response = client.post(
             url,
             jellyfin_track.request_json,
