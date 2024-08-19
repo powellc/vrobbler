@@ -603,13 +603,13 @@ class Scrobble(TimeStampedModel):
                 )
 
     @property
-    def logdata(self) -> dict:
+    def logdata(self) -> Optional[logdata.JSONDataclass]:
         if not self.media_obj.logdata_cls:
             logger.warn(
-                f"Media type has no log data class",
+                f"Media type has no log data class, you should add one!",
                 extra={"media_type": self.media_type, "scrobble_id": self.id},
             )
-            return {}
+            return None
 
         return self.media_obj.logdata_cls.from_dict(json.loads(self.log))
 
