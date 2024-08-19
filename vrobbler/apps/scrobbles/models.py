@@ -1,8 +1,8 @@
 import calendar
 import datetime
+import json
 import logging
-from decimal import Decimal
-from typing import Iterable, Optional
+from typing import Optional
 from uuid import uuid4
 
 import pendulum
@@ -15,7 +15,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.functional import cached_property
 from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
@@ -612,7 +611,7 @@ class Scrobble(TimeStampedModel):
             )
             return {}
 
-        return self.media_obj.logdata_cls.from_dict(self.log)
+        return self.media_obj.logdata_cls.from_dict(json.loads(self.log))
 
     def redirect_url(self, user_id) -> str:
         user = User.objects.filter(id=user_id).first()
