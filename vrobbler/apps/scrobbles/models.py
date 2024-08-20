@@ -536,26 +536,21 @@ class Scrobble(TimeStampedModel):
     )
     timezone = models.CharField(max_length=50, **BNULL)
 
-    # Fields for keeping track of book data DEPRECATED, remove after migration
-    book_koreader_hash = models.CharField(max_length=50, **BNULL)
-    book_pages_read = models.IntegerField(**BNULL)
-    book_page_data = models.JSONField(**BNULL)
-
     # Fields for keeping track of video game data
     videogame_save_data = models.FileField(
         upload_to="scrobbles/videogame_save_data/", **BNULL
     )
-    videogame_screenshot = models.ImageField(
+    screenshot = models.ImageField(
         upload_to="scrobbles/videogame_screenshot/", **BNULL
     )
-    videogame_screenshot_small = ImageSpecField(
-        source="videogame_screenshot",
+    screenshot_small = ImageSpecField(
+        source="screenshot",
         processors=[ResizeToFit(100, 100)],
         format="JPEG",
         options={"quality": 60},
     )
-    videogame_screenshot_medium = ImageSpecField(
-        source="videogame_screenshot",
+    screenshot_medium = ImageSpecField(
+        source="screenshot",
         processors=[ResizeToFit(300, 300)],
         format="JPEG",
         options={"quality": 75},

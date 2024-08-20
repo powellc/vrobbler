@@ -93,7 +93,7 @@
                         <td>{% if scrobble.in_progress %}Now playing{% else %}{{scrobble.playback_position_seconds|natural_duration}}{% endif %}</td>
                         <td>{% for platform in scrobble.video_game.platforms.all %}<a href="{{platform.get_absolute_url}}">{{platform}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                         <td>{% if scrobble.videogame_save_data %}<a href="{{scrobble.videogame_save_data.url}}">Save data</a>{% else %}Not yet{% endif %}</td>
-                        <td>{% if scrobble.videogame_screenshot%}<img src="{{scrobble.videogame_screenshot.url}}" width=250 />{% endif %}</td>
+                        <td>{% if scrobble.screenshot%}<img src="{{scrobble.screenshot.url}}" width=250 />{% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

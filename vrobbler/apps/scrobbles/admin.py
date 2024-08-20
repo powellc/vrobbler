@@ -31,7 +31,7 @@ class ScrobbleInline(admin.TabularInline):
         "scrobble_log",
         "timezone",
         "videogame_save_data",
-        "videogame_screenshot",
+        "screenshot",
     )
 
 

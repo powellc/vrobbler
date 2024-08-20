@@ -164,8 +164,8 @@
                         {% for scrobble in videogame_scrobble_list %}
                         <tr>
                             <td>{{scrobble.timestamp|naturaltime}}</td>
-                            {% if scrobble.videogame_screenshot %}
-                            <td><img src="{{scrobble.videogame_screenshot_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
+                            {% if scrobble.screenshot %}
+                            <td><img src="{{scrobble.screenshot_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
                             {% else %}
                             {% if scrobble.media_obj.hltb_cover %}
                             <td><img src="{{scrobble.media_obj.hltb_cover_medium.url}}" width=25 height=25 style="border:1px solid black;" /></td>
