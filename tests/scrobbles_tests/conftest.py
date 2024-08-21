@@ -19,9 +19,11 @@ def boardgame_scrobble():
         board_game=BoardGame.objects.create(title="Test Board Game"),
         media_type="BoardGame",
         played_to_completion=True,
-        log='{"players": [{"user_id": '
-        + str(user.id)
-        + ', "win": true, "score": 30, "color": "Blue"}]}',
+        log={
+            "players": [
+                {"user_id": user.id, "win": True, "score": 30, "color": "Blue"}
+            ]
+        },
     )
 
 

@@ -132,7 +132,7 @@ class MoodLogData(JSONDataclass):
 
 
 @dataclass
-class VideoMetadata(JSONDataclass):
+class VideoLogData(JSONDataclass):
     title: str
     video_type: str
     run_time_seconds: int
@@ -145,3 +145,10 @@ class VideoMetadata(JSONDataclass):
     cover_url = Optional[str]
     next_imdb_id: Optional[int]
     tv_series_id: Optional[str]
+
+
+@dataclass
+class VideoGameLogData(JSONDataclass):
+    emulated: bool = False
+    console: Optional[str] = None
+    emulator: Optional[str] = None

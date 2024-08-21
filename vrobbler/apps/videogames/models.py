@@ -8,6 +8,7 @@ from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
+from scrobbles.dataclasses import VideoGameLogData
 from scrobbles.mixins import LongPlayScrobblableMixin
 from scrobbles.utils import get_scrobbles_for_media
 from videogames.igdb import lookup_game_id_from_gdb
@@ -166,6 +167,10 @@ class VideoGame(LongPlayScrobblableMixin):
 
     def get_start_url(self):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
+
+    @property
+    def logdata_cls(self):
+        return VideoGameLogData
 
     @property
     def seconds_for_completion(self) -> int:
