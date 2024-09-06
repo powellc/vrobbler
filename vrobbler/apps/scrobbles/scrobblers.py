@@ -65,7 +65,7 @@ def jellyfin_scrobble_media(
         media_type = Scrobble.MediaType.TRACK
 
     logger.info(
-        "[jellyfin_scrobble_track] called",
+        "[jellyfin_scrobble_media] called",
         extra={
             "user_id": user_id,
             "post_data": post_data,
@@ -81,32 +81,45 @@ def jellyfin_scrobble_media(
     # Jellyfin has some race conditions with it's webhooks, these hacks fix some of them
     if null_position_on_progress:
         logger.info(
-            "[jellyfin_scrobble_track] no playback position tick, aborting",
+            "[jellyfin_scrobble_media] no playback position tick, aborting",
             extra={"post_data": post_data},
         )
         return
 
+    timestamp = parse(
+        post_data.get(JELLYFIN_POST_KEYS.get("TIMESTAMP"))
+    ).replace(tzinfo=pytz.utc)
+
     if media_type == Scrobble.MediaType.VIDEO:
         media_obj = Video.find_or_create(post_data)
+        playback_position_seconds = (timezone.now() - timestamp).seconds
     else:
         media_obj = get_or_create_track(
             post_data, post_keys=JELLYFIN_POST_KEYS
         )
+        playback_position_seconds = 0
 
-    timestamp = parse(
-        post_data.get(JELLYFIN_POST_KEYS.get("TIMESTAMP"))
-    ).replace(tzinfo=pytz.utc)
+    if not media_obj:
+        logger.info(
+            "[jellyfin_scrobble_media] no video found from POST data",
+            extra={"post_data": post_data},
+        )
+        return
+
     playback_status = "resumed"
     if post_data.get("IsPaused"):
         playback_status = "paused"
     elif post_data.get("NotificationType") == "PlaybackStop":
         playback_status = "stopped"
 
-    # TODO Add some logging here, maybe?
+    logger.info(
+        "[jellyfin_scrobble_media] no playback position tick, aborting",
+        extra={"post_data": post_data, "playback_status": playback_status},
+    )
 
     return media_obj.scrobble_for_user(
         user_id,
-        playback_position_seconds=(timezone.now() - timestamp).seconds,
+        playback_position_seconds=playback_position_seconds,
         status=playback_status,
     )
 
@@ -150,6 +163,17 @@ def manual_scrobble_video_game(hltb_id: str, user_id: int):
     game = VideoGame.objects.filter(hltb_id=hltb_id).first()
     if not game:
         data_dict = lookup_game_from_hltb(hltb_id)
+        if not data_dict:
+            logger.info(
+                "[manual_scrobble_video_game] game not found on hltb",
+                extra={
+                    "hltb_id": hltb_id,
+                    "user_id": user_id,
+                    "media_type": Scrobble.MediaType.VIDEO_GAME,
+                },
+            )
+            return
+
         game = VideoGame.find_or_create(data_dict)
 
     scrobble_dict = {
@@ -294,4 +318,50 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
         },
     )
 
+    return scrobble
+
+
+def web_scrobbler_scrobble_video_or_song(
+    data_dict: dict, user_id: Optional[int]
+) -> Scrobble:
+    # We're not going to create music tracks, because the only time
+    # we'd hit this is if we're listening to a concert or something.
+    artist_name = data_dict.get("artist")
+    track_name = data_dict.get("track")
+    tracks = Track.objects.filter(
+        artist__name=data_dict.get("artist"), title=data_dict.get("track")
+    )
+    if tracks.count() > 1:
+        logger.warning(
+            "Multiple tracks found for Web Scrobbler",
+            extra={"artist": artist_name, "track": track_name},
+        )
+    track = tracks.first()
+
+    # No track found, create a Video
+    if not track:
+        Video.find_or_create(data_dict)
+
+    # Now we run off a scrobble
+    mopidy_data = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_seconds": data_dict.get("playback_time_ticks"),
+        "source": "Mopidy",
+        "mopidy_status": data_dict.get("status"),
+    }
+
+    logger.info(
+        "[scrobblers] webhook mopidy scrobble request received",
+        extra={
+            "episode_id": episode.id if episode else None,
+            "user_id": user_id,
+            "scrobble_dict": mopidy_data,
+            "media_type": Scrobble.MediaType.PODCAST_EPISODE,
+        },
+    )
+
+    scrobble = None
+    if episode:
+        scrobble = Scrobble.create_or_update(episode, user_id, mopidy_data)
     return scrobble

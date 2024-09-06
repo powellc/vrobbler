@@ -769,6 +769,30 @@ class Scrobble(TimeStampedModel):
         if not padding_seconds:
             return is_in_progress
 
+        if not self.media_obj:
+            logger.info(
+                "[scrobbling] scrobble has no media obj",
+                extra={
+                    "media_id": self.media_obj,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                    "probably_still_in_progress": is_in_progress,
+                },
+            )
+            return is_in_progress
+
+        if not self.media_obj.run_time_seconds:
+            logger.info(
+                "[scrobbling] media has no run time seconds, cannot calculate end",
+                extra={
+                    "media_id": self.media_obj.id,
+                    "scrobble_id": self.id,
+                    "media_type": self.media_type,
+                    "probably_still_in_progress": is_in_progress,
+                },
+            )
+            return is_in_progress
+
         expected_end = self.timestamp + datetime.timedelta(
             seconds=self.media_obj.run_time_seconds
         )

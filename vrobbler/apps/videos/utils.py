@@ -7,45 +7,52 @@ from scrobbles.utils import convert_to_seconds
 logger = logging.getLogger(__name__)
 
 
-def get_or_create_video(name_or_id: str, force_update=False):
-    imdb_dict = lookup_video_from_imdb(name_or_id)
+def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
+    name_or_id = data_dict.get(post_keys.get("IMDB_ID"), "") or data_dict.get(
+        post_keys.get("VIDEO_TITLE"), ""
+    )
+    imdb_metadata = lookup_video_from_imdb(name_or_id)
+    # skatevideosite_metadata = lookup_video_from_skatevideosite(name_or_id)
+    # youtube_metadata = lookup_vide_from_youtube(name_or_id)
 
-    if not imdb_dict:
+    video_dict = imdb_metadata
+    # video_metadata = imdb_metadata or skatevideosite_metadata or youtube_metadata
+    if not video_dict:
+        logger.info(
+            "No video found on imdb, skatevideosite or youtube, cannot scrobble",
+            extra={"name_or_id": name_or_id},
+        )
         return
 
     video, video_created = Video.objects.get_or_create(
-        imdb_id=imdb_dict.get("imdbID"), title=imdb_dict.get("title")
+        imdb_id=video_dict.get("imdb_id"),
+        title=video_dict.get("title"),
     )
-
     if video_created or force_update:
-        video_type = Video.VideoType.MOVIE
         series = None
-        if imdb_dict.get("kind") == "episode":
-            series_name = imdb_dict.get("episode of").data.get("title")
+        if video_dict.get("video_type") == Video.VideoType.TV_EPISODE:
+
+            series_name = video_dict.pop("series_name")
             series, series_created = Series.objects.get_or_create(
                 name=series_name
             )
-            video_type = Video.VideoType.TV_EPISODE
             if series_created:
                 series.fix_metadata()
+            video_dict["tv_series_id"] = series.id
 
-        run_time_seconds = 0
-        if imdb_dict.get("runtimes"):
-            run_time_seconds = int(imdb_dict.get("runtimes")[0]) * 60
-        video_dict = {
-            "video_type": video_type,
-            "run_time_seconds": run_time_seconds,
-            "episode_number": imdb_dict.get("episode", None),
-            "season_number": imdb_dict.get("season", None),
-            "next_imdb_id": imdb_dict.get("next episode", None),
-            "tv_series_id": series.id if series else None,
-        }
+        if genres := video_dict.pop("genres", None):
+            video.genre.add(*genres)
+
+        if cover_url := video_dict.pop("cover_url", None):
+            video.scrape_cover_from_url(cover_url)
+
         Video.objects.filter(pk=video.id).update(**video_dict)
         video.refresh_from_db()
-
-        video.fix_metadata()
-
     return video
+
+
+def get_or_create_video_from_skatevideosite(title: str, force_update=True):
+    ...
 
 
 def get_or_create_video_from_jellyfin(jellyfin_data: dict, force_update=True):
@@ -53,9 +60,8 @@ def get_or_create_video_from_jellyfin(jellyfin_data: dict, force_update=True):
     create a new one.
 
     """
-
     video, video_created = Video.objects.get_or_create(
-        imdb_id=jellyfin_data.get("Provider_imdb").replace("tt", ""),
+        imdb_id=jellyfin_data.get("Provider_imdb", "").replace("tt", ""),
         title=jellyfin_data.get("Name"),
     )
 

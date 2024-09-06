@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
+from music.constants import JELLYFIN_POST_KEYS
 from scrobbles.mixins import ObjectWithGenres, ScrobblableMixin
 from taggit.managers import TaggableManager
 from videos.imdb import lookup_video_from_imdb
@@ -218,8 +219,17 @@ class Video(ScrobblableMixin):
         if genres := imdb_dict.data.get("genres"):
             self.genre.add(*genres)
 
+    def scrape_cover_from_url(
+        self, cover_url: str, force_update: bool = False
+    ):
+        if not self.cover_image or force_update:
+            r = requests.get(cover_url)
+            if r.status_code == 200:
+                fname = f"{self.title}_{self.uuid}.jpg"
+                self.cover_image.save(fname, ContentFile(r.content), save=True)
+
     @classmethod
-    def find_or_create(cls, data_dict: Dict) -> "Video":
+    def find_or_create(cls, data_dict: Dict) -> Optional["Video"]:
         """Given a data dict from Jellyfin, does the heavy lifting of looking up
         the video and, if need, TV Series, creating both if they don't yet
         exist.
@@ -230,16 +240,9 @@ class Video(ScrobblableMixin):
             get_or_create_video_from_jellyfin,
         )
 
-        if "NotificationType" not in data_dict.keys():
-            name_or_id = data_dict.get("imdb_id") or data_dict.get("title")
-            video = get_or_create_video(name_or_id)
-            return video
+        video = get_or_create_video(data_dict, JELLYFIN_POST_KEYS)
 
-        if not data_dict.get("Provider_imdb"):
-            title = data_dict.get("Name", "")
-            logger.warn(
-                f"No IMDB ID from Jellyfin, check metadata for {title}"
-            )
+        if not video:
             return
 
         return get_or_create_video_from_jellyfin(data_dict)

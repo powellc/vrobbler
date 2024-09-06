@@ -19,6 +19,8 @@ JELLYFIN_POST_KEYS = {
     "ALBUM_NAME": "Album",
     "ARTIST_NAME": "Artist",
     "STATUS": "Status",
+    "VIDEO_TITLE": "Name",
+    "IMDB_ID": "Provider_imdb",
 }
 
 MOPIDY_POST_KEYS = {
