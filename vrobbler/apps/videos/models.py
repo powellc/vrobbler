@@ -123,6 +123,7 @@ class Video(ScrobblableMixin):
         UNKNOWN = "U", _("Unknown")
         TV_EPISODE = "E", _("TV Episode")
         MOVIE = "M", _("Movie")
+        SKATE_VIDEO = "S", _("Skate Video")
 
     video_type = models.CharField(
         max_length=1,
