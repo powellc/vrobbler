@@ -14,9 +14,9 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
     )
     imdb_metadata = lookup_video_from_imdb(name_or_id)
     skatevideosite_metadata = lookup_video_from_skatevideosite(name_or_id)
-    # youtube_metadata = lookup_vide_from_youtube(name_or_id)
+    youtube_metadata = {}  # TODO lookup_video_from_youtube(name_or_id)
 
-    video_dict = skatevideosite_metadata or imdb_metadata
+    video_dict = skatevideosite_metadata or youtube_metadata or imdb_metadata
     # video_metadata = imdb_metadata or skatevideosite_metadata or youtube_metadata
     if not video_dict:
         logger.info(
