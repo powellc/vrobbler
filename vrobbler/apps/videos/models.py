@@ -155,6 +155,7 @@ class Video(ScrobblableMixin):
     )
     tvrage_id = models.CharField(max_length=20, **BNULL)
     tvdb_id = models.CharField(max_length=20, **BNULL)
+    tmdb_id = models.CharField(max_length=20, **BNULL)
     plot = models.TextField(**BNULL)
     year = models.IntegerField(**BNULL)
 
@@ -229,20 +230,10 @@ class Video(ScrobblableMixin):
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
 
     @classmethod
-    def find_or_create(cls, data_dict: Dict) -> Optional["Video"]:
-        """Given a data dict from Jellyfin, does the heavy lifting of looking up
-        the video and, if need, TV Series, creating both if they don't yet
-        exist.
+    def find_or_create(
+        cls, data_dict: dict, post_keys: dict = JELLYFIN_POST_KEYS
+    ) -> Optional["Video"]:
+        """Thes smallest of wrappers around our actual get or create utility."""
+        from videos.utils import get_or_create_video
 
-        """
-        from videos.utils import (
-            get_or_create_video,
-            get_or_create_video_from_jellyfin,
-        )
-
-        video = get_or_create_video(data_dict, JELLYFIN_POST_KEYS)
-
-        if not video:
-            return
-
-        return get_or_create_video_from_jellyfin(data_dict)
+        return get_or_create_video(data_dict, post_keys)

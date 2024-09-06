@@ -29,8 +29,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from scrobbles.api import serializers
 from scrobbles.constants import (
-    JELLYFIN_AUDIO_ITEM_TYPES,
-    JELLYFIN_VIDEO_ITEM_TYPES,
     LONG_PLAY_MEDIA,
     MANUAL_SCROBBLE_FNS,
     PLAY_AGAIN_MEDIA,
@@ -342,6 +340,10 @@ def jellyfin_webhook(request):
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
+    logger.info(
+        "[jellyfin_webhook] finished",
+        extra={"scrobble_id": scrobble.id},
+    )
     return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)
 
 

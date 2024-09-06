@@ -91,8 +91,11 @@ def get_or_create_album(
 
 
 def get_or_create_track(post_data: dict, post_keys: dict) -> Track:
-    track_run_time_seconds = post_data.get(post_keys.get("RUN_TIME"), 0)
-    if post_keys.get("RUN_TIME") == "RunTime":
+    try:
+        track_run_time_seconds = int(
+            post_data.get(post_keys.get("RUN_TIME"), 0)
+        )
+    except ValueError:  # Sometimes we get run time as a string like "01:35"
         track_run_time_seconds = convert_to_seconds(
             post_data.get(post_keys.get("RUN_TIME"), 0)
         )

@@ -77,12 +77,12 @@ class ScrobblableMixin(TimeStampedModel):
 
     @property
     def primary_image_url(self) -> str:
-        logger.warn(f"Not implemented yet")
+        logger.warning(f"Not implemented yet")
         return ""
 
     @property
     def logdata_cls(self) -> None:
-        logger.warn("logdata_cls() not implemented yet")
+        logger.warning("logdata_cls() not implemented yet")
         return None
 
     @property
@@ -90,11 +90,11 @@ class ScrobblableMixin(TimeStampedModel):
         return ""
 
     def fix_metadata(self) -> None:
-        logger.warn("fix_metadata() not implemented yet")
+        logger.warning("fix_metadata() not implemented yet")
 
     @classmethod
     def find_or_create(cls) -> None:
-        logger.warn("find_or_create() not implemented yet")
+        logger.warning("find_or_create() not implemented yet")
 
 
 class LongPlayScrobblableMixin(ScrobblableMixin):

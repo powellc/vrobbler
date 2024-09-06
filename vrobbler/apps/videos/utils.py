@@ -29,8 +29,21 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
         title=video_dict.get("title"),
     )
     if video_created or force_update:
+        if not "overview" in video_dict.keys():
+            video_dict["overview"] = data_dict.get(
+                post_keys.get("OVERVIEW"), None
+            )
+        if not "tagline" in video_dict.keys():
+            video_dict["tagline"] = data_dict.get(
+                post_keys.get("TAGLINE"), None
+            )
+        if not "tmdb_id" in video_dict.keys():
+            video_dict["tmdb_id"] = data_dict.get(
+                post_keys.get("TMDB_ID"), None
+            )
+
         series = None
-        if video_dict.get("video_type") == Video.VideoType.TV_EPISODE:
+        if video_dict.get("series_name"):
 
             series_name = video_dict.pop("series_name")
             series, series_created = Series.objects.get_or_create(

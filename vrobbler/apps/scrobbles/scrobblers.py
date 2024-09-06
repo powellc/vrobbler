@@ -1,6 +1,5 @@
 import json
 import logging
-from datetime import datetime
 from typing import Optional
 
 import pendulum
@@ -8,6 +7,7 @@ import pytz
 from boardgames.models import BoardGame
 from books.models import Book
 from dateutil.parser import parse
+from django.conf import settings
 from django.utils import timezone
 from locations.constants import LOCATION_PROVIDERS
 from locations.models import GeoLocation
@@ -17,7 +17,6 @@ from music.utils import get_or_create_track
 from podcasts.utils import get_or_create_podcast
 from scrobbles.constants import JELLYFIN_AUDIO_ITEM_TYPES
 from scrobbles.models import Scrobble
-from scrobbles.utils import convert_to_seconds
 from sports.models import SportEvent
 from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
@@ -32,6 +31,9 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
     media_type = Scrobble.MediaType.TRACK
     if "podcast" in post_data.get("mopidy_uri", ""):
         media_type = Scrobble.MediaType.PODCAST_EPISODE
+
+    if settings.DUMP_REQUEST_DATA:
+        print("MOPIDY_DATA: ", post_data)
 
     logger.info(
         "[scrobblers] webhook mopidy scrobble request received",
@@ -51,7 +53,8 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
         user_id,
         source="Mopidy",
         playback_position_seconds=int(
-            post_data.get("playback_time_ticks", 1) / 1000
+            post_data.get(MOPIDY_POST_KEYS.get("PLAYBACK_POSITION_TICKS"), 1)
+            / 1000
         ),
         status=post_data.get(MOPIDY_POST_KEYS.get("STATUS"), ""),
     )
@@ -63,6 +66,9 @@ def jellyfin_scrobble_media(
     media_type = Scrobble.MediaType.VIDEO
     if post_data.pop("ItemType", "") in JELLYFIN_AUDIO_ITEM_TYPES:
         media_type = Scrobble.MediaType.TRACK
+
+    if settings.DUMP_REQUEST_DATA:
+        print("JELLYFIN_DATA: ", post_data)
 
     logger.info(
         "[jellyfin_scrobble_media] called",
@@ -87,16 +93,20 @@ def jellyfin_scrobble_media(
         return
 
     timestamp = parse(
-        post_data.get(JELLYFIN_POST_KEYS.get("TIMESTAMP"))
+        post_data.get(JELLYFIN_POST_KEYS.get("TIMESTAMP"), "")
     ).replace(tzinfo=pytz.utc)
 
+    playback_position_seconds = int(
+        post_data.get(JELLYFIN_POST_KEYS.get("PLAYBACK_POSITION_TICKS"), 1)
+        / 10000000
+    )
     if media_type == Scrobble.MediaType.VIDEO:
         media_obj = Video.find_or_create(post_data)
-        playback_position_seconds = (timezone.now() - timestamp).seconds
     else:
         media_obj = get_or_create_track(
             post_data, post_keys=JELLYFIN_POST_KEYS
         )
+        # A hack because we don't worry about updating music ... we either finish it or we don't
         playback_position_seconds = 0
 
     if not media_obj:
@@ -112,13 +122,9 @@ def jellyfin_scrobble_media(
     elif post_data.get("NotificationType") == "PlaybackStop":
         playback_status = "stopped"
 
-    logger.info(
-        "[jellyfin_scrobble_media] no playback position tick, aborting",
-        extra={"post_data": post_data, "playback_status": playback_status},
-    )
-
     return media_obj.scrobble_for_user(
         user_id,
+        source=post_data.get(JELLYFIN_POST_KEYS.get("SOURCE")),
         playback_position_seconds=playback_position_seconds,
         status=playback_status,
     )

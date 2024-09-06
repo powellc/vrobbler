@@ -1,9 +1,7 @@
 import logging
-from django.utils import timezone
+from typing import Optional
 
 from imdb import Cinemagoer, helpers
-from imdb.Character import IMDbParserError
-from scrobbles.dataclasses import VideoLogData
 
 imdb_client = Cinemagoer()
 
@@ -12,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def lookup_video_from_imdb(
     name_or_id: str, kind: str = "movie"
-) -> VideoLogData:
+) -> Optional[dict]:
 
     # Very few video titles start with tt, but IMDB IDs often come in with it
     if name_or_id.startswith("tt"):
@@ -50,7 +48,7 @@ def lookup_video_from_imdb(
             f"[lookup_video_from_imdb] no video found on imdb",
             extra={"name_or_id": name_or_id},
         )
-        return video_metadata
+        return None
 
     imdb_client.update(video_metadata)
 
