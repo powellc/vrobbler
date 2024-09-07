@@ -30,6 +30,9 @@ class JSONDataclass(JSONWizard):
     def json(self):
         return json.dumps(self.asdict)
 
+class LongPlayLogData(JSONDataclass):
+    serial_scrobble_id: Optional[int]
+    long_play_complete: Optional[bool]
 
 @dataclass
 class BoardGameScoreLogData(JSONDataclass):
@@ -69,7 +72,7 @@ class BoardGameScoreLogData(JSONDataclass):
 
 
 @dataclass
-class BoardGameLogData(JSONDataclass):
+class BoardGameLogData(LongPlayLogData):
     players: Optional[list[BoardGameScoreLogData]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
@@ -92,10 +95,13 @@ class BookPageLogData(JSONDataclass):
 
 
 @dataclass
-class BookLogData(JSONDataclass):
+class BookLogData(LongPlayLogData):
     koreader_hash: Optional[str]
     pages_read: Optional[int]
     page_data: Optional[list[BookPageLogData]]
+    page_end: Optional[int]
+    page_start: Optional[int]
+    serial_scrobble_id: Optional[int]
 
 
 @dataclass
@@ -148,7 +154,13 @@ class VideoLogData(JSONDataclass):
 
 
 @dataclass
-class VideoGameLogData(JSONDataclass):
+class VideoGameLogData(LongPlayLogData):
     emulated: bool = False
     console: Optional[str] = None
     emulator: Optional[str] = None
+
+
+@dataclass
+class BrickSetLogData(LongPlayLogData):
+    built_with_names: Optional[list[str]]
+    built_with_user_ids: Optional[list[str]]

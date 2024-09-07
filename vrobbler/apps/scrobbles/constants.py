@@ -6,6 +6,7 @@ JELLYFIN_AUDIO_ITEM_TYPES = ["Audio"]
 LONG_PLAY_MEDIA = {
     "videogames": "VideoGame",
     "books": "Book",
+    "bricksets": "BrickSet",
 }
 
 PLAY_AGAIN_MEDIA = {
@@ -13,6 +14,7 @@ PLAY_AGAIN_MEDIA = {
     "books": "Book",
     "boardgames": "BoardGame",
     "moods": "Mood",
+    "bricksets": "BrickSet",
 }
 
 MEDIA_END_PADDING_SECONDS = {

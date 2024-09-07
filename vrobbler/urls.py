@@ -6,6 +6,7 @@ import vrobbler.apps.scrobbles.views as scrobbles_views
 from vrobbler.apps.books.api.views import AuthorViewSet, BookViewSet
 from vrobbler.apps.music import urls as music_urls
 from vrobbler.apps.books import urls as book_urls
+from vrobbler.apps.bricksets import urls as bricksets_urls
 from vrobbler.apps.sports import urls as sports_urls
 from vrobbler.apps.podcasts import urls as podcast_urls
 from vrobbler.apps.videogames import urls as videogame_urls
@@ -69,6 +70,7 @@ urlpatterns = [
     path("", include(video_urls, namespace="videos")),
     path("", include(videogame_urls, namespace="videogames")),
     path("", include(boardgame_urls, namespace="boardgames")),
+    path("", include(bricksets_urls, namespace="bricksets")),
     path("", include(sports_urls, namespace="sports")),
     path("", include(locations_urls, namespace="locations")),
     path("", include(webpages_urls, namespace="webpages")),

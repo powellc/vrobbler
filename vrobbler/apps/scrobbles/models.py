@@ -10,6 +10,7 @@ import pytz
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
+from bricksets.models import BrickSet
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -485,6 +486,7 @@ class Scrobble(TimeStampedModel):
         WEBPAGE = "WebPage", "Web Page"
         LIFE_EVENT = "LifeEvent", "Life event"
         MOOD = "Mood", "Mood"
+        BRICKSET = "BrickSet", "Brick set"
 
     uuid = models.UUIDField(editable=False, **BNULL)
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, **BNULL)
@@ -510,6 +512,7 @@ class Scrobble(TimeStampedModel):
         LifeEvent, on_delete=models.DO_NOTHING, **BNULL
     )
     mood = models.ForeignKey(Mood, on_delete=models.DO_NOTHING, **BNULL)
+    brickset = models.ForeignKey(BrickSet, on_delete=models.DO_NOTHING, **BNULL)
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -881,6 +884,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.life_event
         if self.mood:
             media_obj = self.mood
+        if self.brickset:
+            media_obj = self.brickset
         return media_obj
 
     def __str__(self):

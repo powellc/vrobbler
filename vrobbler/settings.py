@@ -121,6 +121,7 @@ INSTALLED_APPS = [
     "sports",
     "books",
     "boardgames",
+    "bricksets",
     "videogames",
     "locations",
     "webpages",

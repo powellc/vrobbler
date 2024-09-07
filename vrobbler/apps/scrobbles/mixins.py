@@ -96,6 +96,11 @@ class ScrobblableMixin(TimeStampedModel):
     def find_or_create(cls) -> None:
         logger.warning("find_or_create() not implemented yet")
 
+    def __str__(self):
+        if self.title:
+            return self.title
+        return str(self.uuid)
+
 
 class LongPlayScrobblableMixin(ScrobblableMixin):
     class Meta:
