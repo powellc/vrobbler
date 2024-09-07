@@ -30,9 +30,34 @@ class JSONDataclass(JSONWizard):
     def json(self):
         return json.dumps(self.asdict)
 
+
 class LongPlayLogData(JSONDataclass):
     serial_scrobble_id: Optional[int]
-    long_play_complete: Optional[bool]
+    long_play_complete: bool = False
+
+
+class WithOthersLogData(JSONDataclass):
+    with_user_ids: Optional[list[int]] = None
+    with_names_str: Optional[list[str]] = None
+
+    @property
+    def with_names(self) -> list[str]:
+        with_names = []
+        if self.with_user_ids:
+            with_names += [u.full_name for u in self.with_users if u]
+        if self.with_names_str:
+            with_names += [u for u in self.with_names_str]
+        return with_names
+
+    @property
+    def with_users(self) -> list[User]:
+        with_users = []
+        if self.with_user_ids:
+            with_users = [
+                User.objects.filter(id=i).first() for i in self.with_user_ids
+            ]
+        return with_users
+
 
 @dataclass
 class BoardGameScoreLogData(JSONDataclass):
@@ -73,6 +98,8 @@ class BoardGameScoreLogData(JSONDataclass):
 
 @dataclass
 class BoardGameLogData(LongPlayLogData):
+    serial_scrobble_id: Optional[int]
+    long_play_complete: bool = False
     players: Optional[list[BoardGameScoreLogData]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
@@ -96,37 +123,23 @@ class BookPageLogData(JSONDataclass):
 
 @dataclass
 class BookLogData(LongPlayLogData):
-    koreader_hash: Optional[str]
-    pages_read: Optional[int]
-    page_data: Optional[list[BookPageLogData]]
-    page_end: Optional[int]
-    page_start: Optional[int]
     serial_scrobble_id: Optional[int]
+    long_play_complete: bool = False
+    koreader_hash: Optional[str] = None
+    pages_read: Optional[int] = None
+    page_data: Optional[list[BookPageLogData]] = None
+    page_end: Optional[int] = None
+    page_start: Optional[int] = None
+    serial_scrobble_id: Optional[int] = None
 
 
 @dataclass
-class LifeEventLogData(JSONDataclass):
-    participant_user_ids: Optional[list[int]] = None
-    participant_names: Optional[list[str]] = None
+class LifeEventLogData(WithOthersLogData):
+    with_user_ids: Optional[list[int]] = None
+    with_names_str: Optional[list[str]] = None
     location: Optional[str] = None
     geo_location_id: Optional[int] = None
     details: Optional[str] = None
-
-    def participants(self) -> list[str]:
-        participants = []
-        if self.participant_user_ids:
-            participants += [u.full_name for u in self.participant_users]
-        if self.participant_names:
-            participants += self.participant_names
-        return participants
-
-    @property
-    def participant_users(self) -> list[User]:
-        participants = []
-        if self.participant_user_ids:
-            for id in self.participant_user_ids:
-                participants.append(User.objects.filter(id=id).first())
-        return participants
 
     def geo_location(self):
         return GeoLocation.objects.filter(id=self.geo_location_id).first()
@@ -134,7 +147,7 @@ class LifeEventLogData(JSONDataclass):
 
 @dataclass
 class MoodLogData(JSONDataclass):
-    reasons: Optional[str]
+    reasons: Optional[str] = None
 
 
 @dataclass
@@ -144,23 +157,27 @@ class VideoLogData(JSONDataclass):
     run_time_seconds: int
     kind: str
     year: Optional[int]
-    episode_number: Optional[int]
-    source_url: Optional[str]
-    imdbID: Optional[str]
-    season_number: Optional[int]
-    cover_url = Optional[str]
-    next_imdb_id: Optional[int]
-    tv_series_id: Optional[str]
+    episode_number: Optional[int] = None
+    source_url: Optional[str] = None
+    imdbID: Optional[str] = None
+    season_number: Optional[int] = None
+    cover_url: Optional[str] = None
+    next_imdb_id: Optional[int] = None
+    tv_series_id: Optional[str] = None
 
 
 @dataclass
 class VideoGameLogData(LongPlayLogData):
+    serial_scrobble_id: Optional[int]
+    long_play_complete: bool = False
+    console: str = ""
     emulated: bool = False
-    console: Optional[str] = None
     emulator: Optional[str] = None
 
 
 @dataclass
-class BrickSetLogData(LongPlayLogData):
-    built_with_names: Optional[list[str]]
-    built_with_user_ids: Optional[list[str]]
+class BrickSetLogData(LongPlayLogData, WithOthersLogData):
+    serial_scrobble_id: Optional[int]
+    long_play_complete: bool = False
+    with_user_ids: Optional[list[int]] = None
+    with_names_str: Optional[list[str]] = None
