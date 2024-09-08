@@ -48,7 +48,7 @@ class KoReaderBookRows:
             300 + wiggle,
             self.DEFAULT_STR,
             self.DEFAULT_STR,
-            hashlib.md5(title.encode()),
+            hashlib.md5(title.encode()).hexdigest(),
             i * wiggle * 20,
             120,
         ]

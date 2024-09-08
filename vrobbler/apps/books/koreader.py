@@ -93,7 +93,7 @@ def create_book_from_row(row: list):
         title=row[KoReaderBookColumn.TITLE.value],
         pages=total_pages,
         koreader_data_by_hash={
-            row[KoReaderBookColumn.MD5.value]: {
+            str(row[KoReaderBookColumn.MD5.value]): {
                 "title": row[KoReaderBookColumn.TITLE.value],
                 "author_str": author_str,
                 "book_id": row[KoReaderBookColumn.ID.value],
@@ -233,7 +233,7 @@ def build_scrobbles_from_book_map(
                 should_create_scrobble = True
 
             if should_create_scrobble:
-                scrobble_page_data = OrderedDict(
+                scrobble_page_data = dict(
                     sorted(
                         scrobble_page_data.items(),
                         key=lambda x: x[1]["start_ts"],
@@ -359,6 +359,7 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
 
     is_os_file = "https://" not in file_path
     if is_os_file:
+        # Loading sqlite file from local filesystem
         con = sqlite3.connect(file_path)
         cur = con.cursor()
         try:
@@ -376,6 +377,8 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
         )
         new_scrobbles = build_scrobbles_from_book_map(book_map, user)
     else:
+        # Streaming the sqlite file off S3
+        book_map = {}
         for table_name, pragma_table_info, rows in stream_sqlite(
             _sqlite_bytes(file_path), max_buffer_size=1_048_576
         ):
@@ -383,6 +386,9 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
             if table_name == "book":
                 book_map = build_book_map(rows)
 
+        for table_name, pragma_table_info, rows in stream_sqlite(
+            _sqlite_bytes(file_path), max_buffer_size=1_048_576
+        ):
             if table_name == "page_stat_data":
                 book_map = build_page_data(rows, book_map, tz)
                 new_scrobbles = build_scrobbles_from_book_map(book_map, user)

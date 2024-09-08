@@ -123,13 +123,12 @@ class BookPageLogData(JSONDataclass):
 
 @dataclass
 class BookLogData(LongPlayLogData):
-    serial_scrobble_id: Optional[int]
-    long_play_complete: bool = False
+    long_play_complete: Optional[bool] = None
     koreader_hash: Optional[str] = None
+    page_data: Optional[dict[int, BookPageLogData]] = None
     pages_read: Optional[int] = None
-    page_data: Optional[list[BookPageLogData]] = None
-    page_end: Optional[int] = None
     page_start: Optional[int] = None
+    page_end: Optional[int] = None
     serial_scrobble_id: Optional[int] = None
 
 

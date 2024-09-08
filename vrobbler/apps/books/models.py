@@ -34,6 +34,7 @@ from vrobbler.apps.books.locg import (
     lookup_comic_from_locg,
     lookup_comic_writer_by_locg_slug,
 )
+from vrobbler.apps.scrobbles.dataclasses import BookLogData
 
 COMICVINE_API_KEY = getattr(settings, "COMICVINE_API_KEY", "")
 
@@ -136,6 +137,10 @@ class Book(LongPlayScrobblableMixin):
     @property
     def subtitle(self):
         return f" by {self.author}"
+
+    @property
+    def logdata_cls(self):
+        return BookLogData
 
     @property
     def primary_image_url(self) -> str:
@@ -278,19 +283,24 @@ class Book(LongPlayScrobblableMixin):
                 author.headshot.save(fname, ContentFile(r.content), save=True)
         self.authors.add(author)
 
-
-    def page_data_for_user(self, user_id: int, convert_timestamps: bool=True) -> dict:
+    def page_data_for_user(
+        self, user_id: int, convert_timestamps: bool = True
+    ) -> dict:
         scrobbles = self.scrobble_set.filter(user=user_id)
 
         pages = {}
         for scrobble in scrobbles:
-            if scrobble.book_page_data:
-                for page, data in scrobble.book_page_data.items():
+            if scrobble.logdata.page_data:
+                for page, data in scrobble.logdata.page_data.items():
                     if convert_timestamps:
-                        data["start_ts"] = datetime.fromtimestamp(data["start_ts"])
+                        data["start_ts"] = datetime.fromtimestamp(
+                            data["start_ts"]
+                        )
                         data["end_ts"] = datetime.fromtimestamp(data["end_ts"])
                     pages[page] = data
-        sorted_pages = OrderedDict(sorted(pages.items(), key=lambda x: x[1]["start_ts"]))
+        sorted_pages = OrderedDict(
+            sorted(pages.items(), key=lambda x: x[1]["start_ts"])
+        )
 
         return sorted_pages
 
