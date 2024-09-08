@@ -296,7 +296,7 @@ def build_scrobbles_from_book_map(
                     log_data = {
                         "koreader_hash": book_dict.get("hash"),
                         "page_data": scrobble_page_data,
-                        "pages_read": cur_page_number,
+                        "pages_read": len(scrobble_page_data.keys()),
                     }
                     scrobbles_to_create.append(
                         Scrobble(
