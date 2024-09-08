@@ -512,7 +512,9 @@ class Scrobble(TimeStampedModel):
         LifeEvent, on_delete=models.DO_NOTHING, **BNULL
     )
     mood = models.ForeignKey(Mood, on_delete=models.DO_NOTHING, **BNULL)
-    brickset = models.ForeignKey(BrickSet, on_delete=models.DO_NOTHING, **BNULL)
+    brickset = models.ForeignKey(
+        BrickSet, on_delete=models.DO_NOTHING, **BNULL
+    )
     media_type = models.CharField(
         max_length=14, choices=MediaType.choices, default=MediaType.VIDEO
     )
@@ -894,15 +896,15 @@ class Scrobble(TimeStampedModel):
 
     def calc_reading_duration(self) -> int:
         duration = 0
-        if self.book_page_data:
-            for k, v in self.book_page_data.items():
+        if self.logdata.page_data:
+            for k, v in self.logdata.page_data.items():
                 duration += v.get("duration")
         return duration
 
     def calc_pages_read(self) -> int:
         pages_read = 0
-        if self.book_page_data:
-            pages = [int(k) for k in self.book_page_data.keys()]
+        if self.logdata.page_data:
+            pages = [int(k) for k in self.logdata.page_data.keys()]
             pages.sort()
             if len(pages) == 1:
                 pages_read = 1
@@ -915,8 +917,8 @@ class Scrobble(TimeStampedModel):
     @property
     def last_page_read(self) -> int:
         last_page = 0
-        if self.book_page_data:
-            pages = [int(k) for k in self.book_page_data.keys()]
+        if self.logdata.page_data:
+            pages = [int(k) for k in self.logdata.page_data.keys()]
             pages.sort()
             last_page = pages[-1]
         return last_page
