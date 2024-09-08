@@ -45,8 +45,6 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
 
         series_name = video_dict.pop("series_name", None)
         if series_name:
-
-            series_name = video_dict.pop("series_name")
             series, series_created = Series.objects.get_or_create(
                 name=series_name
             )
