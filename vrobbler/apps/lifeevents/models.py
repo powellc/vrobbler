@@ -1,7 +1,6 @@
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
-import pendulum
 from scrobbles.dataclasses import LifeEventLogData
 from scrobbles.mixins import ScrobblableMixin
 
@@ -9,8 +8,6 @@ BNULL = {"blank": True, "null": True}
 
 
 class LifeEvent(ScrobblableMixin):
-    COMPLETION_PERCENT = 100
-
     description = models.TextField(**BNULL)
 
     def __str__(self):
