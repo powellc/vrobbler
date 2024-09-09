@@ -180,3 +180,12 @@ class BrickSetLogData(LongPlayLogData, WithOthersLogData):
     long_play_complete: bool = False
     with_user_ids: Optional[list[int]] = None
     with_names_str: Optional[list[str]] = None
+
+
+@dataclass
+class TrailLogData(WithOthersLogData):
+    with_user_ids: Optional[list[int]] = None
+    with_names_str: Optional[list[str]] = None
+    details: Optional[str] = None
+    effort: Optional[str] = None
+    difficulty: Optional[str] = None

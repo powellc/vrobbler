@@ -41,6 +41,7 @@ from sports.models import SportEvent
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
+from trails.models import Trail
 from webpages.models import WebPage
 
 from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
@@ -483,6 +484,7 @@ class Scrobble(TimeStampedModel):
         VIDEO_GAME = "VideoGame", "Video game"
         BOARD_GAME = "BoardGame", "Board game"
         GEO_LOCATION = "GeoLocation", "GeoLocation"
+        TRAIL = "Trail", "Trail"
         WEBPAGE = "WebPage", "Web Page"
         LIFE_EVENT = "LifeEvent", "Life event"
         MOOD = "Mood", "Mood"
@@ -507,6 +509,7 @@ class Scrobble(TimeStampedModel):
     geo_location = models.ForeignKey(
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
+    trail = models.ForeignKey(Trail, on_delete=models.DO_NOTHING, **BNULL)
     web_page = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
     life_event = models.ForeignKey(
         LifeEvent, on_delete=models.DO_NOTHING, **BNULL

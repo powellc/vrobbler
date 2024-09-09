@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     "videogames",
     "locations",
     "webpages",
+    "trails",
     "lifeevents",
     "moods",
     "mathfilters",
