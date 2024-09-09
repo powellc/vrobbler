@@ -23,6 +23,7 @@ class ScrobbleInline(admin.TabularInline):
         "sport_event",
         "board_game",
         "geo_location",
+        "trail",
         "web_page",
         "life_event",
         "user",
@@ -95,7 +96,7 @@ class ChartRecordAdmin(admin.ModelAdmin):
 
 @admin.register(Scrobble)
 class ScrobbleAdmin(admin.ModelAdmin):
-    date_hierarchy = "timestamp"
+    # date_hierarchy = "timestamp"
     list_display = (
         "timestamp",
         "media_name",
