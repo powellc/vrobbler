@@ -15,6 +15,7 @@ PLAY_AGAIN_MEDIA = {
     "boardgames": "BoardGame",
     "moods": "Mood",
     "bricksets": "BrickSet",
+    "trails": "Trail",
 }
 
 MEDIA_END_PADDING_SECONDS = {

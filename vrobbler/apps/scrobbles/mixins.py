@@ -75,6 +75,9 @@ class ScrobblableMixin(TimeStampedModel):
         )
         return Scrobble.create_or_update(self, user_id, scrobble_data)
 
+    def get_start_url(self):
+        return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
+
     @property
     def primary_image_url(self) -> str:
         logger.warning(f"Not implemented yet")

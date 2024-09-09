@@ -891,6 +891,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.mood
         if self.brickset:
             media_obj = self.brickset
+        if self.trail:
+            media_obj = self.trail
         return media_obj
 
     def __str__(self):
