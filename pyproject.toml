@@ -38,7 +38,6 @@ honcho = "^1.1.0"
 howlongtobeatpy = "^1.0.5"
 beautifulsoup4 = "^4.11.2"
 django-storages = "^1.13.2"
-boto3 = "^1.26.98"
 stream-sqlite = "^0.0.41"
 ipython = "^8.14.0"
 pendulum = "^2.1.2"
@@ -46,6 +45,8 @@ trafilatura = "^1.6.3"
 django-imagekit = "^5.0.0"
 thefuzz = "^0.22.1"
 dataclass-wizard = "0.22.0"
+webdavclient3 = "^3.14.6"
+boto3 = "^1.35.14"
 
 [tool.poetry.group.dev]
 optional = true
