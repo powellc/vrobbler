@@ -1,8 +1,15 @@
+import csv
+import json
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import requests
 from bs4 import BeautifulSoup
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+if TYPE_CHECKING:
+    from scrobbles.models import Scrobble
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +97,56 @@ def lookup_boardgame_from_bgg(lookup_id: str) -> dict:
         }
 
     return game_dict
+
+
+def push_scrobble_to_bgg(scrobble: "Scrobble", user: User) -> Optional[bool]:
+    bgg_username = user.profile.bgg_username
+    bgg_password = user.profile.bgg_password
+
+    if not bgg_username or bgg_password:
+        return
+
+    login_payload = {
+        "credentials": {"username": bgg_username, "password": bgg_password}
+    }
+    headers = {"content-type": "application/json"}
+
+    # TODO Look up past plays for scrobble.media_obj.bggeek_id, and make sure we haven't scrobbled this before
+
+    with requests.Session() as s:
+        p = s.post(
+            "https://boardgamegeek.com/login/api/v1",
+            data=json.dumps(login_payload),
+            headers=headers,
+        )
+
+        players = []
+        if scrobble.metadata:
+            for player in scrobble.metadata.players:
+                if player["user_id"]:
+                    player_user = User.objects.filter(
+                        id=player["user_id"]
+                    ).first()
+                    if player_user:
+                        if player_user.bgg_username:
+                            player["username"] = player_user.bgg_username
+                        else:
+                            player["name"] = player_user.username
+                        player["win"] = player.get("win")
+                        player["color"] = player.get("color")
+                        player["new"] = player.get("new")
+                        player["score"] = player.get("score")
+                        players.append(player)
+
+        play_payload = {
+            "playdate": scrobble.timestamp.date.strftime("%Y-%m-%d"),
+            "length": scrobble.playback_position_seconds / 60,
+            "comments": "Uploaded from Vrobbler",
+            "location": scrobble.log.location or None,
+            "objectid": scrobble.media_obj.bggeek_id,
+            "quantity": "1",
+            "action": "save",
+            "players": players,
+            "objecttype": "thing",
+            "ajax": 1,
+        }
