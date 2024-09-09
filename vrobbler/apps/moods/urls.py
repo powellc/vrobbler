@@ -5,9 +5,9 @@ app_name = "moods"
 
 
 urlpatterns = [
-    path("mood/", views.MoodListView.as_view(), name="mood-list"),
+    path("moods/", views.MoodListView.as_view(), name="mood-list"),
     path(
-        "mood/<slug:slug>/",
+        "moods/<slug:slug>/",
         views.MoodDetailView.as_view(),
         name="mood-detail",
     ),

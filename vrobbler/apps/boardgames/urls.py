@@ -6,10 +6,12 @@ app_name = "boardgames"
 
 urlpatterns = [
     path(
-        "board-game/", views.BoardGameListView.as_view(), name="boardgame_list"
+        "board-games/",
+        views.BoardGameListView.as_view(),
+        name="boardgame_list",
     ),
     path(
-        "board-game/<slug:slug>/",
+        "board-games/<slug:slug>/",
         views.BoardGameDetailView.as_view(),
         name="boardgame_detail",
     ),

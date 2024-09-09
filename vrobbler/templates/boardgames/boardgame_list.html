@@ -1,82 +1,43 @@
 {% extends "base_list.html" %}
-{% load urlreplace %}
 
-{% block title %}Albums{% endblock %}
+{% block title %}Board Games{% endblock %}
+
+{% block head_extra %}
+<style>
+ dl { width: 210px; float:left; margin-right: 10px; }
+ dt a { color:white; text-decoration: none; font-size:smaller; }
+ img { height:200px; width: 200px; object-fit: cover; }
+ dd .right { float:right; }
+</style>
+{% endblock  %}
 
 {% block lists %}
-
 <div class="row">
-    <p class="view">
-        <span class="view-links">
-            {% if view == 'grid' %}
-            View as <a href="?{% urlreplace view='list' %}">List</a>
-            {% else %}
-            View as <a href="?{% urlreplace view='grid' %}">Grid</a>
-            {% endif %}
-        </span>
-    </p>
-    <p class="pagination">
-        <span class="page-links">
-            {% if page_obj.has_previous %}
-            <a href="?{% urlreplace page=page_obj.previous_page_number %}">prev</a>
-            {% endif %}
-            <span class="page-current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-            {% if page_obj.has_next %}
-            <a href="?{% urlreplace page=page_obj.next_page_number %}">next</a>
-            {% endif %}
-        </span>
-    </p>
-    <hr />
 
-    {% if view == 'grid' %}
-    <div>
-        {% for game in object_list %}
-        {% if game.cover %}
-        <dl style="width: 130px; float: left; margin-right:10px;">
-            <dd><img src="{{game.cover.url}}" width=120 height=120 /></dd>
-        </dl>
-        {% endif %}
-        {% endfor %}
-    </div>
-    {% else %}
     <div class="col-md">
         <div class="table-responsive">
             <table class="table table-striped table-sm">
                 <thead>
                     <tr>
+                        <th scope="col">Title</th>
                         <th scope="col">Scrobbles</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Publisher</th>
+                        <th scope="col">Start</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for game in object_list %}
+                    {% for obj in object_list %}
                     <tr>
-                        <td>{{game.scrobbles.count}}</td>
-                        <td><a href="{{game.get_absolute_url}}">{{game}}</a></td>
-                        <td><a href="{{game.publisher.get_absolute_url}}">{{game.publisher}}</a></td>
+                        <td><a href="{{obj.get_absolute_url}}">{{obj}}</a></td>
+                        {% if request.user.is_authenticated %}
+                        <td>{{obj.scrobble_count}}</td>
+                        <td><a type="button" class="btn btn-sm btn-primary" href="{{obj.get_start_url}}">Scrobble</a></td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-    {% endif %}
-
-    <div class="pagination" style="margin-bottom:50px;">
-        <span class="page-links">
-            {% if page_obj.has_previous %}
-            <a href="?{% urlreplace page=page_obj.previous_page_number %}">prev</a>
-            {% endif %}
-            <span class="page-current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-            {% if page_obj.has_next %}
-            <a href="?{% urlreplace page=page_obj.next_page_number %}">next</a>
-            {% endif %}
-        </span>
-    </div>
 </div>
 {% endblock %}
+
