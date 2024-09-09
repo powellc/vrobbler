@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from enum import Enum
 from typing import Optional
 from bs4 import BeautifulSoup
 import requests
