@@ -16,28 +16,8 @@
 
     <div class="col-md">
         <div class="table-responsive">
-            <table class="table table-striped table-sm">
-                <thead>
-                    <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Scrobbles</th>
-                        <th scope="col">Start</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for obj in object_list %}
-                    <tr>
-                        <td><a href="{{obj.get_absolute_url}}">{{obj}}</a></td>
-                        {% if request.user.is_authenticated %}
-                        <td>{{obj.scrobble_count}}</td>
-                        <td><a type="button" class="btn btn-sm btn-primary" href="{{obj.get_start_url}}">Scrobble</a></td>
-                        {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% include "_scrobblable_list.html" %}
         </div>
     </div>
 </div>
 {% endblock %}
-

@@ -1,15 +1,14 @@
 from django.views import generic
 from boardgames.models import BoardGame, BoardGamePublisher
+from scrobbles.views import ScrobbleableListView, ScrobbleableDetailView
 
 
-class BoardGameListView(generic.ListView):
+class BoardGameListView(ScrobbleableListView):
     model = BoardGame
-    paginate_by = 20
 
 
-class BoardGameDetailView(generic.DetailView):
+class BoardGameDetailView(ScrobbleableDetailView):
     model = BoardGame
-    slug_field = "uuid"
 
 
 class BoardGamePublisherDetailView(generic.DetailView):

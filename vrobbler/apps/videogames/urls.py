@@ -6,15 +6,17 @@ app_name = "videogames"
 
 urlpatterns = [
     path(
-        "video-game/", views.VideoGameListView.as_view(), name="videogame_list"
+        "video-games/",
+        views.VideoGameListView.as_view(),
+        name="videogame_list",
     ),
     path(
-        "video-game/<slug:slug>/",
+        "video-games/<slug:slug>/",
         views.VideoGameDetailView.as_view(),
         name="videogame_detail",
     ),
     path(
-        "video-game-platform/<slug:slug>/",
+        "video-game-platforms/<slug:slug>/",
         views.VideoGamePlatformDetailView.as_view(),
         name="platform_detail",
     ),

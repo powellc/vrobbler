@@ -5,14 +5,14 @@ app_name = "books"
 
 
 urlpatterns = [
-    path("book/", views.BookListView.as_view(), name="book_list"),
+    path("books/", views.BookListView.as_view(), name="book_list"),
     path(
-        "book/<slug:slug>/",
+        "books/<slug:slug>/",
         views.BookDetailView.as_view(),
         name="book_detail",
     ),
     path(
-        "author/<slug:slug>/",
+        "authors/<slug:slug>/",
         views.AuthorDetailView.as_view(),
         name="author_detail",
     ),

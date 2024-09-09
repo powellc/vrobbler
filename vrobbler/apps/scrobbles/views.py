@@ -60,7 +60,7 @@ logger = logging.getLogger(__name__)
 
 class ScrobbleableListView(ListView):
     model = None
-    paginate_by = 20
+    paginate_by = 200
 
     def get_queryset(self):
         queryset = super().get_queryset()
