@@ -548,6 +548,7 @@ class Scrobble(TimeStampedModel):
     videogame_save_data = models.FileField(
         upload_to="scrobbles/videogame_save_data/", **BNULL
     )
+    gpx_file = models.FileField(upload_to="scrobbles/gpx_file/", **BNULL)
     screenshot = models.ImageField(
         upload_to="scrobbles/videogame_screenshot/", **BNULL
     )
