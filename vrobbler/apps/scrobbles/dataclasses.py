@@ -98,7 +98,7 @@ class BoardGameScoreLogData(JSONDataclass):
 
 @dataclass
 class BoardGameLogData(LongPlayLogData):
-    serial_scrobble_id: Optional[int]
+    serial_scrobble_id: Optional[int] = None
     long_play_complete: bool = False
     players: Optional[list[BoardGameScoreLogData]] = None
     location: Optional[str] = None
