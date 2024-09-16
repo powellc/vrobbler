@@ -771,7 +771,9 @@ class ScrobbleStatusView(LoginRequiredMixin, TemplateView):
             in_progress=True, is_paused=False
         )
 
-        data["listening"] = progress_plays.filter(track__isnull=False).first()
+        data["listening"] = progress_plays.filter(
+            Q(track__isnull=False) | Q(podcast_episode__isnull=False)
+        ).first()
         data["watching"] = progress_plays.filter(video__isnull=False).first()
         data["going"] = progress_plays.filter(
             geo_location__isnull=False
