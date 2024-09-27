@@ -142,6 +142,9 @@ def jellyfin_scrobble_media(
 
 
 def manual_scrobble_video(imdb_id: str, user_id: int):
+    if "tt" not in imdb_id:
+        imdb_id = "tt" + imdb_id
+
     video = Video.find_or_create({JELLYFIN_POST_KEYS.get("IMDB_ID"): imdb_id})
 
     # When manually scrobbling, try finding a source from the series

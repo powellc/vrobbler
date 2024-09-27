@@ -23,7 +23,7 @@ MEDIA_END_PADDING_SECONDS = {
 }
 
 SCROBBLE_CONTENT_URLS = {
-    "-v": "https://www.imdb.com/title/",
+    "-i": "https://www.imdb.com/title/",
     "-s": "https://www.thesportsdb.com/event/",
     "-g": "https://boardgamegeek.com/boardgame/",
     "-b": "https://www.amazon.com/",
