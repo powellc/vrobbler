@@ -53,6 +53,12 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
     else:
         media_obj = get_or_create_track(post_data, MOPIDY_POST_KEYS)
 
+    log = {}
+    try:
+        log = {"mopidy_source": post_data.get("mopidy_ur").split(":")[0]}
+    except IndexError:
+        pass
+
     return media_obj.scrobble_for_user(
         user_id,
         source="Mopidy",
@@ -61,6 +67,7 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
             / 1000
         ),
         status=post_data.get(MOPIDY_POST_KEYS.get("STATUS"), ""),
+        log=log,
     )
 
 

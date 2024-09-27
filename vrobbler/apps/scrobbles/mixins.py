@@ -53,6 +53,7 @@ class ScrobblableMixin(TimeStampedModel):
         source: str = "Vrobbler",
         playback_position_seconds: int = 0,
         status: str = "started",
+        log: Optional[dict] = None,
     ):
         Scrobble = apps.get_model("scrobbles", "Scrobble")
         scrobble_data = {
@@ -61,6 +62,7 @@ class ScrobblableMixin(TimeStampedModel):
             "source": source,
             "playback_position_seconds": playback_position_seconds,
             "status": status,
+            "log": log,
         }
 
         logger.info(

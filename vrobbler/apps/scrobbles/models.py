@@ -976,6 +976,8 @@ class Scrobble(TimeStampedModel):
             scrobble.can_be_updated
             or scrobble_data["playback_status"] == "stopped"
         ):
+            if "log" in scrobble_data.keys():
+                scrobble_data["log"] = scrobble.log | scrobble_data["log"]
             return scrobble.update(scrobble_data)
 
         # Discard status before creating
