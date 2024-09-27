@@ -1,4 +1,4 @@
-import json
+import re
 import logging
 from typing import Optional
 
@@ -22,6 +22,10 @@ from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
 from videos.models import Video
+from vrobbler.apps.scrobbles.constants import (
+    MANUAL_SCROBBLE_FNS,
+    SCROBBLE_CONTENT_URLS,
+)
 from webpages.models import WebPage
 
 logger = logging.getLogger(__name__)
@@ -256,6 +260,24 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
     )
 
     return Scrobble.create_or_update(boardgame, user_id, scrobble_dict)
+
+
+def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
+    content_key = ""
+    for key, content_url in SCROBBLE_CONTENT_URLS.items():
+        if content_url in url:
+            content_key = key
+
+    if not content_key:
+        return
+
+    try:
+        item_id = re.findall("\d+", url)[0]
+    except IndexError:
+        item_id = None
+
+    scrobble_fn = MANUAL_SCROBBLE_FNS[content_key]
+    return eval(scrobble_fn)(item_id, user_id)
 
 
 def manual_scrobble_webpage(url: str, user_id: int):

@@ -22,6 +22,13 @@ MEDIA_END_PADDING_SECONDS = {
     "Video": 3600,  # 60 min
 }
 
+SCROBBLE_CONTENT_URLS = {
+    "-v": "https://www.imdb.com/title/",
+    "-s": "https://www.thesportsdb.com/event/",
+    "-g": "https://boardgamegeek.com/boardgame/",
+    "-b": "https://www.amazon.com/",
+}
+
 EXCLUDE_FROM_NOW_PLAYING = ("GeoLocation",)
 
 MANUAL_SCROBBLE_FNS = {

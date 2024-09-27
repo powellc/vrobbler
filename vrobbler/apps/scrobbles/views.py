@@ -32,6 +32,7 @@ from scrobbles.constants import (
     LONG_PLAY_MEDIA,
     MANUAL_SCROBBLE_FNS,
     PLAY_AGAIN_MEDIA,
+    SCROBBLE_CONTENT_URLS,
 )
 from scrobbles.export import export_scrobbles
 from scrobbles.forms import ExportScrobbleForm, ScrobbleForm
@@ -97,6 +98,14 @@ class RecentScrobbleList(ListView):
         user = self.request.user
         if user.is_authenticated:
             if scrobble_url := self.request.GET.get("scrobble_url"):
+                for content_url in SCROBBLE_CONTENT_URLS.values():
+                    if content_url in scrobble_url:
+                        scrobble = manual_scrobble_from_url(
+                            scrobble_url, self.request.user.id
+                        )
+                        return HttpResponseRedirect(
+                            scrobble.redirect_url(user.id)
+                        )
                 scrobble = manual_scrobble_webpage(
                     scrobble_url, self.request.user.id
                 )
