@@ -13,6 +13,7 @@ from vrobbler.apps.videogames import urls as videogame_urls
 from vrobbler.apps.boardgames import urls as boardgame_urls
 from vrobbler.apps.locations import urls as locations_urls
 from vrobbler.apps.lifeevents import urls as lifeevents_urls
+from vrobbler.apps.tasks import urls as tasks_urls
 from vrobbler.apps.trails import urls as trails_urls
 from vrobbler.apps.webpages import urls as webpages_urls
 from vrobbler.apps.moods import urls as moods_urls
@@ -75,6 +76,7 @@ urlpatterns = [
     path("", include(sports_urls, namespace="sports")),
     path("", include(locations_urls, namespace="locations")),
     path("", include(trails_urls, namespace="trails")),
+    path("", include(tasks_urls, namespace="tasks")),
     path("", include(webpages_urls, namespace="webpages")),
     path("", include(podcast_urls, namespace="podcasts")),
     path("", include(lifeevents_urls, namespace="life-events")),

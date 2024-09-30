@@ -38,10 +38,11 @@ from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.stats import build_charts
 from scrobbles.utils import media_class_to_foreign_key
 from sports.models import SportEvent
+from tasks.models import Task
+from trails.models import Trail
 from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
-from trails.models import Trail
 from webpages.models import WebPage
 
 from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
@@ -485,6 +486,7 @@ class Scrobble(TimeStampedModel):
         BOARD_GAME = "BoardGame", "Board game"
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         TRAIL = "Trail", "Trail"
+        TASK = "Task", "Task"
         WEBPAGE = "WebPage", "Web Page"
         LIFE_EVENT = "LifeEvent", "Life event"
         MOOD = "Mood", "Mood"
@@ -510,6 +512,7 @@ class Scrobble(TimeStampedModel):
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
     trail = models.ForeignKey(Trail, on_delete=models.DO_NOTHING, **BNULL)
+    task = models.ForeignKey(Task, on_delete=models.DO_NOTHING, **BNULL)
     web_page = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
     life_event = models.ForeignKey(
         LifeEvent, on_delete=models.DO_NOTHING, **BNULL
@@ -894,6 +897,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.brickset
         if self.trail:
             media_obj = self.trail
+        if self.task:
+            media_obj = self.task
         return media_obj
 
     def __str__(self):

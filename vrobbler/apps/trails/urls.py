@@ -1,7 +1,7 @@
 from django.urls import path
 from trails import views
 
-app_name = "trials"
+app_name = "trails"
 
 
 urlpatterns = [

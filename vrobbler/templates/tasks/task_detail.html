@@ -1,0 +1,73 @@
+{% extends "base_list.html" %}
+{% load mathfilters %}
+{% load static %}
+{% load naturalduration %}
+
+{% block title %}{{object.title}}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .cover img {
+        width: 250px;
+    }
+
+    .cover {
+        float: left;
+        width: 252px;
+        padding: 0;
+    }
+
+    .summary {
+        float: left;
+        width: 600px;
+        margin-left: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block lists %}
+
+<div class="row">
+    <div class="summary">
+        {% if object.description%}
+        <p>{{object.description|safe|linebreaks|truncatewords:160}}</p>
+        <hr />
+        {% endif %}
+        <p style="float:right;">
+            <a href="{{object.source_link}}"><img src="{% static "images/org-mode-logo.png" %}" width=35></a>
+        </p>
+    </div>
+</div>
+<div class="row">
+    <p>{{object.scrobble_set.count}} scrobbles</p>
+    <p>
+        <a href="{{object.get_start_url}}">Play again</a>
+    </p>
+</div>
+<div class="row">
+    <div class="col-md">
+        <h3>Last scrobbles</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Distance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
+                    <tr>
+                        <td>{{scrobble.timestamp}}</td>
+                        <td>{{scrobble.logdata}}</td>
+                        <td>{{scrobble.media_obj.publisher}}</td>
+                        <td>{% if scrobble.screenshot%}<img src="{{scrobble.screenshot.url}}" width=250 />{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
