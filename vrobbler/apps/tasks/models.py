@@ -1,30 +1,43 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
+
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
 from scrobbles.dataclasses import LongPlayLogData
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import LongPlayScrobblableMixin
 
 BNULL = {"blank": True, "null": True}
 
+TASK_SOURCE_URL_PATTERNS = [
+    ("https://app.shortcut.com/sure/story/{id}", "Shortcut"),
+    ("https://app.todoist.com/app/task/{id}", "Todoist"),
+]
 
+
+@dataclass
 class TaskLogData(LongPlayLogData):
-    serial_scrobble_id: Optional[int]
-    long_play_complete: bool = False
+    source_id: Optional[str] = None
+    serial_scrobble_id: Optional[int] = None
+    long_play_complete: Optional[bool] = None
 
 
 class TaskType(Enum):
-    WOODS = "Professional"
-    ROAD = "Amateur"
+    PRO = "Professional"
+    AMATEUR = "Amateur"
 
 
-class Task(ScrobblableMixin):
+class Task(LongPlayScrobblableMixin):
     """Basically a holder for task sources ... Shortcut, JIRA, Todoist, Org-mode
     and any other otherwise generic tasks.
 
     """
 
+    source = models.CharField(max_length=255, **BNULL)
+    source_url_pattern = models.CharField(
+        max_length=255, choices=TASK_SOURCE_URL_PATTERNS, **BNULL
+    )
     description = models.TextField(**BNULL)
 
     def __str__(self):
@@ -36,6 +49,20 @@ class Task(ScrobblableMixin):
     @property
     def logdata_cls(self):
         return TaskLogData
+
+    def source_url_for_user(self, user_id):
+        url = str(self.source_url_pattern).replace("{id}", "")
+        scrobble = self.scrobbles(user_id).first()
+        if scrobble.logdata.source_id and self.source_url_pattern:
+            url = str(self.source_url_pattern).format(
+                id=scrobble.logdata.source_id
+            )
+
+        return url
+
+    def subtitle_for_user(self, user_id):
+        scrobble = self.scrobbles(user_id).first()
+        return scrobble.logdata.source_id or ""
 
     @classmethod
     def find_or_create(cls, title: str) -> "Task":

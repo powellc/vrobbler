@@ -114,10 +114,24 @@ class LongPlayScrobblableMixin(ScrobblableMixin):
     def get_longplay_finish_url(self):
         return reverse("scrobbles:longplay-finish", kwargs={"uuid": self.uuid})
 
+    def first_long_play_scrobble_for_user(self, user) -> Optional["Scrobble"]:
+        return (
+            get_scrobbles_for_media(self, user)
+            .filter(
+                log__long_play_complete=False,
+                log__serial_scrobble_id__isnull=True,
+            )
+            .order_by("timestamp")
+            .first()
+        )
+
     def last_long_play_scrobble_for_user(self, user) -> Optional["Scrobble"]:
         return (
             get_scrobbles_for_media(self, user)
-            .filter(long_play_complete=False)
-            .order_by("-timestamp")
-            .first()
+            .filter(
+                log__long_play_complete=False,
+                log__serial_scrobble_id__isnull=False,
+            )
+            .order_by("timestamp")
+            .last()
         )

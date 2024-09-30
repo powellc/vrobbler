@@ -48,10 +48,14 @@ def get_scrobbles_for_media(media_obj, user: User) -> models.QuerySet:
         media_query = models.Q(book=media_obj)
     if media_class == "VideoGame":
         media_query = models.Q(video_game=media_obj)
+    if media_class == "Brickset":
+        media_query = models.Q(brickset=media_obj)
+    if media_class == "Task":
+        media_query = models.Q(task=media_obj)
 
     if not media_query:
-        logger.warn("Do not know about media {media_class} 🙍")
-        return []
+        logger.warn(f"Do not know about media {media_class} 🙍")
+        return QuerySet()
     return Scrobble.objects.filter(media_query, user=user)
 
 
