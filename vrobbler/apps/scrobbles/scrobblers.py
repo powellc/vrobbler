@@ -55,7 +55,7 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
 
     log = {}
     try:
-        log = {"mopidy_source": post_data.get("mopidy_ur").split(":")[0]}
+        log = {"mopidy_source": post_data.get("mopidy_uri").split(":")[0]}
     except IndexError:
         pass
 
