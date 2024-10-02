@@ -1,5 +1,6 @@
-{% extends "base_list.html" %} {% block title %}Tasks{% endblock %} {% block
-head_extra %}
+{% extends "base_list.html" %}
+{% block title %}Tasks{% endblock %}
+{% block head_extra %}
 <style>
   dl {
     width: 210px;
@@ -20,7 +21,9 @@ head_extra %}
     float: right;
   }
 </style>
-{% endblock %} {% block lists %}
+{% endblock %}
+
+{% block lists %}
 <div class="row">
   <div class="col-md">
     <div class="table-responsive">{% include "_scrobblable_list.html" %}</div>

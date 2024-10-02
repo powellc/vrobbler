@@ -63,7 +63,6 @@
                     {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        <td>{{scrobble.logdata}}</td>
                         <td>{{scrobble.media_obj.publisher}}</td>
                         <td>{% if scrobble.screenshot%}<img src="{{scrobble.screenshot.url}}" width=250 />{% endif %}</td>
                     </tr>
