@@ -12,6 +12,11 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
     name_or_id = data_dict.get(post_keys.get("IMDB_ID"), "") or data_dict.get(
         post_keys.get("VIDEO_TITLE"), ""
     )
+
+    video = Video.objects.filter(imdb_id=name_or_id).first()
+    if video:
+        return video
+
     imdb_metadata = lookup_video_from_imdb(name_or_id)
     # skatevideosite_metadata = lookup_video_from_skatevideosite(name_or_id)
     # youtube_metadata = {}  # TODO lookup_video_from_youtube(name_or_id)
