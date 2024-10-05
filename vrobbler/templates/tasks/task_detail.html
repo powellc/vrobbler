@@ -60,7 +60,7 @@
                     {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        <td><a href="{{scrobble.source_url_for_user}}">{{scrobble.logdata.description}}</a></td>
+                        <td><a href="{{scrobble.get_media_source_url}}">{{scrobble.logdata.description}}</a></td>
                         <td>{{scrobble.source}}</td>
                     </tr>
                     {% endfor %}

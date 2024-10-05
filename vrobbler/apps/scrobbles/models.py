@@ -934,6 +934,17 @@ class Scrobble(TimeStampedModel):
             last_page = pages[-1]
         return last_page
 
+    @property
+    def get_media_source_url(self) -> str:
+        url = ""
+        if self.media_type == "Website":
+            url = self.media_obj.url
+        if self.media_type == "Task" and self.logdata.source_id:
+            url = self.media_obj.source_url_pattern.format(
+                id=self.logdata.source_id
+            )
+        return url
+
     @classmethod
     def create_or_update(
         cls, media, user_id: int, scrobble_data: dict, **kwargs
