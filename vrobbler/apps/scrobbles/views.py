@@ -44,7 +44,7 @@ from scrobbles.models import (
     RetroarchImport,
     Scrobble,
 )
-from scrobbles.scrobblers import manual_scrobble_from_url
+from scrobbles.scrobblers import *
 from scrobbles.tasks import (
     process_koreader_import,
     process_lastfm_import,

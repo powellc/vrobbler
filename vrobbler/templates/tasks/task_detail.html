@@ -52,16 +52,16 @@
                 <thead>
                     <tr>
                         <th scope="col">Date</th>
+                        <th scope="col">Description</th>
                         <th scope="col">Source</th>
-                        <th scope="col">ID</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for scrobble in object.scrobble_set.all|dictsortreversed:"timestamp" %}
                     <tr>
                         <td>{{scrobble.timestamp}}</td>
-                        <td>{{scrobble.media_obj.source}}</td>
-                        <td><a href="{{scrobble.source_url_for_user}}">{{scrobble.logdata.source_url_pattern.label}}</a></td>
+                        <td><a href="{{scrobble.source_url_for_user}}">{{scrobble.logdata.description}}</a></td>
+                        <td>{{scrobble.source}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

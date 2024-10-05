@@ -313,11 +313,11 @@ def manual_scrobble_task(url: str, user_id: int):
     if "shortcut" in url:
         source = "Shortcut"
         title = "Generic Shortcut task"
-        description = url.split("/")[-1]
+        description = " ".join(url.split("/")[-1].split("-")).capitalize
     if "todoist" in url:
         source = "Todoist"
         title = "Generic Todoist task"
-        description = url.split("-")[-1]
+        description = " ".join(url.split("/")[-1].split("-")[:-1]).capitalize
 
     task = Task.find_or_create(title)
 
@@ -337,7 +337,6 @@ def manual_scrobble_task(url: str, user_id: int):
             "media_type": Scrobble.MediaType.WEBPAGE,
         },
     )
-
     scrobble = Scrobble.create_or_update(task, user_id, scrobble_dict)
     return scrobble
 

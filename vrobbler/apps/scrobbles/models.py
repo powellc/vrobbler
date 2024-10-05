@@ -957,7 +957,7 @@ class Scrobble(TimeStampedModel):
 
         # GeoLocations are a special case scrobble
         if mtype == cls.MediaType.GEO_LOCATION:
-            logger.warn(
+            logger.warning(
                 f"[create_or_update] geoloc requires create_or_update_location"
             )
             scrobble = cls.create_or_update_location(
@@ -981,7 +981,7 @@ class Scrobble(TimeStampedModel):
             scrobble.can_be_updated
             or scrobble_data["playback_status"] == "stopped"
         ):
-            if "log" in scrobble_data.keys():
+            if "log" in scrobble_data.keys() and scrobble.log:
                 scrobble_data["log"] = scrobble.log | scrobble_data["log"]
             return scrobble.update(scrobble_data)
 
@@ -997,7 +997,8 @@ class Scrobble(TimeStampedModel):
             },
         )
 
-        return cls.create(scrobble_data)
+        scrobble = cls.create(scrobble_data)
+        return scrobble
 
     @classmethod
     def create_or_update_location(
@@ -1151,7 +1152,6 @@ class Scrobble(TimeStampedModel):
         cls,
         scrobble_data: dict,
     ) -> "Scrobble":
-        scrobble_data["log"] = {}
         scrobble = cls.objects.create(
             **scrobble_data,
         )

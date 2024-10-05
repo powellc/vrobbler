@@ -14,6 +14,7 @@ BNULL = {"blank": True, "null": True}
 
 @dataclass
 class TaskLogData(LongPlayLogData):
+    description: Optional[str] = None
     source_id: Optional[str] = None
     serial_scrobble_id: Optional[int] = None
     long_play_complete: Optional[bool] = None
