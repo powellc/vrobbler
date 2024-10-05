@@ -7,13 +7,9 @@ from django.db import models
 from django.urls import reverse
 from scrobbles.dataclasses import LongPlayLogData
 from scrobbles.mixins import LongPlayScrobblableMixin
+from scrobbles.constants import TASK_SOURCE_URL_PATTERNS
 
 BNULL = {"blank": True, "null": True}
-
-TASK_SOURCE_URL_PATTERNS = [
-    ("https://app.shortcut.com/sure/story/{id}", "Shortcut"),
-    ("https://app.todoist.com/app/task/{id}", "Todoist"),
-]
 
 
 @dataclass
@@ -66,7 +62,7 @@ class Task(LongPlayScrobblableMixin):
 
     @classmethod
     def find_or_create(cls, title: str) -> "Task":
-        return cls.objects.filter(title=title).first()
+        return cls.objects.get_or_create(title=title)[0]
 
     def scrobbles(self, user_id):
         Scrobble = apps.get_model("scrobbles", "Scrobble")

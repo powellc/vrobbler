@@ -22,10 +22,12 @@ from sports.thesportsdb import lookup_event_from_thesportsdb
 from videogames.howlongtobeat import lookup_game_from_hltb
 from videogames.models import VideoGame
 from videos.models import Video
-from vrobbler.apps.scrobbles.constants import (
+from scrobbles.constants import (
     MANUAL_SCROBBLE_FNS,
     SCROBBLE_CONTENT_URLS,
+    TASK_SOURCE_URL_PATTERNS,
 )
+from tasks.models import Task
 from webpages.models import WebPage
 
 logger = logging.getLogger(__name__)
@@ -273,21 +275,71 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
 
 
 def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
+    """We have scrobblable media URLs, and then any other webpages that
+    we want to scrobble as a media type in and of itself. This checks whether
+    we know about the content type, and routes it to the appropriate media
+    scrobbler. Otherwise, return nothing."""
     content_key = ""
+    try:
+        domain = url.split("//")[-1].split("/")[0]
+    except IndexError:
+        domain = None
+
     for key, content_url in SCROBBLE_CONTENT_URLS.items():
-        if content_url in url:
+        if domain in content_url:
             content_key = key
 
+    item_id = None
     if not content_key:
-        return
+        content_key = "-w"
+        item_id = url
 
-    try:
-        item_id = re.findall("\d+", url)[0]
-    except IndexError:
-        item_id = None
+    if not item_id:
+        try:
+            item_id = re.findall("\d+", url)[0]
+        except IndexError:
+            pass
+
+    if content_key == "-t":
+        item_id = url
 
     scrobble_fn = MANUAL_SCROBBLE_FNS[content_key]
     return eval(scrobble_fn)(item_id, user_id)
+
+
+def manual_scrobble_task(url: str, user_id: int):
+    source_id = re.findall("\d+", url)[0]
+
+    if "shortcut" in url:
+        source = "Shortcut"
+        title = "Generic Shortcut task"
+        description = url.split("/")[-1]
+    if "todoist" in url:
+        source = "Todoist"
+        title = "Generic Todoist task"
+        description = url.split("-")[-1]
+
+    task = Task.find_or_create(title)
+
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_seconds": 0,
+        "source": source,
+        "log": {"description": description, "source_id": source_id},
+    }
+    logger.info(
+        "[webhook] webpage scrobble request received",
+        extra={
+            "task_id": task.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.WEBPAGE,
+        },
+    )
+
+    scrobble = Scrobble.create_or_update(task, user_id, scrobble_dict)
+    return scrobble
 
 
 def manual_scrobble_webpage(url: str, user_id: int):

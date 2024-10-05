@@ -44,7 +44,7 @@ from scrobbles.models import (
     RetroarchImport,
     Scrobble,
 )
-from scrobbles.scrobblers import *
+from scrobbles.scrobblers import manual_scrobble_from_url
 from scrobbles.tasks import (
     process_koreader_import,
     process_lastfm_import,
@@ -97,16 +97,8 @@ class RecentScrobbleList(ListView):
     def get(self, *args, **kwargs):
         user = self.request.user
         if user.is_authenticated:
-            if scrobble_url := self.request.GET.get("scrobble_url"):
-                for content_url in SCROBBLE_CONTENT_URLS.values():
-                    if content_url in scrobble_url:
-                        scrobble = manual_scrobble_from_url(
-                            scrobble_url, self.request.user.id
-                        )
-                        return HttpResponseRedirect(
-                            scrobble.redirect_url(user.id)
-                        )
-                scrobble = manual_scrobble_webpage(
+            if scrobble_url := self.request.GET.get("scrobble_url", ""):
+                scrobble = manual_scrobble_from_url(
                     scrobble_url, self.request.user.id
                 )
                 return HttpResponseRedirect(scrobble.redirect_url(user.id))
