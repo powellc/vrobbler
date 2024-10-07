@@ -542,6 +542,7 @@ class Scrobble(TimeStampedModel):
     source = models.CharField(max_length=255, **BNULL)
     log = models.JSONField(
         **BNULL,
+        default=dict,
         encoder=logdata.ScrobbleLogDataEncoder,
         decoder=logdata.ScrobbleLogDataDecoder,
     )
@@ -626,6 +627,10 @@ class Scrobble(TimeStampedModel):
                 extra={"log": self.log},
             )
             log_dict = json.loads(self.log)
+
+        if not log_dict:
+            log_dict = {}
+
         return self.media_obj.logdata_cls.from_dict(log_dict)
 
     def redirect_url(self, user_id) -> str:
