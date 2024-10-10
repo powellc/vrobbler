@@ -203,14 +203,19 @@ class Video(ScrobblableMixin):
             return
         if imdb_dict.get("runtimes") and len(imdb_dict.get("runtimes")) > 0:
             self.run_time_seconds = int(imdb_dict.get("runtimes")[0]) * 60
-        self.imdb_rating = imdb_dict.data.get("rating")
-        self.plot = imdb_dict.data.get("plot")
-        self.year = imdb_dict.data.get("year")
+        if (
+            imdb_dict.get("run_time_seconds")
+            and imdb_dict.get("run_time_seconds") > 0
+        ):
+            self.run_time_seconds = int(imdb_dict.get("run_time_seconds"))
+        self.imdb_rating = imdb_dict.get("imdb_rating")
+        self.plot = imdb_dict.get("plot")
+        self.year = imdb_dict.get("year")
         self.save(
             update_fields=["imdb_rating", "plot", "year", "run_time_seconds"]
         )
 
-        cover_url = imdb_dict.get("cover url")
+        cover_url = imdb_dict.get("cover_url")
 
         if (not self.cover_image or force_update) and cover_url:
             r = requests.get(cover_url)
@@ -218,7 +223,7 @@ class Video(ScrobblableMixin):
                 fname = f"{self.title}_{self.uuid}.jpg"
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
 
-        if genres := imdb_dict.data.get("genres"):
+        if genres := imdb_dict.get("genres"):
             self.genre.add(*genres)
 
     def scrape_cover_from_url(
