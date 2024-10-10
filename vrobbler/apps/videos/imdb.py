@@ -40,7 +40,8 @@ def lookup_video_from_imdb(
         if len(imdb_results) == 1:
             video_metadata = imdb_results[0]
         imdb_client.update(
-            video_metadata, info=["plot", "synopsis", "taglines"]
+            video_metadata,
+            info=["plot", "synopsis", "taglines", "next_episode", "genres"],
         )
 
     if not video_metadata:
@@ -83,4 +84,5 @@ def lookup_video_from_imdb(
         "plot": video_metadata.get("plot outline"),
         "imdb_rating": video_metadata.get("rating"),
         "cover_url": cover_url,
+        "genres": video_metadata.get("genres"),
     }

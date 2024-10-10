@@ -95,15 +95,15 @@ class Series(TimeStampedModel):
             name_or_id = self.imdb_id
         imdb_dict = lookup_video_from_imdb(name_or_id)
         if not imdb_dict:
-            logger.warn(f"No imdb data for {self}")
+            logger.warning(f"No imdb data for {self}")
             return
 
-        self.imdb_id = imdb_dict.data.get("imdbID")
-        self.imdb_rating = imdb_dict.data.get("arithmetic mean")
-        self.plot = imdb_dict.data.get("plot outline")
+        self.imdb_id = imdb_dict.get("imdb_id")
+        self.imdb_rating = imdb_dict.get("imdb_rating")
+        self.plot = imdb_dict.get("plot")
         self.save(update_fields=["imdb_id", "imdb_rating", "plot"])
 
-        cover_url = imdb_dict.get("cover url")
+        cover_url = imdb_dict.get("cover_url")
 
         if (not self.cover_image or force_update) and cover_url:
             r = requests.get(cover_url)
@@ -111,7 +111,7 @@ class Series(TimeStampedModel):
                 fname = f"{self.name}_{self.uuid}.jpg"
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
 
-        if genres := imdb_dict.data.get("genres"):
+        if genres := imdb_dict.get("genres"):
             self.genre.add(*genres)
 
 
