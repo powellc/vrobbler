@@ -7,6 +7,7 @@ LONG_PLAY_MEDIA = {
     "videogames": "VideoGame",
     "books": "Book",
     "bricksets": "BrickSet",
+    "tasks": "Task",
 }
 
 PLAY_AGAIN_MEDIA = {
