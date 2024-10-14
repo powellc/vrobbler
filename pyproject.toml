@@ -46,7 +46,8 @@ django-imagekit = "^5.0.0"
 thefuzz = "^0.22.1"
 dataclass-wizard = "0.22.0"
 webdavclient3 = "^3.14.6"
-boto3 = "^1.35.14"
+boto3 = "^1.35.37"
+django-oauth-toolkit = "^3.0.1"
 
 [tool.poetry.group.dev]
 optional = true

@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     "storages",
     "taggit",
     "rest_framework.authtoken",
+    "oauth2_provider",
     "encrypted_field",
     "profiles",
     "scrobbles",

@@ -1,27 +1,23 @@
 from django.contrib import admin
 from django.urls import include, path
+from oauth2_provider import urls as oauth2_urls
 from rest_framework import routers
 
 import vrobbler.apps.scrobbles.views as scrobbles_views
-from vrobbler.apps.books.api.views import AuthorViewSet, BookViewSet
-from vrobbler.apps.music import urls as music_urls
-from vrobbler.apps.books import urls as book_urls
-from vrobbler.apps.bricksets import urls as bricksets_urls
-from vrobbler.apps.sports import urls as sports_urls
-from vrobbler.apps.podcasts import urls as podcast_urls
-from vrobbler.apps.videogames import urls as videogame_urls
 from vrobbler.apps.boardgames import urls as boardgame_urls
-from vrobbler.apps.locations import urls as locations_urls
+from vrobbler.apps.books import urls as book_urls
+from vrobbler.apps.books.api.views import AuthorViewSet, BookViewSet
+from vrobbler.apps.bricksets import urls as bricksets_urls
 from vrobbler.apps.lifeevents import urls as lifeevents_urls
-from vrobbler.apps.tasks import urls as tasks_urls
-from vrobbler.apps.trails import urls as trails_urls
-from vrobbler.apps.webpages import urls as webpages_urls
+from vrobbler.apps.locations import urls as locations_urls
 from vrobbler.apps.moods import urls as moods_urls
+from vrobbler.apps.music import urls as music_urls
 from vrobbler.apps.music.api.views import (
     AlbumViewSet,
     ArtistViewSet,
     TrackViewSet,
 )
+from vrobbler.apps.podcasts import urls as podcast_urls
 from vrobbler.apps.profiles.api.views import UserProfileViewSet, UserViewSet
 from vrobbler.apps.scrobbles import urls as scrobble_urls
 from vrobbler.apps.scrobbles.api.views import (
@@ -30,6 +26,7 @@ from vrobbler.apps.scrobbles.api.views import (
     LastFmImportViewSet,
     ScrobbleViewSet,
 )
+from vrobbler.apps.sports import urls as sports_urls
 from vrobbler.apps.sports.api.views import (
     LeagueViewSet,
     PlayerViewSet,
@@ -38,8 +35,12 @@ from vrobbler.apps.sports.api.views import (
     SportViewSet,
     TeamViewSet,
 )
+from vrobbler.apps.tasks import urls as tasks_urls
+from vrobbler.apps.trails import urls as trails_urls
+from vrobbler.apps.videogames import urls as videogame_urls
 from vrobbler.apps.videos import urls as video_urls
 from vrobbler.apps.videos.api.views import SeriesViewSet, VideoViewSet
+from vrobbler.apps.webpages import urls as webpages_urls
 
 router = routers.DefaultRouter()
 router.register(r"scrobbles", ScrobbleViewSet)
@@ -67,6 +68,7 @@ urlpatterns = [
     path("api/v1/auth", include("rest_framework.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
+    path("o/", include(oauth2_urls)),
     path("", include(music_urls, namespace="music")),
     path("", include(book_urls, namespace="books")),
     path("", include(video_urls, namespace="videos")),
