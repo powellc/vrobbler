@@ -60,10 +60,9 @@ def todoist_webhook(request):
     if not user_id:
         user_id = 1
 
-    scrobble = None
     if "completed" in todoist_task["todoist_event"]:
         scrobble = todoist_scrobble_task_finish(todoist_task, user_id)
-    elif "inprogress" in todoist_task["todoist_label_list"]:
+    else:
         scrobble = todoist_scrobble_task(todoist_task, user_id)
 
     if not scrobble:
