@@ -155,7 +155,7 @@
             {% if working %}
             <div class="titles">
                 <p><a href="{{working.media_obj.get_absolute_url}}">{{working.media_obj}}</a></p>
-                {% if working.media_obj.subtitle %}<p><em><a href="{{working.media_obj.subtitle.get_absolute_url}}">{{working.media_obj.subtitle}}</a></em></p>{% endif %}
+                {% if working.logdata.description %}<p><em>{{working.logdata.description}}</em></p>{% endif %}
             </div>
             <p><small>{{working.timestamp|naturaltime}} from {{working.source}}</small></p>
             {% else %}
