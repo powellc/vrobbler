@@ -791,6 +791,7 @@ class ScrobbleStatusView(LoginRequiredMixin, TemplateView):
         data["participating"] = progress_plays.filter(
             life_event__isnull=False
         ).first()
+        data["working"] = progress_plays.filter(task__isnull=False).first()
 
         long_plays = user_scrobble_qs.filter(
             long_play_complete=False, played_to_completion=True

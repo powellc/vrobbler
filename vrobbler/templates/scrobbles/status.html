@@ -149,5 +149,20 @@
             </div>
             {% endif %}
         </div>
+        <hr />
+        <h3>Working</h3>
+        <div class="working">
+            {% if working %}
+            <div class="titles">
+                <p><a href="{{working.media_obj.get_absolute_url}}">{{working.media_obj}}</a></p>
+                {% if working.media_obj.subtitle %}<p><em><a href="{{working.media_obj.subtitle.get_absolute_url}}">{{working.media_obj.subtitle}}</a></em></p>{% endif %}
+            </div>
+            <p><small>{{working.timestamp|naturaltime}} from {{working.source}}</small></p>
+            {% else %}
+            <div class="titles">
+                <p>Nothing</p>
+            </div>
+            {% endif %}
+        </div>
     </body>
 </html>
