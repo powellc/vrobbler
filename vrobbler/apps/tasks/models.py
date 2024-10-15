@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum
+from datetime import datetime
 from typing import Optional
 
 from django.apps import apps
@@ -16,10 +16,14 @@ TODOIST_TASK_URL = "https://app.todoist.com/app/task/{id}"
 @dataclass
 class TaskLogData(LongPlayLogData):
     description: Optional[str] = None
+    title: Optional[str] = None
     project: Optional[str] = None
-    source_id: Optional[str] = None
+    todoist_id: Optional[str] = None
+    todoist_event: Optional[str] = None
+    todoist_type: Optional[str] = None
     serial_scrobble_id: Optional[int] = None
     long_play_complete: Optional[bool] = None
+    timestamp_utc: Optional[datetime] = None
 
 
 class Task(LongPlayScrobblableMixin):
@@ -53,7 +57,12 @@ class Task(LongPlayScrobblableMixin):
 
     @classmethod
     def find_or_create(cls, title: str) -> "Task":
-        return cls.objects.get_or_create(title=title)[0]
+        task, created = cls.objects.get_or_create(title=title)
+        if created:
+            task.run_time_seconds = 1800
+            task.save(update_fields=["run_time_seconds"])
+
+        return task
 
     def scrobbles(self, user_id):
         Scrobble = apps.get_model("scrobbles", "Scrobble")

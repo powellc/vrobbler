@@ -1,10 +1,15 @@
 import logging
 
+import pendulum
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from scrobbles.scrobblers import (
+    todoist_scrobble_task,
+    todoist_scrobble_task_finish,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,22 +23,47 @@ def todoist_webhook(request):
         "[todoist_webhook] called",
         extra={"post_data": post_data},
     )
+    # ["inprogress","project","work"],
+    # :item:updated,
+    todoist_type, todoist_event = post_data.get("event_name").split(":")
+    todoist_task = {
+        "todoist_id": post_data.get("id"),
+        "todoist_label_list": post_data.get("event_data", {}).get("labels"),
+        "todoist_type": todoist_type,
+        "todoist_event": todoist_event,
+        "title": post_data.get("content"),
+        "description": post_data.get("description"),
+        "timestamp_utc": pendulum.parse(
+            post_data.get("event_data", {}).get("updated_at")
+        ),
+    }
 
-    # Disregard progress updates
-    if in_progress and is_music:
+    if todoist_task["todoist_type"] != "item" or todoist_task[
+        "todoist_event"
+    ] not in [
+        "updated",
+        "completed",
+    ]:
         logger.info(
-            "[jellyfin_webhook] ignoring update of music in progress",
-            extra={"post_data": post_data},
+            "[todoist_webhook] ignoring wrong todoist type or event",
+            extra={
+                "todoist_type": todoist_task["todoist_type"],
+                "todoist_event": todoist_task["todoist_event"],
+            },
         )
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
-    scrobble = todoist_scrobble_task(post_data, request.user.id)
+    scrobble = None
+    if "inprogress" in todoist_task["todoist_label_list"]:
+        scrobble = todoist_scrobble_task(todoist_task, request.user.id)
+    if "completed" in todoist_task["todoist_event"]:
+        scrobble = todoist_scrobble_task_finish(todoist_task, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
     logger.info(
-        "[jellyfin_webhook] finished",
+        "[todoist_webhook] finished",
         extra={"scrobble_id": scrobble.id},
     )
     return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)

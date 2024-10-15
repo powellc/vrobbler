@@ -27,6 +27,10 @@ from scrobbles.constants import (
     SCROBBLE_CONTENT_URLS,
 )
 from tasks.models import Task
+from vrobbler.apps.tasks.constants import (
+    TODOIST_TITLE_PREFIX_LABELS,
+    TODOIST_TITLE_SUFFIX_LABELS,
+)
 from webpages.models import WebPage
 
 logger = logging.getLogger(__name__)
@@ -304,6 +308,54 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
 
     scrobble_fn = MANUAL_SCROBBLE_FNS[content_key]
     return eval(scrobble_fn)(item_id, user_id)
+
+
+def todoist_scrobble_task_finish(todoist_task: dict, user_id: int) -> Scrobble:
+    scrobble = Scrobble.obejcts.filter(
+        user_id=user_id, logdata__todoist_id=todoist_task.get("todoist_id")
+    )
+
+    if not scrobble.in_progress or scrobble.played_to_completion:
+        logger.warning(
+            "[todoist_scrobble_task_finish] todoist webhook finish called on finished task"
+        )
+
+    scrobble.stop(force_finish=True)
+
+    return scrobble
+
+
+def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
+
+    for label in todoist_task["todoist_label_list"]:
+        if label in TODOIST_TITLE_PREFIX_LABELS:
+            prefix = label
+        if label in TODOIST_TITLE_SUFFIX_LABELS:
+            suffix = label
+
+    title = " ".join([prefix.capitalize(), suffix.capitalize()])
+
+    task = Task.find_or_create(title)
+
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": todoist_task.get("timestamp_utc", timezone.now()),
+        "playback_position_seconds": 0,
+        "source": "Todoist Webhook",
+        "log": todoist_task,
+    }
+
+    logger.info(
+        "[todoist_scrobble_task] task scrobble request received",
+        extra={
+            "task_id": task.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.TASK,
+        },
+    )
+    scrobble = Scrobble.create_or_update(task, user_id, scrobble_dict)
+    return scrobble
 
 
 def manual_scrobble_task(url: str, user_id: int):
