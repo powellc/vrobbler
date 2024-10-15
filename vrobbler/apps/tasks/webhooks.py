@@ -52,10 +52,10 @@ def todoist_webhook(request):
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
     scrobble = None
-    if "inprogress" in todoist_task["todoist_label_list"]:
-        scrobble = todoist_scrobble_task(todoist_task, request.user.id)
     if "completed" in todoist_task["todoist_event"]:
         scrobble = todoist_scrobble_task_finish(todoist_task, request.user.id)
+    elif "inprogress" in todoist_task["todoist_label_list"]:
+        scrobble = todoist_scrobble_task(todoist_task, request.user.id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)
