@@ -347,6 +347,11 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
     title = " ".join([prefix.capitalize(), suffix.capitalize()])
 
     task = Task.find_or_create(title)
+    in_progress_scrobble = Scrobble.objects.filter(
+        in_progress=True, log__todoist_id=todoist_task.get("todoist_id")
+    ).first()
+    if in_progress_scrobble:
+        return in_progress_scrobble
 
     # TODO Should use updated_at from TOdoist, but parsing isn't working
     scrobble_dict = {
