@@ -353,6 +353,14 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
     title = " ".join([prefix.capitalize(), suffix.capitalize()])
 
     task = Task.find_or_create(title)
+
+    # is_complete = "completed" in todoist_task["todoist_event"]
+    is_no_longer_in_progress = (
+        "inprogress" not in todoist_task["todoist_label_list"]
+    )
+    if is_no_longer_in_progress:
+        scrobble = todoist_scrobble_task_finish(todoist_task, user_id)
+
     in_progress_scrobble = Scrobble.objects.filter(
         in_progress=True,
         log__todoist_id=todoist_task.get("todoist_id"),
@@ -360,9 +368,6 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
     ).last()
     if in_progress_scrobble:
         return in_progress_scrobble
-
-    if "inprogress" not in todoist_task["todoist_label_list"]:
-        return todoist_scrobble_task_finish(todoist_task, user_id)
 
     # TODO Should use updated_at from TOdoist, but parsing isn't working
     scrobble_dict = {
