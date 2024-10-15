@@ -311,7 +311,7 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
 
 
 def todoist_scrobble_task_finish(todoist_task: dict, user_id: int) -> Scrobble:
-    scrobble = Scrobble.obejcts.filter(
+    scrobble = Scrobble.objects.filter(
         user_id=user_id, logdata__todoist_id=todoist_task.get("todoist_id")
     )
 
@@ -327,6 +327,8 @@ def todoist_scrobble_task_finish(todoist_task: dict, user_id: int) -> Scrobble:
 
 def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
 
+    prefix = ""
+    suffix = ""
     for label in todoist_task["todoist_label_list"]:
         if label in TODOIST_TITLE_PREFIX_LABELS:
             prefix = label
