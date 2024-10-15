@@ -344,6 +344,12 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
         if label in TODOIST_TITLE_SUFFIX_LABELS:
             suffix = label
 
+    if not prefix and suffix:
+        logger.warning(
+            "Missing a prefix and suffix tag for task",
+            extra={"todoist_task": todoist_task},
+        )
+
     title = " ".join([prefix.capitalize(), suffix.capitalize()])
 
     task = Task.find_or_create(title)
