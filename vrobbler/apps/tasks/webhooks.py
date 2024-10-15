@@ -67,7 +67,10 @@ def todoist_webhook(request):
         scrobble = todoist_scrobble_task(todoist_task, user_id)
 
     if not scrobble:
-        return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "No scrobble found to be updated"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     logger.info(
         "[todoist_webhook] finished",

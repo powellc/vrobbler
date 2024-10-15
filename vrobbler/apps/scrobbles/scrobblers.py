@@ -310,15 +310,24 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
     return eval(scrobble_fn)(item_id, user_id)
 
 
-def todoist_scrobble_task_finish(todoist_task: dict, user_id: int) -> Scrobble:
+def todoist_scrobble_task_finish(
+    todoist_task: dict, user_id: int
+) -> Optional[Scrobble]:
     scrobble = Scrobble.objects.filter(
         user_id=user_id, log__todoist_id=todoist_task.get("todoist_id")
     ).first()
 
+    if not scrobble:
+        logger.info(
+            "[todoist_scrobble_task_finish] todoist webhook finish called on missing task"
+        )
+        return
+
     if not scrobble.in_progress or scrobble.played_to_completion:
-        logger.warning(
+        logger.info(
             "[todoist_scrobble_task_finish] todoist webhook finish called on finished task"
         )
+        return
 
     scrobble.stop(force_finish=True)
 
