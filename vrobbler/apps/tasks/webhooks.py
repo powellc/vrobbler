@@ -23,19 +23,17 @@ def todoist_webhook(request):
         "[todoist_webhook] called",
         extra={"post_data": post_data},
     )
-    # ["inprogress","project","work"],
-    # :item:updated,
     todoist_type, todoist_event = post_data.get("event_name").split(":")
+    event_data = post_data.get("event_data", {})
     todoist_task = {
-        "todoist_id": post_data.get("id"),
-        "todoist_label_list": post_data.get("event_data", {}).get("labels"),
+        "todoist_id": event_data.get("id"),
+        "todoist_label_list": event_data.get("labels"),
         "todoist_type": todoist_type,
         "todoist_event": todoist_event,
-        "title": post_data.get("content"),
-        "description": post_data.get("description"),
-        "timestamp_utc": pendulum.parse(
-            post_data.get("event_data", {}).get("updated_at")
-        ),
+        "todoist_project_id": event_data.get("project_id"),
+        "description": event_data.get("content"),
+        "details": event_data.get("description"),
+        "timestamp_utc": pendulum.parse(event_data.get("updated_at")),
     }
 
     if todoist_task["todoist_type"] != "item" or todoist_task[
