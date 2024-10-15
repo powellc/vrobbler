@@ -5,4 +5,5 @@ TODOIST_TITLE_SUFFIX_LABELS = [
     "chores",
     "admin",
     "meeting",
+    "habit",
 ]
