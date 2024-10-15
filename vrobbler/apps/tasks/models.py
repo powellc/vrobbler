@@ -48,12 +48,12 @@ class Task(LongPlayScrobblableMixin):
         url = ""
         scrobble = self.scrobbles(user_id).first()
         if scrobble:
-            url = TODOIST_TASK_URL.format(id=scrobble.logdata.source_id)
+            url = TODOIST_TASK_URL.format(id=scrobble.logdata.todoist_id)
         return url
 
     def subtitle_for_user(self, user_id):
         scrobble = self.scrobbles(user_id).first()
-        return scrobble.logdata.source_id or ""
+        return scrobble.logdata.description or ""
 
     @classmethod
     def find_or_create(cls, title: str) -> "Task":
