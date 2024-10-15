@@ -33,6 +33,7 @@ class UserProfile(TimeStampedModel):
 
     todoist_auth_key = EncryptedField(**BNULL)
     todoist_state = EncryptedField(**BNULL)
+    todoist_user_id = models.CharField(max_length=100, **BNULL)
 
     redirect_to_webpage = models.BooleanField(default=True)
 

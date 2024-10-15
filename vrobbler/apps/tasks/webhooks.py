@@ -10,6 +10,7 @@ from scrobbles.scrobblers import (
     todoist_scrobble_task,
     todoist_scrobble_task_finish,
 )
+from profiles.models import UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +52,20 @@ def todoist_webhook(request):
         )
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
+    user_id = (
+        UserProfile.objects.filter(todoist_user_id=post_data.get("user_id"))
+        .first()
+        .user_id
+    )
+    # TODO huge hack, find a way to populate user id from Todoist
+    if not user_id:
+        user_id = 1
+
     scrobble = None
     if "completed" in todoist_task["todoist_event"]:
-        scrobble = todoist_scrobble_task_finish(todoist_task, request.user.id)
+        scrobble = todoist_scrobble_task_finish(todoist_task, user_id)
     elif "inprogress" in todoist_task["todoist_label_list"]:
-        scrobble = todoist_scrobble_task(todoist_task, request.user.id)
+        scrobble = todoist_scrobble_task(todoist_task, user_id)
 
     if not scrobble:
         return Response({}, status=status.HTTP_400_BAD_REQUEST)

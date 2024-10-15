@@ -1246,9 +1246,8 @@ class Scrobble(TimeStampedModel):
 
         # Set our playback seconds, and calc long play seconds
         self.playback_position_seconds = seconds_elapsed
-        past_seconds = 0
         if self.previous:
-            past_seconds = self.previous.long_play_seconds
+            past_seconds = self.previous.long_play_seconds or 0
 
         self.long_play_seconds = past_seconds + seconds_elapsed
 
