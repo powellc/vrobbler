@@ -1,5 +1,6 @@
 from django.urls import path
 from scrobbles import views
+from tasks.webhooks import todoist_webhook
 
 app_name = "scrobbles"
 
@@ -45,6 +46,7 @@ urlpatterns = [
         views.mopidy_webhook,
         name="mopidy-webhook",
     ),
+    path("webhook/todoist/", todoist_webhook, name="todoist-webhook"),
     path("export/", views.export, name="export"),
     path(
         "imports/",

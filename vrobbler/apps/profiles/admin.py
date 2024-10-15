@@ -12,4 +12,6 @@ class UserProfileAdmin(admin.ModelAdmin):
         "twitch_client_secret",
         "lastfm_password",
         "archivebox_password",
+        "todoist_auth_key",
+        "todoist_state",
     )

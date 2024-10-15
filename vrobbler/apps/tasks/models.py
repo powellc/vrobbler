@@ -7,34 +7,27 @@ from django.db import models
 from django.urls import reverse
 from scrobbles.dataclasses import LongPlayLogData
 from scrobbles.mixins import LongPlayScrobblableMixin
-from scrobbles.constants import TASK_SOURCE_URL_PATTERNS
 
 BNULL = {"blank": True, "null": True}
+
+TODOIST_TASK_URL = "https://app.todoist.com/app/task/{id}"
 
 
 @dataclass
 class TaskLogData(LongPlayLogData):
     description: Optional[str] = None
+    project: Optional[str] = None
     source_id: Optional[str] = None
     serial_scrobble_id: Optional[int] = None
     long_play_complete: Optional[bool] = None
 
 
-class TaskType(Enum):
-    PRO = "Professional"
-    AMATEUR = "Amateur"
-
-
 class Task(LongPlayScrobblableMixin):
-    """Basically a holder for task sources ... Shortcut, JIRA, Todoist, Org-mode
+    """Basically a holder for Todoist Tasks
     and any other otherwise generic tasks.
 
     """
 
-    source = models.CharField(max_length=255, **BNULL)
-    source_url_pattern = models.CharField(
-        max_length=255, choices=TASK_SOURCE_URL_PATTERNS, **BNULL
-    )
     description = models.TextField(**BNULL)
 
     def __str__(self):
@@ -47,14 +40,11 @@ class Task(LongPlayScrobblableMixin):
     def logdata_cls(self):
         return TaskLogData
 
-    def source_url_for_user(self, user_id):
-        url = str(self.source_url_pattern).replace("{id}", "")
+    def source_url_for_user(self, user_id) -> str:
+        url = ""
         scrobble = self.scrobbles(user_id).first()
-        if scrobble.logdata.source_id and self.source_url_pattern:
-            url = str(self.source_url_pattern).format(
-                id=scrobble.logdata.source_id
-            )
-
+        if scrobble:
+            url = TODOIST_TASK_URL.format(id=scrobble.logdata.source_id)
         return url
 
     def subtitle_for_user(self, user_id):

@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import pytz
-from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
@@ -31,6 +30,9 @@ class UserProfile(TimeStampedModel):
     archivebox_url = models.CharField(max_length=255, **BNULL)
 
     bgg_username = models.CharField(max_length=255, **BNULL)
+
+    todoist_auth_key = EncryptedField(**BNULL)
+    todoist_state = EncryptedField(**BNULL)
 
     redirect_to_webpage = models.BooleanField(default=True)
 

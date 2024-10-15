@@ -944,10 +944,8 @@ class Scrobble(TimeStampedModel):
         url = ""
         if self.media_type == "Website":
             url = self.media_obj.url
-        if self.media_type == "Task" and self.logdata.source_id:
-            url = self.media_obj.source_url_pattern.format(
-                id=self.logdata.source_id
-            )
+        if self.media_type == "Task":
+            url = self.media_obj.source_url_for_user(self.user)
         return url
 
     @classmethod

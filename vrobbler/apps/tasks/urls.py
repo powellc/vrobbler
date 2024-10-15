@@ -11,4 +11,5 @@ urlpatterns = [
         views.TaskDetailView.as_view(),
         name="task_detail",
     ),
+    path("tasks/auth/todoist/", views.todoist_oauth, name="task_todoist_auth"),
 ]

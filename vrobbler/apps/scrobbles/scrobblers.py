@@ -25,7 +25,6 @@ from videos.models import Video
 from scrobbles.constants import (
     MANUAL_SCROBBLE_FNS,
     SCROBBLE_CONTENT_URLS,
-    TASK_SOURCE_URL_PATTERNS,
 )
 from tasks.models import Task
 from webpages.models import WebPage
@@ -310,10 +309,6 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
 def manual_scrobble_task(url: str, user_id: int):
     source_id = re.findall("\d+", url)[0]
 
-    if "shortcut" in url:
-        source = "Shortcut"
-        title = "Generic Shortcut task"
-        description = " ".join(url.split("/")[-1].split("-")).capitalize()
     if "todoist" in url:
         source = "Todoist"
         title = "Generic Todoist task"

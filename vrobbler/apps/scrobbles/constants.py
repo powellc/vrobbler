@@ -23,20 +23,14 @@ MEDIA_END_PADDING_SECONDS = {
     "Video": 3600,  # 60 min
 }
 
-TASK_SOURCE_URL_PATTERNS = [
-    ("https://app.shortcut.com/sure/story/{id}", "Shortcut"),
-    ("https://app.todoist.com/app/task/{id}", "Todoist"),
-]
-
-for task_pattern in TASK_SOURCE_URL_PATTERNS:
-    task_urls = ", ".join([t[0] for t in TASK_SOURCE_URL_PATTERNS])
+TODOIST_TASK_URL = "https://app.todoist.com/app/task/{id}"
 
 SCROBBLE_CONTENT_URLS = {
     "-i": "https://www.imdb.com/title/",
     "-s": "https://www.thesportsdb.com/event/",
     "-g": "https://boardgamegeek.com/boardgame/",
     "-b": "https://www.amazon.com/",
-    "-t": task_urls,
+    "-t": "https://app.todoist.com/app/task/{id}",
 }
 
 EXCLUDE_FROM_NOW_PLAYING = ("GeoLocation",)
