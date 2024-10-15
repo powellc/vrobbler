@@ -34,7 +34,6 @@ def todoist_webhook(request):
         "todoist_project_id": event_data.get("project_id"),
         "description": event_data.get("content"),
         "details": event_data.get("description"),
-        "timestamp_utc": pendulum.parse(event_data.get("updated_at")),
     }
 
     if todoist_task["todoist_type"] != "item" or todoist_task[

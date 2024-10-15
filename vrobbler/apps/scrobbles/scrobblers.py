@@ -339,11 +339,12 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
 
     task = Task.find_or_create(title)
 
+    # TODO Should use updated_at from TOdoist, but parsing isn't working
     scrobble_dict = {
         "user_id": user_id,
-        "timestamp": todoist_task.get("timestamp_utc", timezone.now()),
+        "timestamp": timezone.now(),
         "playback_position_seconds": 0,
-        "source": "Todoist Webhook",
+        "source": "Todoist",
         "log": todoist_task,
     }
 
