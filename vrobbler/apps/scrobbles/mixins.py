@@ -87,8 +87,8 @@ class ScrobblableMixin(TimeStampedModel):
 
     @property
     def logdata_cls(self) -> None:
-        logger.warning("logdata_cls() not implemented yet")
-        return None
+        from scrobbles.dataclasses import ScrobbleLogData
+        return ScrobbleLogData
 
     @property
     def subtitle(self) -> str:

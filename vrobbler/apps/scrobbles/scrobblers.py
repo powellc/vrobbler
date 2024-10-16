@@ -347,7 +347,7 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
     if not prefix and suffix:
         logger.warning(
             "Missing a prefix and suffix tag for task",
-            extra={"todoist_task": todoist_task},
+            extra={"todoist_scrobble_task": todoist_task},
         )
 
     title = " ".join([prefix.capitalize(), suffix.capitalize()])
@@ -359,13 +359,26 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
         log__todoist_id=todoist_task.get("todoist_id"),
         task=task,
     ).last()
-    is_no_longer_in_progress = (
-        "inprogress" not in todoist_task["todoist_label_list"]
+    in_progress_in_todoist = (
+        "inprogress" in todoist_task["todoist_label_list"]
     )
-    if in_progress_scrobble 
-        if is_no_longer_in_progress:
-            scrobble = todoist_scrobble_task_finish(todoist_task, user_id)
-        return in_progress_scrobble
+    if not in_progress_scrobble and not in_progress_in_todoist:
+        logger.info(
+            "[todoist_scrobble_task] no task in progress, and no inprogress label found",
+            extra={
+                "todoist_type": todoist_task["todoist_type"],
+                "todoist_event": todoist_task["todoist_event"],
+                "todoist_id": todoist_task["todoist_id"],
+            },
+        )
+        return 
+
+    if in_progress_scrobble and not in_progress_in_todoist:
+        scrobble = todoist_scrobble_task_finish(todoist_task, user_id)
+
+    # TODO this logic probably belongs in create_or_update
+    if in_progress_scrobble:
+        return scrobble
 
     # TODO Should use updated_at from TOdoist, but parsing isn't working
     scrobble_dict = {

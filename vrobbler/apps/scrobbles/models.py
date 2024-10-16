@@ -612,16 +612,14 @@ class Scrobble(TimeStampedModel):
 
     @property
     def logdata(self) -> Optional[logdata.JSONDataclass]:
-        if not self.media_obj.logdata_cls:
-            logger.warn(
-                f"Media type has no log data class, you should add one!",
-                extra={"media_type": self.media_type, "scrobble_id": self.id},
-            )
-            return None
+        if self.media_obj:
+            logdata_cls = self.media_obj.logdata_cls
+        else:
+            logdata_cls = logdata.ScrobbleLogData
 
         log_dict = self.log
         if isinstance(self.log, str):
-            # There's nothing stopping django from saving a string ina  JSONField :(
+            # There's nothing stopping django from saving a string in a JSONField :(
             logger.warning(
                 "[scrobbles] Received string in JSON data in log",
                 extra={"log": self.log},
@@ -631,7 +629,7 @@ class Scrobble(TimeStampedModel):
         if not log_dict:
             log_dict = {}
 
-        return self.media_obj.logdata_cls.from_dict(log_dict)
+        return logdata_cls.from_dict(log_dict)
 
     def redirect_url(self, user_id) -> str:
         user = User.objects.filter(id=user_id).first()

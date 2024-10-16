@@ -31,6 +31,10 @@ class JSONDataclass(JSONWizard):
         return json.dumps(self.asdict)
 
 
+@dataclass
+class ScrobbleLogData(JSONDataclass):
+    description: Optional[str] = None
+
 class LongPlayLogData(JSONDataclass):
     serial_scrobble_id: Optional[int]
     long_play_complete: bool = False

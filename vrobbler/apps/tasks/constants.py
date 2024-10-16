@@ -3,7 +3,7 @@ TODOIST_TITLE_SUFFIX_LABELS = [
     "bug",
     "project",
     "errand",
-    "chores",
+    "chore",
     "admin",
     "meeting",
     "habit",

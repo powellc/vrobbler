@@ -57,9 +57,6 @@ def todoist_webhook(request):
         .user_id
     )
     # TODO huge hack, find a way to populate user id from Todoist
-    if not user_id:
-        user_id = 1
-
     scrobble = todoist_scrobble_task(todoist_task, user_id)
 
     if not scrobble:
