@@ -12,6 +12,7 @@ from books.openlibrary import get_author_openlibrary_id
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from stream_sqlite import stream_sqlite
+from vrobbler.apps.books.constants import BOOKS_TITLES_TO_IGNORE
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -73,11 +74,9 @@ def lookup_or_create_authors_from_author_str(ko_author_str: str) -> list:
 
         author = Author.objects.filter(name=author_str).first()
         if not author:
-            author = Author.objects.create(
-                name=author_str,
-                openlibrary_id=get_author_openlibrary_id(author_str),
-            )
-            author.fix_metadata()
+            author = Author.objects.create(name=author_str)
+            # TODO Move these to async processes after importing
+            # author.fix_metadata()
             logger.debug(f"Created author {author}")
         author_list.append(author)
     return author_list
@@ -88,21 +87,27 @@ def create_book_from_row(row: list):
     author_str = get_author_str_from_row(row)
     total_pages = row[KoReaderBookColumn.PAGES.value]
     run_time = total_pages * Book.AVG_PAGE_READING_SECONDS
+    book_title = row[KoReaderBookColumn.TITLE.value]
+    if " - " in book_title:
+        book_title = book_title.split(" - ")[0]
+        if not author_str:
+            author_str = book_title.split(" - ")[1]
 
     book = Book.objects.create(
-        title=row[KoReaderBookColumn.TITLE.value],
+        title=book_title,
         pages=total_pages,
         koreader_data_by_hash={
             str(row[KoReaderBookColumn.MD5.value]): {
-                "title": row[KoReaderBookColumn.TITLE.value],
+                "title": book_title,
                 "author_str": author_str,
                 "book_id": row[KoReaderBookColumn.ID.value],
-                "pages": total_pages,
+                "raw_row_data": row,
             }
         },
         run_time_seconds=run_time,
     )
-    book.fix_metadata()
+    # TODO Move these to async processes after importing
+    # book.fix_metadata()
 
     # Add authors
     author_list = lookup_or_create_authors_from_author_str(author_str)
@@ -122,12 +127,11 @@ def build_book_map(rows) -> dict:
     book_id_map = {}
 
     for book_row in rows:
-        if (
-            book_row[KoReaderBookColumn.TITLE.value]
-            == "KOReader Quickstart Guide"
-        ):
+
+        if book_row[KoReaderBookColumn.TITLE.value] in BOOKS_TITLES_TO_IGNORE:
             logger.info(
-                "Ignoring the KOReader quickstart guide. No on wants that."
+                "[build_book_map] Ignoring book title that is likely garbage",
+                extra={"book_row": book_row, "media_type": "Book"},
             )
             continue
         book = Book.objects.filter(
@@ -135,6 +139,11 @@ def build_book_map(rows) -> dict:
                 KoReaderBookColumn.MD5.value
             ]
         ).first()
+
+        if not book:
+            book = Book.objects.filter(
+                title=book_row[KoReaderBookColumn.TITLE.value].split(" - ")[0]
+            ).first()
 
         if not book:
             book = create_book_from_row(book_row)
