@@ -283,6 +283,26 @@ def build_scrobbles_from_book_map(
                     )
                 ):
                     timezone = "Europe/Paris"
+                if (
+                    datetime(2024, 4, 28).replace(
+                        tzinfo=pytz.timezone("US/Pacific")
+                    )
+                    <= timestamp
+                    <= datetime(2024, 5, 4).replace(
+                        tzinfo=pytz.timezone("US/Pacific")
+                    )
+                ):
+                    timezone = "US/Pacific"
+                if (
+                    datetime(2024, 8, 4).replace(
+                        tzinfo=pytz.timezone("Canada/Atlantic")
+                    )
+                    <= timestamp
+                    <= datetime(2024, 8, 10).replace(
+                        tzinfo=pytz.timezone("Canada/Atlantic")
+                    )
+                ):
+                    timezone = "Canada/Atlantic"
 
                 stop_timestamp = datetime.fromtimestamp(
                     int(last_page.get("end_ts"))
@@ -326,10 +346,10 @@ def build_scrobbles_from_book_map(
                             timezone=timezone,
                         )
                     )
-                    # Then start over
-                    should_create_scrobble = False
-                    playback_position_seconds = 0
-                    scrobble_page_data = {}
+                # Then start over
+                should_create_scrobble = False
+                playback_position_seconds = 0
+                scrobble_page_data = {}
 
             # We accumulate pages for the scrobble until we should create a new one
             scrobble_page_data[cur_page_number] = stats
