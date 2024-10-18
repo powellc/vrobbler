@@ -41,11 +41,8 @@ def mopidy_scrobble_media(post_data: dict, user_id: int) -> Scrobble:
     if "podcast" in post_data.get("mopidy_uri", ""):
         media_type = Scrobble.MediaType.PODCAST_EPISODE
 
-    if settings.DUMP_REQUEST_DATA:
-        print("MOPIDY_DATA: ", post_data)
-
     logger.info(
-        "[scrobblers] webhook mopidy scrobble request received",
+        "[mopidy_webhook] called",
         extra={
             "user_id": user_id,
             "post_data": post_data,
@@ -82,18 +79,6 @@ def jellyfin_scrobble_media(
     media_type = Scrobble.MediaType.VIDEO
     if post_data.pop("ItemType", "") in JELLYFIN_AUDIO_ITEM_TYPES:
         media_type = Scrobble.MediaType.TRACK
-
-    if settings.DUMP_REQUEST_DATA:
-        print("JELLYFIN_DATA: ", post_data)
-
-    logger.info(
-        "[jellyfin_scrobble_media] called",
-        extra={
-            "user_id": user_id,
-            "post_data": post_data,
-            "media_type": media_type,
-        },
-    )
 
     null_position_on_progress = (
         post_data.get("PlaybackPosition") == "00:00:00"
@@ -265,7 +250,7 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
         "source": "Vrobbler",
     }
     logger.info(
-        "[webhook] board game scrobble request received",
+        "[vrobbler-scrobble] board game scrobble request received",
         extra={
             "boardgame_id": boardgame.id,
             "user_id": user_id,
@@ -420,7 +405,7 @@ def manual_scrobble_task(url: str, user_id: int):
         "log": {"description": description, "source_id": source_id},
     }
     logger.info(
-        "[webhook] webpage scrobble request received",
+        "[vrobbler-scrobble] webpage scrobble request received",
         extra={
             "task_id": task.id,
             "user_id": user_id,
@@ -442,7 +427,7 @@ def manual_scrobble_webpage(url: str, user_id: int):
         "source": "Vrobbler",
     }
     logger.info(
-        "[webhook] webpage scrobble request received",
+        "[vrobbler-scrobble] webpage scrobble request received",
         extra={
             "webpage_id": webpage.id,
             "user_id": user_id,
@@ -492,7 +477,7 @@ def gpslogger_scrobble_location(data_dict: dict, user_id: int) -> Scrobble:
 
     scrobble.save(update_fields=["log", "playback_position_seconds"])
     logger.info(
-        "[webhook] gpslogger scrobble request received",
+        "[gpslogger_webhook] gpslogger scrobble request received",
         extra={
             "scrobble_id": scrobble.id,
             "provider": provider,

@@ -322,7 +322,10 @@ def jellyfin_webhook(request):
     post_data = request.data
     logger.info(
         "[jellyfin_webhook] called",
-        extra={"post_data": post_data},
+        extra={
+            "post_data": post_data,
+            "user_id": request.user.id,
+        },
     )
 
     in_progress = post_data.get("NotificationType", "") == "PlaybackProgress"
@@ -357,6 +360,14 @@ def mopidy_webhook(request):
     except TypeError:
         data_dict = request.data
 
+    logger.info(
+        "[mopidy_webhook] called",
+        extra={
+            "post_data": data_dict,
+            "user_id": request.user.id,
+        },
+    )
+
     scrobble = mopidy_scrobble_media(data_dict, request.user.id)
 
     if not scrobble:
@@ -374,10 +385,13 @@ def gps_webhook(request):
     except TypeError:
         data_dict = request.data
 
-    # For making things easier to build new input processors
-    if getattr(settings, "DUMP_REQUEST_DATA", False):
-        json_data = json.dumps(data_dict, indent=4)
-        logger.debug(f"{json_data}")
+    logger.info(
+        "[geolocation_webhook] called",
+        extra={
+            "post_data": data_dict,
+            "user_id": 1,
+       }
+    )
 
     # TODO Fix this so we have to authenticate!
     user_id = 1
