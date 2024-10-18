@@ -89,12 +89,13 @@ def create_book_from_row(row: list):
     run_time = total_pages * Book.AVG_PAGE_READING_SECONDS
     book_title = row[KoReaderBookColumn.TITLE.value]
     if " - " in book_title:
-        book_title = book_title.split(" - ")[0]
-        if not author_str:
-            author_str = book_title.split(" - ")[1]
+        split_title = book_title.split(" - ")
+        book_title = split_title[0]
+        if (not author_str or author_str == "N/A") and len(split_title) > 1:
+            author_str = split_title[1].split("_")[0]
 
     book = Book.objects.create(
-        title=book_title,
+        title=book_title.replace("_", ":"),
         pages=total_pages,
         koreader_data_by_hash={
             str(row[KoReaderBookColumn.MD5.value]): {
@@ -142,7 +143,9 @@ def build_book_map(rows) -> dict:
 
         if not book:
             book = Book.objects.filter(
-                title=book_row[KoReaderBookColumn.TITLE.value].split(" - ")[0]
+                title=book_row[KoReaderBookColumn.TITLE.value]
+                .split(" - ")[0]
+                .lower()
             ).first()
 
         if not book:

@@ -101,10 +101,6 @@ class Book(LongPlayScrobblableMixin):
     title = models.CharField(max_length=255)
     authors = models.ManyToManyField(Author, blank=True)
     goodreads_id = models.CharField(max_length=255, **BNULL)
-    # All individual koreader fields are deprecated
-    koreader_id = models.IntegerField(**BNULL)
-    koreader_authors = models.CharField(max_length=255, **BNULL)
-    koreader_md5 = models.CharField(max_length=255, **BNULL)
     koreader_data_by_hash = models.JSONField(**BNULL)
     isbn = models.CharField(max_length=255, **BNULL)
     pages = models.IntegerField(**BNULL)
