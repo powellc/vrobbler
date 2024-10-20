@@ -35,6 +35,11 @@ class UserProfile(TimeStampedModel):
     todoist_state = EncryptedField(**BNULL)
     todoist_user_id = models.CharField(max_length=100, **BNULL)
 
+    webdav_url = models.CharField(max_length=255, **BNULL)
+    webdav_user = models.CharField(max_length=255, **BNULL)
+    webdav_pass = EncryptedField(**BNULL)
+    webdav_auto_import = models.BooleanField(default=False)
+
     redirect_to_webpage = models.BooleanField(default=True)
 
     def __str__(self):
