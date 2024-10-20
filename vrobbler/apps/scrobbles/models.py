@@ -571,6 +571,12 @@ class Scrobble(TimeStampedModel):
     long_play_seconds = models.BigIntegerField(**BNULL)
     long_play_complete = models.BooleanField(**BNULL)
 
+    @property
+    def last_serial_scrobble(self) -> Optional["Scrobble"]:
+        from scrobbles.models import Scrobble
+        if self.logdata and self.logdata.serial_scrobble_id:
+            return Scrobble.objects.filter(id=self.logdata.serial_scrobble_id).first()
+
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid4()
