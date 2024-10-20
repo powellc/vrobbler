@@ -31,17 +31,16 @@ def todoist_webhook(request):
         "todoist_label_list": event_data.get("labels"),
         "todoist_type": todoist_type,
         "todoist_event": todoist_event,
+        "updated_at": event_data.get("updated_at"),
         "todoist_project_id": event_data.get("project_id"),
         "description": event_data.get("content"),
         "details": event_data.get("description"),
     }
 
-    if todoist_task["todoist_type"] != "item" or todoist_task[
-        "todoist_event"
-    ] not in [
-        "updated",
-        "completed",
-    ]:
+    is_not_item_type = todoist_task["todoist_type"] != "item"
+    is_not_updated = todoist_task["todoist_event"] not in ["updated"]
+
+    if is_not_item_type or is_not_updated:
         logger.info(
             "[todoist_webhook] ignoring wrong todoist type or event",
             extra={

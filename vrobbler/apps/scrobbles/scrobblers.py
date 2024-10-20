@@ -339,6 +339,7 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
 
     task = Task.find_or_create(title)
 
+    timestamp = pendulum.parse(todoist_task.get("updated_at", timezone.now()))
     in_progress_scrobble = Scrobble.objects.filter(
         in_progress=True,
         log__todoist_id=todoist_task.get("todoist_id"),
@@ -347,9 +348,10 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
     in_progress_in_todoist = (
         "inprogress" in todoist_task["todoist_label_list"]
     )
+    # We need either an in-progress scrobble OR an in-progress todoist task
     if not in_progress_scrobble and not in_progress_in_todoist:
         logger.info(
-            "[todoist_scrobble_task] no task in progress, and no inprogress label found",
+            "[todoist_scrobble_task] noop",
             extra={
                 "todoist_type": todoist_task["todoist_type"],
                 "todoist_event": todoist_task["todoist_event"],
@@ -358,24 +360,43 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
         )
         return 
 
+    # Finish an in-progress scrobble
     if in_progress_scrobble and not in_progress_in_todoist:
-        scrobble = todoist_scrobble_task_finish(todoist_task, user_id)
+        logger.info(
+            "[todoist_scrobble_task] finishing",
+            extra={
+                "todoist_type": todoist_task["todoist_type"],
+                "todoist_event": todoist_task["todoist_event"],
+                "todoist_id": todoist_task["todoist_id"],
+            },
+        )
+        return todoist_scrobble_task_finish(todoist_task, user_id)
 
-    # TODO this logic probably belongs in create_or_update
+    # Ignore an already in progress scrobble
     if in_progress_scrobble:
-        return scrobble
+        logger.info(
+            "[todoist_scrobble_task] continuing",
+            extra={
+                "todoist_type": todoist_task["todoist_type"],
+                "todoist_event": todoist_task["todoist_event"],
+                "todoist_id": todoist_task["todoist_id"],
+                "scrobble_id": in_progress_scrobble.id,
+            },
+        )
+        return in_progress_scrobble
 
+    # Default to create new scrobble "if not in_progress_scrobble and in_progress_in_todoist"
     # TODO Should use updated_at from TOdoist, but parsing isn't working
     scrobble_dict = {
         "user_id": user_id,
-        "timestamp": timezone.now(),
+        "timestamp": timestamp,
         "playback_position_seconds": 0,
         "source": "Todoist",
         "log": todoist_task,
     }
 
     logger.info(
-        "[todoist_scrobble_task] task scrobble request received",
+        "[todoist_scrobble_task] creating",
         extra={
             "task_id": task.id,
             "user_id": user_id,
