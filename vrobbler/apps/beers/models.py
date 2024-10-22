@@ -10,6 +10,10 @@ from scrobbles.mixins import ScrobblableMixin
 BNULL = {"blank": True, "null": True}
 
 
+class BeerStyle(TimeStampedModel):
+    description = models.TextField(**BNULL)
+
+
 class BeerProducer(TimeStampedModel):
     description = models.TextField(**BNULL)
     location = models.CharField(max_length=255, **BNULL)
@@ -24,7 +28,7 @@ class Beer(ScrobblableMixin):
     description = models.TextField(**BNULL)
     ibu = models.SmallIntegerField(**BNULL)
     abv = models.FloatField(**BNULL)
-    style = models.CharField(max_length=100, **BNULL)
+    styles = models.ManyToManyField(BeerStyle)
     non_alcoholic = models.BooleanField(default=False)
     beeradvocate_id = models.CharField(max_length=255, **BNULL)
     beeradvocate_score = models.SmallIntegerField(**BNULL)

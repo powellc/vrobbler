@@ -1,7 +1,5 @@
+from beers.models import Beer, BeerProducer, BeerStyle
 from django.contrib import admin
-
-from beers.models import Beer
-
 from scrobbles.admin import ScrobbleInline
 
 
@@ -10,10 +8,15 @@ class BeerInline(admin.TabularInline):
     extra = 0
 
 
-@admin.register(Beer)
+@admin.register(BeerStyle)
+class BeerStyle(admin.ModelAdmin):
+    date_hierarchy = "created"
+    search_fields = ("name",)
+
+
+@admin.register(BeerProducer)
 class BeerProducer(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("uuid",)
     search_fields = ("name",)
 
 
@@ -23,7 +26,6 @@ class BeerAdmin(admin.ModelAdmin):
     list_display = (
         "uuid",
         "title",
-        "style",
     )
     ordering = ("-created",)
     search_fields = ("title",)
