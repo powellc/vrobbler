@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
@@ -11,10 +13,14 @@ BNULL = {"blank": True, "null": True}
 
 
 class BeerStyle(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+    name = models.CharField(max_length=255)
     description = models.TextField(**BNULL)
 
 
 class BeerProducer(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+    name = models.CharField(max_length=255)
     description = models.TextField(**BNULL)
     location = models.CharField(max_length=255, **BNULL)
     beeradvocate_id = models.CharField(max_length=255, **BNULL)
@@ -28,7 +34,7 @@ class Beer(ScrobblableMixin):
     description = models.TextField(**BNULL)
     ibu = models.SmallIntegerField(**BNULL)
     abv = models.FloatField(**BNULL)
-    styles = models.ManyToManyField(BeerStyle)
+    styles = models.ManyToManyField(BeerStyle, related_name="styles")
     non_alcoholic = models.BooleanField(default=False)
     beeradvocate_id = models.CharField(max_length=255, **BNULL)
     beeradvocate_score = models.SmallIntegerField(**BNULL)
