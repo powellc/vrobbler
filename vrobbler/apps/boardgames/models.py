@@ -112,9 +112,6 @@ class BoardGame(ScrobblableMixin):
             link = f"https://boardgamegeek.com/boardgame/{self.bggeek_id}"
         return link
 
-    def get_start_url(self):
-        return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
-
     def fix_metadata(self, data: dict = {}, force_update=False) -> None:
 
         if not self.published_date or force_update:
