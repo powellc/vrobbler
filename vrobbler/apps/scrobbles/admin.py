@@ -27,6 +27,7 @@ class ScrobbleInline(admin.TabularInline):
         "mood",
         "brickset",
         "trail",
+        "beer",
         "web_page",
         "life_event",
         "user",
@@ -123,6 +124,7 @@ class ScrobbleAdmin(admin.ModelAdmin):
         "mood",
         "brickset",
         "trail",
+        "beer",
         "web_page",
         "life_event",
     )

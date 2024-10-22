@@ -912,6 +912,8 @@ class Scrobble(TimeStampedModel):
             media_obj = self.brickset
         if self.trail:
             media_obj = self.trail
+        if self.beer:
+            media_obj = self.beer
         if self.task:
             media_obj = self.task
         return media_obj
