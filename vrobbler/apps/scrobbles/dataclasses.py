@@ -35,6 +35,7 @@ class JSONDataclass(JSONWizard):
 class ScrobbleLogData(JSONDataclass):
     description: Optional[str] = None
 
+
 class LongPlayLogData(JSONDataclass):
     serial_scrobble_id: Optional[int]
     long_play_complete: bool = False
@@ -193,3 +194,12 @@ class TrailLogData(WithOthersLogData):
     details: Optional[str] = None
     effort: Optional[str] = None
     difficulty: Optional[str] = None
+
+
+@dataclass
+class BeerLogData(WithOthersLogData):
+    with_user_ids: Optional[list[int]] = None
+    with_names_str: Optional[list[str]] = None
+    details: Optional[str] = None
+    rating: Optional[str] = None
+    notes: Optional[str] = None

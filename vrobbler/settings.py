@@ -130,6 +130,7 @@ INSTALLED_APPS = [
     "webpages",
     "tasks",
     "trails",
+    "beers",
     "lifeevents",
     "moods",
     "mathfilters",

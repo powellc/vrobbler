@@ -17,6 +17,7 @@ PLAY_AGAIN_MEDIA = {
     "moods": "Mood",
     "bricksets": "BrickSet",
     "trails": "Trail",
+    "beers": "Beer",
 }
 
 MEDIA_END_PADDING_SECONDS = {

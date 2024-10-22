@@ -1,0 +1,23 @@
+{% extends "base_list.html" %}
+
+{% block title %}Beers{% endblock %}
+
+{% block head_extra %}
+<style>
+ dl { width: 210px; float:left; margin-right: 10px; }
+ dt a { color:white; text-decoration: none; font-size:smaller; }
+ img { height:200px; width: 200px; object-fit: cover; }
+ dd .right { float:right; }
+</style>
+{% endblock  %}
+
+{% block lists %}
+<div class="row">
+
+    <div class="col-md">
+        <div class="table-responsive">
+            {% include "_scrobblable_list.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

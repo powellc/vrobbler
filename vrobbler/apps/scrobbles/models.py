@@ -39,6 +39,7 @@ from scrobbles.stats import build_charts
 from scrobbles.utils import media_class_to_foreign_key
 from sports.models import SportEvent
 from tasks.models import Task
+from beers.models import Beer
 from trails.models import Trail
 from videogames import retroarch
 from videogames.models import VideoGame
@@ -486,6 +487,7 @@ class Scrobble(TimeStampedModel):
         BOARD_GAME = "BoardGame", "Board game"
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         TRAIL = "Trail", "Trail"
+        BEER = "Beer", "Beer"
         TASK = "Task", "Task"
         WEBPAGE = "WebPage", "Web Page"
         LIFE_EVENT = "LifeEvent", "Life event"
@@ -511,6 +513,7 @@ class Scrobble(TimeStampedModel):
     geo_location = models.ForeignKey(
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
+    beer = models.ForeignKey(Beer, on_delete=models.DO_NOTHING, **BNULL)
     trail = models.ForeignKey(Trail, on_delete=models.DO_NOTHING, **BNULL)
     task = models.ForeignKey(Task, on_delete=models.DO_NOTHING, **BNULL)
     web_page = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)
@@ -574,8 +577,11 @@ class Scrobble(TimeStampedModel):
     @property
     def last_serial_scrobble(self) -> Optional["Scrobble"]:
         from scrobbles.models import Scrobble
+
         if self.logdata and self.logdata.serial_scrobble_id:
-            return Scrobble.objects.filter(id=self.logdata.serial_scrobble_id).first()
+            return Scrobble.objects.filter(
+                id=self.logdata.serial_scrobble_id
+            ).first()
 
     def save(self, *args, **kwargs):
         if not self.uuid:
