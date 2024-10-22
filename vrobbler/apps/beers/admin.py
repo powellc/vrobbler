@@ -11,6 +11,13 @@ class BeerInline(admin.TabularInline):
 
 
 @admin.register(Beer)
+class BeerProducer(admin.ModelAdmin):
+    date_hierarchy = "created"
+    list_display = ("uuid",)
+    search_fields = ("name",)
+
+
+@admin.register(Beer)
 class BeerAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (

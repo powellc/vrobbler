@@ -14,6 +14,7 @@ class BeerProducer(TimeStampedModel):
     description = models.TextField(**BNULL)
     location = models.CharField(max_length=255, **BNULL)
     beeradvocate_id = models.CharField(max_length=255, **BNULL)
+    untappd_id = models.CharField(max_length=255, **BNULL)
 
     def find_or_create(cls, title: str) -> "BeerProducer":
         return cls.objects.filter(title=title).first()
@@ -27,22 +28,21 @@ class Beer(ScrobblableMixin):
     non_alcoholic = models.BooleanField(default=False)
     beeradvocate_id = models.CharField(max_length=255, **BNULL)
     beeradvocate_score = models.SmallIntegerField(**BNULL)
-    beeradvocate_image = models.ImageField(
-        upload_to="beers/beeradvcoate/", **BNULL
-    )
-    beeradvocate_image_small = ImageSpecField(
-        source="cover",
+    untappd_image = models.ImageField(upload_to="beers/untappd/", **BNULL)
+    untappd_image_small = ImageSpecField(
+        source="untappd_image",
         processors=[ResizeToFit(100, 100)],
         format="JPEG",
         options={"quality": 60},
     )
-    beeradvocate_image_medium = ImageSpecField(
-        source="cover",
+    untappd_image_medium = ImageSpecField(
+        source="untappd_image",
         processors=[ResizeToFit(300, 300)],
         format="JPEG",
         options={"quality": 75},
     )
     untappd_id = models.CharField(max_length=255, **BNULL)
+    untappd_rating = models.FloatField(**BNULL)
     producer = models.ForeignKey(
         BeerProducer, on_delete=models.DO_NOTHING, **BNULL
     )
