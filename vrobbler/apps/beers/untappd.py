@@ -32,7 +32,7 @@ def get_title_from_soup(soup) -> str:
 def get_description_from_soup(soup) -> str:
     desc = ""
     try:
-        desc = soup.find(class_="beer-description-read-less").get_text()
+        desc = soup.find(class_="beer-descrption-read-less").get_text()
     except AttributeError:
         pass
     except ValueError:
