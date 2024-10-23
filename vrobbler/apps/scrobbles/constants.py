@@ -30,8 +30,7 @@ SCROBBLE_CONTENT_URLS = {
     "-i": "https://www.imdb.com/title/",
     "-s": "https://www.thesportsdb.com/event/",
     "-g": "https://boardgamegeek.com/boardgame/",
-    "-ba": "https://beeradvocate.com/beer/profile/{producer_id}/{id}/",
-    "-u": "https://untappd.com/beer/{id}",
+    "-u": "https://untappd.com/",
     "-b": "https://www.amazon.com/",
     "-t": "https://app.todoist.com/app/task/{id}",
 }
@@ -44,7 +43,7 @@ MANUAL_SCROBBLE_FNS = {
     "-s": "manual_scrobble_event",
     "-i": "manual_scrobble_video",
     "-g": "manual_scrobble_board_game",
-    "-d": "manual_scrobble_beer",
+    "-u": "manual_scrobble_beer",
     "-w": "manual_scrobble_webpage",
     "-t": "manual_scrobble_task",
 }
