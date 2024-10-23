@@ -30,7 +30,8 @@ SCROBBLE_CONTENT_URLS = {
     "-i": "https://www.imdb.com/title/",
     "-s": "https://www.thesportsdb.com/event/",
     "-g": "https://boardgamegeek.com/boardgame/",
-    "-d": "https://beeradvocate.com/beer/profile/",
+    "-ba": "https://beeradvocate.com/beer/profile/{producer_id}/{id}/",
+    "-u": "https://untappd.com/beer/{id}",
     "-b": "https://www.amazon.com/",
     "-t": "https://app.todoist.com/app/task/{id}",
 }

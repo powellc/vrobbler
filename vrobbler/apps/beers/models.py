@@ -57,13 +57,19 @@ class Beer(ScrobblableMixin):
         BeerProducer, on_delete=models.DO_NOTHING, **BNULL
     )
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         return reverse("beers:beer_detail", kwargs={"slug": self.uuid})
 
     def beeradvocate_link(self):
+        if self.producer and self.beeradvocate_id:
+            if self.beeradvocate_id:
+                link = f"https://www.beeradvocate.com/beer/profile/{self.producer.beeradvocate_id}/{self.beeradvocate_id}/"
+        return link
+
+    def untappd_link(self) -> str:
         link = ""
-        if self.beeradvocate_id and self.producer:
-            link = f"https://www.beeradvocate.com/beer/profile/{self.producer.beeradvocate_id}/{self.beeradvocate_id}/"
+        if self.untappd_id:
+            link = f"https://www.untappd.com/beer/{self.untappd_id}/"
         return link
 
     def primary_image_url(self) -> str:
@@ -77,8 +83,8 @@ class Beer(ScrobblableMixin):
         return BeerLogData
 
     @classmethod
-    def find_or_create(cls, title: str) -> "Beer":
-        return cls.objects.filter(title=title).first()
+    def find_or_create(cls, untappd_id: str) -> "Beer":
+        return cls.objects.filter(untappd_id=untappd_id).first()
 
     def scrobbles(self, user_id):
         Scrobble = apps.get_model("scrobbles", "Scrobble")

@@ -1,9 +1,10 @@
-import re
 import logging
+import re
 from typing import Optional
 
 import pendulum
 import pytz
+from beers.models import Beer
 from boardgames.models import BoardGame
 from books.models import Book
 from dateutil.parser import parse
@@ -15,23 +16,24 @@ from music.constants import JELLYFIN_POST_KEYS, MOPIDY_POST_KEYS
 from music.models import Track
 from music.utils import get_or_create_track
 from podcasts.utils import get_or_create_podcast
-from scrobbles.constants import JELLYFIN_AUDIO_ITEM_TYPES
-from scrobbles.models import Scrobble
-from sports.models import SportEvent
-from sports.thesportsdb import lookup_event_from_thesportsdb
-from videogames.howlongtobeat import lookup_game_from_hltb
-from videogames.models import VideoGame
-from videos.models import Video
 from scrobbles.constants import (
+    JELLYFIN_AUDIO_ITEM_TYPES,
     MANUAL_SCROBBLE_FNS,
     SCROBBLE_CONTENT_URLS,
 )
+from scrobbles.models import Scrobble
+from sports.models import SportEvent
+from sports.thesportsdb import lookup_event_from_thesportsdb
 from tasks.models import Task
+from videogames.howlongtobeat import lookup_game_from_hltb
+from videogames.models import VideoGame
+from videos.models import Video
+from webpages.models import WebPage
+
 from vrobbler.apps.tasks.constants import (
     TODOIST_TITLE_PREFIX_LABELS,
     TODOIST_TITLE_SUFFIX_LABELS,
 )
-from webpages.models import WebPage
 
 logger = logging.getLogger(__name__)
 
@@ -345,9 +347,7 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
         log__todoist_id=todoist_task.get("todoist_id"),
         task=task,
     ).last()
-    in_progress_in_todoist = (
-        "inprogress" in todoist_task["todoist_label_list"]
-    )
+    in_progress_in_todoist = "inprogress" in todoist_task["todoist_label_list"]
     # We need either an in-progress scrobble OR an in-progress todoist task
     if not in_progress_scrobble and not in_progress_in_todoist:
         logger.info(
@@ -358,7 +358,7 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
                 "todoist_id": todoist_task["todoist_id"],
             },
         )
-        return 
+        return
 
     # Finish an in-progress scrobble
     if in_progress_scrobble and not in_progress_in_todoist:
@@ -556,3 +556,30 @@ def web_scrobbler_scrobble_video_or_song(
     if episode:
         scrobble = Scrobble.create_or_update(episode, user_id, mopidy_data)
     return scrobble
+
+
+def manual_scrobble_beer(untappd_id: str, user_id: int):
+    beer = Beer.find_or_create(untappd_id)
+
+    if not beer:
+        logger.error(f"No beer found for Untappd ID {untappd_id}")
+        return
+
+    scrobble_dict = {
+        "user_id": user_id,
+        "timestamp": timezone.now(),
+        "playback_position_seconds": 0,
+        "source": "Vrobbler",
+    }
+    logger.info(
+        "[vrobbler-scrobble] beer scrobble request received",
+        extra={
+            "beer_id": beer.id,
+            "user_id": user_id,
+            "scrobble_dict": scrobble_dict,
+            "media_type": Scrobble.MediaType.BEER,
+        },
+    )
+
+    # TODO Kick out a process to enrich the media here, and in every scrobble event
+    return Scrobble.create_or_update(beer, user_id, scrobble_dict)
