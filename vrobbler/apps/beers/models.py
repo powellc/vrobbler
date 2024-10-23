@@ -8,6 +8,10 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from scrobbles.dataclasses import BeerLogData
 from scrobbles.mixins import ScrobblableMixin
+from vrobbler.apps.beers.untappd import (
+    get_beer_from_untappd_id,
+    get_rating_from_soup,
+)
 
 BNULL = {"blank": True, "null": True}
 
@@ -16,6 +20,9 @@ class BeerStyle(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
     description = models.TextField(**BNULL)
+
+    def __str__(self):
+        return self.name
 
 
 class BeerProducer(TimeStampedModel):
@@ -28,6 +35,9 @@ class BeerProducer(TimeStampedModel):
 
     def find_or_create(cls, title: str) -> "BeerProducer":
         return cls.objects.filter(title=title).first()
+
+    def __str__(self):
+        return self.name
 
 
 class Beer(ScrobblableMixin):
@@ -60,7 +70,8 @@ class Beer(ScrobblableMixin):
     def get_absolute_url(self) -> str:
         return reverse("beers:beer_detail", kwargs={"slug": self.uuid})
 
-    def beeradvocate_link(self):
+    def beeradvocate_link(self) -> str:
+        link = ""
         if self.producer and self.beeradvocate_id:
             if self.beeradvocate_id:
                 link = f"https://www.beeradvocate.com/beer/profile/{self.producer.beeradvocate_id}/{self.beeradvocate_id}/"
@@ -74,8 +85,8 @@ class Beer(ScrobblableMixin):
 
     def primary_image_url(self) -> str:
         url = ""
-        if self.beeradvocate_image:
-            url = self.beeradvocate_image.url
+        if self.untappd_image:
+            url = self.untappd_image.url
         return url
 
     @property
@@ -84,7 +95,32 @@ class Beer(ScrobblableMixin):
 
     @classmethod
     def find_or_create(cls, untappd_id: str) -> "Beer":
-        return cls.objects.filter(untappd_id=untappd_id).first()
+        beer = cls.objects.filter(untappd_id=untappd_id).first()
+
+        if not beer:
+            beer_dict = get_beer_from_untappd_id(untappd_id)
+            producer_dict = {}
+            style_ids = []
+            for key in list(beer_dict.keys()):
+                if "producer__" in key:
+                    pkey = key.replace("producer__", "")
+                    producer_dict[pkey] = beer_dict.pop(key)
+                if "styles" in key:
+                    for style in beer_dict.pop("styles"):
+                        style_inst, created = BeerStyle.objects.get_or_create(
+                            name=style
+                        )
+                        style_ids.append(style_inst.id)
+
+            producer, _created = BeerProducer.objects.get_or_create(
+                **producer_dict
+            )
+            beer_dict["producer_id"] = producer.id
+            beer = Beer.objects.create(**beer_dict)
+            for style_id in style_ids:
+                beer.styles.add(style_id)
+
+        return beer
 
     def scrobbles(self, user_id):
         Scrobble = apps.get_model("scrobbles", "Scrobble")

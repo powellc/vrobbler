@@ -221,7 +221,7 @@ class WebPage(ScrobblableMixin):
             self.save()
 
     @classmethod
-    def find_or_create(cls, data_dict: Dict) -> "GeoLocation":
+    def find_or_create(cls, data_dict: Dict) -> "WebPage":
         """Given a data dict from an manual URL scrobble, does the heavy lifting of looking up
         the url, creating if if doesn't exist yet.
 
