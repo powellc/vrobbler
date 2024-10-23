@@ -70,6 +70,11 @@ class Beer(ScrobblableMixin):
     def get_absolute_url(self) -> str:
         return reverse("beers:beer_detail", kwargs={"slug": self.uuid})
 
+    @property
+    def subtitle(self):
+        return self.producer.name
+
+    @property
     def beeradvocate_link(self) -> str:
         link = ""
         if self.producer and self.beeradvocate_id:
@@ -77,12 +82,14 @@ class Beer(ScrobblableMixin):
                 link = f"https://www.beeradvocate.com/beer/profile/{self.producer.beeradvocate_id}/{self.beeradvocate_id}/"
         return link
 
+    @property
     def untappd_link(self) -> str:
         link = ""
         if self.untappd_id:
             link = f"https://www.untappd.com/beer/{self.untappd_id}/"
         return link
 
+    @property
     def primary_image_url(self) -> str:
         url = ""
         if self.untappd_image:
