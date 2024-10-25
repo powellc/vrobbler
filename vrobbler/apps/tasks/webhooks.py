@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from scrobbles.scrobblers import (
     todoist_scrobble_task,
     todoist_scrobble_task_finish,
+    todoist_scrobble_update_task,
 )
 from profiles.models import UserProfile
 
@@ -24,25 +25,44 @@ def todoist_webhook(request):
         "[todoist_webhook] called",
         extra={"post_data": post_data},
     )
+    todoist_task = {}
+    todoist_note = {}
     todoist_type, todoist_event = post_data.get("event_name").split(":")
     event_data = post_data.get("event_data", {})
-    todoist_task = {
-        "todoist_id": event_data.get("id"),
-        "todoist_label_list": event_data.get("labels"),
-        "todoist_type": todoist_type,
-        "todoist_event": todoist_event,
-        "updated_at": event_data.get("updated_at"),
-        "todoist_project_id": event_data.get("project_id"),
-        "description": event_data.get("content"),
-        "details": event_data.get("description"),
-    }
+    is_item_type = todoist_type == "item"
+    is_note_type = todoist_type == "note"
 
-    is_not_item_type = todoist_task["todoist_type"] != "item"
-    is_not_updated = todoist_task["todoist_event"] not in ["updated"]
+    is_updated = todoist_event == ["updated"]
+    is_added = todoist_event == ["added"]
 
-    if is_not_item_type or is_not_updated:
+    if is_item_type:
+        todoist_task = {
+            "todoist_id": event_data.get("id"),
+            "todoist_label_list": event_data.get("labels"),
+            "todoist_type": todoist_type,
+            "todoist_event": todoist_event,
+            "updated_at": event_data.get("updated_at"),
+            "todoist_project_id": event_data.get("project_id"),
+            "description": event_data.get("content"),
+            "details": event_data.get("description"),
+        }
+    if is_note_type:
+        task_data = event_data.get("item", {})
+        todoist_note = {
+            "todoist_id": task_data.get("id"),
+            "todoist_label_list": task_data.get("labels"),
+            "todoist_type": todoist_type,
+            "todoist_event": todoist_event,
+            "updated_at": task_data.get("updated_at"),
+            "details": task_data.get("description"),
+            "notes": event_data.get("content"),
+            "is_deleted": True
+            if event_data.get("is_deleted") == "true"
+            else False,
+        }
+    else:
         logger.info(
-            "[todoist_webhook] ignoring wrong todoist type or event",
+            "[todoist_webhook] ignoring wrong todoist type",
             extra={
                 "todoist_type": todoist_task["todoist_type"],
                 "todoist_event": todoist_task["todoist_event"],
@@ -55,13 +75,17 @@ def todoist_webhook(request):
         .first()
         .user_id
     )
-    # TODO huge hack, find a way to populate user id from Todoist
-    scrobble = todoist_scrobble_task(todoist_task, user_id)
+
+    if todoist_task and todoist_event == "updated":
+        scrobble = todoist_scrobble_task(todoist_task, user_id)
+
+    if todoist_note and todoist_event == "added":
+        scrobble = todoist_scrobble_update_task(todoist_note, user_id)
 
     if not scrobble:
         return Response(
             {"error": "No scrobble found to be updated"},
-            status=status.HTTP_400_BAD_REQUEST,
+            status=status.HTTP_304_NOT_MODIFIED,
         )
 
     logger.info(

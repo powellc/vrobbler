@@ -30,17 +30,10 @@ def get_todoist_access_token(user_id: int, state: str, code: str):
         "[get_todoist_access_token] called",
         extra={"state": state, "code": code},
     )
-    user_profile = UserProfile.objects.filter(user_id=user_id).first()
+    user_profile = UserProfile.objects.filter(todoist_state=state).first()
 
     if not user_profile:
-        raise Exception
-
-    if user_profile.todoist_state != state:
-        logger.info(
-            "[get_todoist_access_token] state mismatch",
-            extra={"user_id": user_id, "state": state},
-        )
-        raise Exception
+        raise Exception("Could not find profile")
 
     post_data = {
         "client_id": settings.TODOIST_CLIENT_ID,

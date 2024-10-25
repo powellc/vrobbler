@@ -321,6 +321,34 @@ def todoist_scrobble_task_finish(
     return scrobble
 
 
+def todoist_scrobble_update_task(
+    todoist_note: dict, user_id: int
+) -> Optional[Scrobble]:
+    scrobble = Scrobble.objects.filter(
+        in_progress=True,
+        user_id=user_id,
+        log__task_id=todoist_note.get("task_id"),
+    ).first()
+
+    if scrobble:
+        existing_notes = scrobble.log.get("notes", {})
+        existing_notes[todoist_note.get("todoist_id")] = todoist_note.get(
+            "content"
+        )
+        scrobble.log["notes"] = existing_notes
+        scrobble.save(update_fields=["log"])
+        logger.info(
+            "[todoist_scrobble_update_task] todoist note added",
+            extra={
+                "todoist_note": todoist_note,
+                "user_id": user_id,
+                "media_type": Scrobble.MediaType.TASK,
+            },
+        )
+
+    return scrobble
+
+
 def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
 
     prefix = ""

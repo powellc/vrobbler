@@ -24,6 +24,7 @@ class TaskLogData(LongPlayLogData):
     serial_scrobble_id: Optional[int] = None
     long_play_complete: Optional[bool] = None
     timestamp_utc: Optional[datetime] = None
+    notes: Optional[list[dict]] = None
 
 
 class Task(LongPlayScrobblableMixin):
