@@ -301,18 +301,15 @@ def todoist_scrobble_task_finish(
     todoist_task: dict, user_id: int
 ) -> Optional[Scrobble]:
     scrobble = Scrobble.objects.filter(
-        user_id=user_id, log__todoist_id=todoist_task.get("todoist_id")
+        user_id=user_id,
+        log__todoist_id=todoist_task.get("todoist_id"),
+        in_progress=True,
+        played_to_completion=False,
     ).first()
 
     if not scrobble:
         logger.info(
             "[todoist_scrobble_task_finish] todoist webhook finish called on missing task"
-        )
-        return
-
-    if not scrobble.in_progress or scrobble.played_to_completion:
-        logger.info(
-            "[todoist_scrobble_task_finish] todoist webhook finish called on finished task"
         )
         return
 

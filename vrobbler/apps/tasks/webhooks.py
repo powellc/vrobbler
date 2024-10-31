@@ -31,9 +31,19 @@ def todoist_webhook(request):
     event_data = post_data.get("event_data", {})
     is_item_type = todoist_type == "item"
     is_note_type = todoist_type == "note"
-
-    is_updated = todoist_event == ["updated"]
-    is_added = todoist_event == ["added"]
+    new_labels = event_data.get("labels")
+    old_labels = (
+        post_data.get("event_data_extra", {})
+        .get("old_item", {})
+        .get("labels", [])
+    )
+    # TODO Don't hard code status strings in here
+    is_updated = (
+        todoist_event in ["updated"]
+        and "inprogress" in new_labels
+        and "inprogress" not in old_labels
+    )
+    is_added = todoist_event in ["added"]
 
     if is_item_type:
         todoist_task = {
@@ -70,16 +80,26 @@ def todoist_webhook(request):
         )
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
 
+    if is_item_type and new_labels == old_labels:
+        logger.info(
+            "[todoist_webhook] ignoring item, labels unchanged",
+            extra={
+                "todoist_type": todoist_task["todoist_type"],
+                "todoist_event": todoist_task["todoist_event"],
+            },
+        )
+        return Response({}, status=status.HTTP_304_NOT_MODIFIED)
+
     user_id = (
         UserProfile.objects.filter(todoist_user_id=post_data.get("user_id"))
         .first()
         .user_id
     )
 
-    if todoist_task and todoist_event == "updated":
+    if todoist_task and is_updated:
         scrobble = todoist_scrobble_task(todoist_task, user_id)
 
-    if todoist_note and todoist_event == "added":
+    if todoist_note and is_added:
         scrobble = todoist_scrobble_update_task(todoist_note, user_id)
 
     if not scrobble:
