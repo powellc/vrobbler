@@ -296,7 +296,7 @@
                                 {% if scrobble.media_obj.primary_image_url %}<div style="float:left;padding-right:10px;padding-bottom:10px;"><img src="{{scrobble.media_obj.primary_image_url}}" /></div>{% endif %}
                                 <p><a href="{{scrobble.media_obj.get_absolute_url}}">{{scrobble.media_obj.title}}</a></p>
                                 {% if scrobble.media_obj.subtitle %}<p><em><a href="{{scrobble.media_obj.subtitle.get_absolute_url}}">{{scrobble.media_obj.subtitle}}</a></em></p>{% endif %}
-                                {% if scrobble.logdata.description %}<p><em>{{scrobble.logdata.description}}</em></p>{% endif %}
+                                {% if scrobble.logdata %}{% if scrobble.logdata.description %}<p><em>{{scrobble.logdata.description}}</em></p>{% endif %}{% endif %}
                                 <p><small>{{scrobble.timestamp|naturaltime}} from {{scrobble.source}}</small></p>
                                 <div class="progress-bar" style="margin-right:5px;">
                                     <span class="progress-bar-fill" style="width: {{scrobble.percent_played}}%;"></span>
