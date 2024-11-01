@@ -38,9 +38,9 @@ class Task(LongPlayScrobblableMixin):
     def get_absolute_url(self):
         return reverse("tasks:task_detail", kwargs={"slug": self.uuid})
 
-    @property
-    def logdata_cls(self):
-        return TaskLogData
+    # @property
+    # def logdata_cls(self):
+    #    return TaskLogData
 
     def source_url_for_user(self, user_id) -> str:
         url = ""
