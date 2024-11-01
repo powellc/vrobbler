@@ -8,7 +8,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from scrobbles.scrobblers import (
     todoist_scrobble_task,
-    todoist_scrobble_task_finish,
     todoist_scrobble_update_task,
 )
 from profiles.models import UserProfile
@@ -38,14 +37,16 @@ def todoist_webhook(request):
         .get("labels", [])
     )
     # TODO Don't hard code status strings in here
-    is_updated = (
-        todoist_event in ["updated"]
-        and "inprogress" in new_labels
-        and "inprogress" not in old_labels
-    )
+    is_updated = todoist_event in ["updated"]
     is_added = todoist_event in ["added"]
 
-    if is_item_type and is_updated:
+    state_changed = False
+    if ("inprogress" in new_labels and "inprogress" not in old_labels) or (
+        "inprogress" not in new_labels and "inprogress" in old_labels
+    ):
+        state_changed = True
+
+    if is_item_type and is_updated and state_changed:
         todoist_task = {
             "todoist_id": event_data.get("id"),
             "todoist_label_list": event_data.get("labels"),
@@ -73,10 +74,13 @@ def todoist_webhook(request):
 
     if not todoist_note or todoist_event:
         logger.info(
-            "[todoist_webhook] ignoring wrong todoist type",
+            "[todoist_webhook] ignoring wrong todoist type, event or labels",
             extra={
-                "todoist_type": todoist_task["todoist_type"],
-                "todoist_event": todoist_task["todoist_event"],
+                "todoist_type": todoist_type,
+                "todoist_event": todoist_event,
+                "state_changed": state_changed,
+                "new_labels": new_labels,
+                "old_labels": old_labels,
             },
         )
         return Response({}, status=status.HTTP_304_NOT_MODIFIED)
