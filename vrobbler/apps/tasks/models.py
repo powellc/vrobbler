@@ -5,7 +5,7 @@ from typing import Optional
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
-from scrobbles.dataclasses import LongPlayLogData
+from scrobbles.dataclasses import JSONDataclass
 from scrobbles.mixins import LongPlayScrobblableMixin
 
 BNULL = {"blank": True, "null": True}
@@ -14,18 +14,13 @@ TODOIST_TASK_URL = "https://app.todoist.com/app/task/{id}"
 
 
 @dataclass
-class TaskLogData(LongPlayLogData):
-    details: Optional[str] = None
+class TaskLogData(JSONDataclass):
     description: Optional[str] = None
     title: Optional[str] = None
     project: Optional[str] = None
     todoist_id: Optional[str] = None
     todoist_event: Optional[str] = None
     todoist_type: Optional[str] = None
-    serial_scrobble_id: Optional[int] = None
-    long_play_complete: Optional[bool] = None
-    timestamp_utc: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
     notes: Optional[dict] = None
 
 
