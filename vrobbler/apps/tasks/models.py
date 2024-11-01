@@ -26,7 +26,7 @@ class TaskLogData(LongPlayLogData):
     long_play_complete: Optional[bool] = None
     timestamp_utc: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    notes: Optional[list[dict]] = None
+    notes: Optional[dict] = None
 
 
 class Task(LongPlayScrobblableMixin):
