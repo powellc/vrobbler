@@ -61,7 +61,8 @@ def todoist_webhook(request):
     if is_note_type and is_added:
         task_data = event_data.get("item", {})
         todoist_note = {
-            "todoist_id": task_data.get("id"),
+            "task_id": event_data.get("item_id"),
+            "todoist_id": event_data.get("id"),
             "todoist_label_list": task_data.get("labels"),
             "todoist_type": todoist_type,
             "todoist_event": todoist_event,
