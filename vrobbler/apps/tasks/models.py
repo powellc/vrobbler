@@ -15,6 +15,7 @@ TODOIST_TASK_URL = "https://app.todoist.com/app/task/{id}"
 
 @dataclass
 class TaskLogData(LongPlayLogData):
+    details: Optional[str] = None
     description: Optional[str] = None
     title: Optional[str] = None
     project: Optional[str] = None
@@ -24,6 +25,7 @@ class TaskLogData(LongPlayLogData):
     serial_scrobble_id: Optional[int] = None
     long_play_complete: Optional[bool] = None
     timestamp_utc: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     notes: Optional[list[dict]] = None
 
 

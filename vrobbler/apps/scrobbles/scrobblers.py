@@ -346,7 +346,12 @@ def todoist_scrobble_update_task(
     return scrobble
 
 
-def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
+def todoist_scrobble_task(
+    todoist_task: dict,
+    user_id: int,
+    started: bool = False,
+    stopped: bool = False,
+) -> Scrobble:
 
     prefix = ""
     suffix = ""
@@ -368,15 +373,15 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
 
     timestamp = pendulum.parse(todoist_task.get("updated_at", timezone.now()))
     in_progress_scrobble = Scrobble.objects.filter(
+        user_id=user_id,
         in_progress=True,
         log__todoist_id=todoist_task.get("todoist_id"),
         task=task,
     ).last()
-    in_progress_in_todoist = "inprogress" in todoist_task["todoist_label_list"]
-    # We need either an in-progress scrobble OR an in-progress todoist task
-    if not in_progress_scrobble and not in_progress_in_todoist:
+
+    if not in_progress_scrobble and stopped:
         logger.info(
-            "[todoist_scrobble_task] noop",
+            "[todoist_scrobble_task] cannot stop already stopped task",
             extra={
                 "todoist_type": todoist_task["todoist_type"],
                 "todoist_event": todoist_task["todoist_event"],
@@ -385,8 +390,19 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
         )
         return
 
+    if in_progress_scrobble and started:
+        logger.info(
+            "[todoist_scrobble_task] cannot start already started task",
+            extra={
+                "todoist_type": todoist_task["todoist_type"],
+                "todoist_event": todoist_task["todoist_event"],
+                "todoist_id": todoist_task["todoist_id"],
+            },
+        )
+        return in_progress_scrobble
+
     # Finish an in-progress scrobble
-    if in_progress_scrobble and not in_progress_in_todoist:
+    if in_progress_scrobble and stopped:
         logger.info(
             "[todoist_scrobble_task] finishing",
             extra={
@@ -396,19 +412,6 @@ def todoist_scrobble_task(todoist_task: dict, user_id: int) -> Scrobble:
             },
         )
         return todoist_scrobble_task_finish(todoist_task, user_id)
-
-    # Ignore an already in progress scrobble
-    if in_progress_scrobble:
-        logger.info(
-            "[todoist_scrobble_task] continuing",
-            extra={
-                "todoist_type": todoist_task["todoist_type"],
-                "todoist_event": todoist_task["todoist_event"],
-                "todoist_id": todoist_task["todoist_id"],
-                "scrobble_id": in_progress_scrobble.id,
-            },
-        )
-        return in_progress_scrobble
 
     # Default to create new scrobble "if not in_progress_scrobble and in_progress_in_todoist"
     # TODO Should use updated_at from TOdoist, but parsing isn't working

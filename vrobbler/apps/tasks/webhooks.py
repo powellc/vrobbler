@@ -40,13 +40,14 @@ def todoist_webhook(request):
     is_updated = todoist_event in ["updated"]
     is_added = todoist_event in ["added"]
 
-    state_changed = False
-    if ("inprogress" in new_labels and "inprogress" not in old_labels) or (
+    task_started = (
+        "inprogress" in new_labels and "inprogress" not in old_labels
+    )
+    task_stopped = (
         "inprogress" not in new_labels and "inprogress" in old_labels
-    ):
-        state_changed = True
+    )
 
-    if is_item_type and is_updated and state_changed:
+    if is_item_type and is_updated and (task_started or task_stopped):
         todoist_task = {
             "todoist_id": event_data.get("id"),
             "todoist_label_list": event_data.get("labels"),
@@ -78,7 +79,8 @@ def todoist_webhook(request):
             extra={
                 "todoist_type": todoist_type,
                 "todoist_event": todoist_event,
-                "state_changed": state_changed,
+                "task_started": task_started,
+                "task_stopped": task_stopped,
                 "new_labels": new_labels,
                 "old_labels": old_labels,
             },
@@ -92,7 +94,9 @@ def todoist_webhook(request):
     )
 
     if todoist_task:
-        scrobble = todoist_scrobble_task(todoist_task, user_id)
+        scrobble = todoist_scrobble_task(
+            todoist_task, user_id, stopped=task_stopped
+        )
 
     if todoist_note:
         scrobble = todoist_scrobble_update_task(todoist_note, user_id)
