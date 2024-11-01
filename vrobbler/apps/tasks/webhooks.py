@@ -45,7 +45,7 @@ def todoist_webhook(request):
     )
     is_added = todoist_event in ["added"]
 
-    if is_item_type:
+    if is_item_type and is_updated:
         todoist_task = {
             "todoist_id": event_data.get("id"),
             "todoist_label_list": event_data.get("labels"),
@@ -56,7 +56,7 @@ def todoist_webhook(request):
             "description": event_data.get("content"),
             "details": event_data.get("description"),
         }
-    if is_note_type:
+    if is_note_type and is_added:
         task_data = event_data.get("item", {})
         todoist_note = {
             "todoist_id": task_data.get("id"),
@@ -70,19 +70,10 @@ def todoist_webhook(request):
             if event_data.get("is_deleted") == "true"
             else False,
         }
-    else:
+
+    if not todoist_note or todoist_event:
         logger.info(
             "[todoist_webhook] ignoring wrong todoist type",
-            extra={
-                "todoist_type": todoist_task["todoist_type"],
-                "todoist_event": todoist_task["todoist_event"],
-            },
-        )
-        return Response({}, status=status.HTTP_304_NOT_MODIFIED)
-
-    if is_item_type and new_labels == old_labels:
-        logger.info(
-            "[todoist_webhook] ignoring item, labels unchanged",
             extra={
                 "todoist_type": todoist_task["todoist_type"],
                 "todoist_event": todoist_task["todoist_event"],
@@ -96,10 +87,10 @@ def todoist_webhook(request):
         .user_id
     )
 
-    if todoist_task and is_updated:
+    if todoist_task:
         scrobble = todoist_scrobble_task(todoist_task, user_id)
 
-    if todoist_note and is_added:
+    if todoist_note:
         scrobble = todoist_scrobble_update_task(todoist_note, user_id)
 
     if not scrobble:
