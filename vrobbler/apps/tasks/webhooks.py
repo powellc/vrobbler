@@ -72,7 +72,7 @@ def todoist_webhook(request):
             else False,
         }
 
-    if not todoist_note or todoist_event:
+    if (is_added and not todoist_note) or (is_updated and not todoist_task):
         logger.info(
             "[todoist_webhook] ignoring wrong todoist type, event or labels",
             extra={
