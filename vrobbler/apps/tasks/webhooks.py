@@ -103,6 +103,10 @@ def todoist_webhook(request):
         scrobble = todoist_scrobble_update_task(todoist_note, user_id)
 
     if not scrobble:
+        logger.info(
+            "[todoist_webhook] finished with no note or task found",
+            extra={"scrobble_id": None},
+        )
         return Response(
             {"error": "No scrobble found to be updated"},
             status=status.HTTP_304_NOT_MODIFIED,

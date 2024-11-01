@@ -327,21 +327,31 @@ def todoist_scrobble_update_task(
         log__task_id=todoist_note.get("task_id"),
     ).first()
 
-    if scrobble:
-        existing_notes = scrobble.log.get("notes", {})
-        existing_notes[todoist_note.get("todoist_id")] = todoist_note.get(
-            "content"
-        )
-        scrobble.log["notes"] = existing_notes
-        scrobble.save(update_fields=["log"])
+    if not scrobble:
         logger.info(
-            "[todoist_scrobble_update_task] todoist note added",
+            "[todoist_scrobble_update_task] no task found",
             extra={
                 "todoist_note": todoist_note,
                 "user_id": user_id,
                 "media_type": Scrobble.MediaType.TASK,
             },
         )
+        return
+
+    existing_notes = scrobble.log.get("notes", {})
+    existing_notes[todoist_note.get("todoist_id")] = todoist_note.get(
+        "content"
+    )
+    scrobble.log["notes"] = existing_notes
+    scrobble.save(update_fields=["log"])
+    logger.info(
+        "[todoist_scrobble_update_task] todoist note added",
+        extra={
+            "todoist_note": todoist_note,
+            "user_id": user_id,
+            "media_type": Scrobble.MediaType.TASK,
+        },
+    )
 
     return scrobble
 
