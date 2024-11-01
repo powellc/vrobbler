@@ -30,7 +30,7 @@ def todoist_webhook(request):
     event_data = post_data.get("event_data", {})
     is_item_type = todoist_type == "item"
     is_note_type = todoist_type == "note"
-    new_labels = event_data.get("labels")
+    new_labels = event_data.get("labels", [])
     old_labels = (
         post_data.get("event_data_extra", {})
         .get("old_item", {})
@@ -93,6 +93,7 @@ def todoist_webhook(request):
         .user_id
     )
 
+    scrobble = None
     if todoist_task:
         scrobble = todoist_scrobble_task(
             todoist_task, user_id, stopped=task_stopped
