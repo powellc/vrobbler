@@ -87,11 +87,11 @@ def get_ibu_from_soup(soup) -> Optional[int]:
 def get_rating_from_soup(soup) -> str:
     rating = ""
     try:
-        rating = soup.find(class_="num").get_text().strip("(").strip(")")
+        rating = float(soup.find(class_="num").get_text().strip("(").strip(")"))
     except AttributeError:
-        pass
+        rating = None
     except ValueError:
-        pass
+        rating = None
     return rating
 
 
