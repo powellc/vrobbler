@@ -66,8 +66,8 @@ def get_abv_from_soup(soup) -> Optional[float]:
         pass
     except ValueError:
         pass
-    if "N/A" in abv:
-        abv = None
+    except TypeError:
+        pass
     return abv
 
 
