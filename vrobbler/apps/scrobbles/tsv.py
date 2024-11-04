@@ -49,22 +49,27 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
             )
             continue
 
-        artist = get_or_create_artist(row[AsTsvColumn["ARTIST_NAME"].value])
-        album = get_or_create_album(
-            row[AsTsvColumn["ALBUM_NAME"].value], artist
-        )
-
         track = get_or_create_track(
-            title=row[AsTsvColumn["TRACK_NAME"].value],
-            mbid=row[AsTsvColumn["MB_ID"].value],
-            artist=artist,
-            album=album,
-            run_time_seconds=int(row[AsTsvColumn["RUN_TIME_SECONDS"].value]),
+            {
+                "title": row[AsTsvColumn["TRACK_NAME"].value],
+                "mbid": row[AsTsvColumn["MB_ID"].value],
+                "artist_name": row[AsTsvColumn["ARTIST_NAME"].value],
+                "album_name": row[AsTsvColumn["ALBUM_NAME"].value],
+                "run_time_seconds": int(
+                    row[AsTsvColumn["RUN_TIME_SECONDS"].value]
+                ),
+            },
+            {
+                "TRACK_MB_ID": "mbid",
+                "TRACK_TITLE": "track_title",
+                "ALBUM_NAME": "album_name",
+                "ARTIST_NAME": "artist_name",
+                "RUN_TIME": "run_time_seconds",
+            },
         )
+        # TODO Set all this up as constants
         if row[AsTsvColumn["COMPLETE"].value] == "S":
-            logger.info(
-                f"Skipping track {track} by {artist} because not finished"
-            )
+            logger.info(f"Skipping track {track} because not finished")
             continue
 
         timestamp = timestamp_user_tz_to_utc(
