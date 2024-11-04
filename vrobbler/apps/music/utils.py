@@ -111,11 +111,13 @@ def get_or_create_track(post_data: dict, post_keys: dict) -> Track:
         artist_name,
         mbid=artist_mb_id,
     )
-    album = get_or_create_album(
-        album_title,
-        artist=artist,
-        mbid=album_mb_id,
-    )
+    album = None
+    if album_mb_id:
+        album = get_or_create_album(
+            album_title,
+            artist=artist,
+            mbid=album_mb_id,
+        )
 
     track = None
     if not track_mb_id and album:
@@ -127,6 +129,13 @@ def get_or_create_track(post_data: dict, post_keys: dict) -> Track:
             ).get("id", 0)
         except TypeError:
             pass
+
+    if not track_title and not track_mb_id:
+        logger.info(
+            "Cannot find track without either title or MB ID",
+            extra={"post_data": post_data},
+        )
+        return
 
     if track_mb_id:
         track = Track.objects.filter(musicbrainz_id=track_mb_id).first()

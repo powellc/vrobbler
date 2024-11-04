@@ -67,6 +67,10 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
                 "RUN_TIME": "run_time_seconds",
             },
         )
+        if not track:
+            logger.info(f"Skipping track {track} because not found")
+            continue
+
         # TODO Set all this up as constants
         if row[AsTsvColumn["COMPLETE"].value] == "S":
             logger.info(f"Skipping track {track} because not finished")
