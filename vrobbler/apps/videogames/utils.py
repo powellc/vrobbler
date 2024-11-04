@@ -29,11 +29,13 @@ def get_or_create_videogame(
     # Create missing platforms and prep for loading after create
     platform_ids = []
     if "platforms" in game_dict.keys():
-        for platform in game_dict.get("platforms", []):
-            p, _created = VideoGamePlatform.objects.get_or_create(
-                name=platform
-            )
-            platform_ids.append(p.id)
+        platforms = game_dict.get("platforms", [])
+        if platforms:
+            for platform in game_dict.get("platforms", []):
+                p, _created = VideoGamePlatform.objects.get_or_create(
+                    name=platform
+                )
+                platform_ids.append(p.id)
         game_dict.pop("platforms")
 
     cover_url = game_dict.pop("cover_url")
