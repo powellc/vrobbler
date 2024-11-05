@@ -1188,6 +1188,9 @@ class Scrobble(TimeStampedModel):
         ).first()
         if profile.ntfy_enabled and profile.ntfy_url:
             # TODO allow prority and tags to be configured in the profile
+            notify_str = f"{scrobble.media_obj}"
+            if scrobble.log.get("details"):
+                notify_str += f" - {scrobble.log.get('details')}"
             requests.post(
                 profile.ntfy_url,
                 data=f"{scrobble.media_obj}".encode(encoding="utf-8"),
