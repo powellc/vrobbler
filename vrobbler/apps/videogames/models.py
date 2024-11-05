@@ -9,7 +9,7 @@ from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from scrobbles.dataclasses import VideoGameLogData
-from scrobbles.mixins import LongPlayScrobblableMixin
+from scrobbles.mixins import LongPlayScrobblableMixin, ScrobblableConstants
 from scrobbles.utils import get_scrobbles_for_media
 from videogames.igdb import lookup_game_id_from_gdb
 
@@ -145,8 +145,8 @@ class VideoGame(LongPlayScrobblableMixin):
         return f" On {self.platforms.first()}"
 
     @property
-    def verb(self) -> str:
-        return "Sessioning"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Sessioning", tags="joystick")
 
     @property
     def primary_image_url(self) -> str:

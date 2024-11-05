@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -91,8 +91,10 @@ class GeoLocation(ScrobblableMixin):
         return ""
 
     @property
-    def verb(self) -> str:
-        return "Going"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(
+            verb="Going", tags="world_map", priority="low"
+        )
 
     def loc_diff(self, old_lat_lon: tuple) -> tuple:
         return (

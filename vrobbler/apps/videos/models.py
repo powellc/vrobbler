@@ -12,7 +12,11 @@ from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from music.constants import JELLYFIN_POST_KEYS
-from scrobbles.mixins import ObjectWithGenres, ScrobblableMixin
+from scrobbles.mixins import (
+    ObjectWithGenres,
+    ScrobblableConstants,
+    ScrobblableMixin,
+)
 from taggit.managers import TaggableManager
 from videos.imdb import lookup_video_from_imdb
 
@@ -197,8 +201,8 @@ class Video(ScrobblableMixin):
         return url
 
     @property
-    def verb(self) -> str:
-        return "Watching"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Watching", tags="movie_camera")
 
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.imdb_id)

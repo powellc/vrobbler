@@ -172,10 +172,10 @@ class VideoLogData(JSONDataclass):
 
 @dataclass
 class VideoGameLogData(LongPlayLogData):
-    serial_scrobble_id: Optional[int]
-    long_play_complete: bool = False
-    console: str = ""
-    emulated: bool = False
+    serial_scrobble_id: Optional[int] = None
+    long_play_complete: Optional[bool] = False
+    console: Optional[str] = None
+    emulated: Optional[bool] = False
     emulator: Optional[str] = None
 
 

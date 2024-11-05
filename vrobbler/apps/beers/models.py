@@ -7,7 +7,7 @@ from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from scrobbles.dataclasses import BeerLogData
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 from vrobbler.apps.beers.untappd import (
     get_beer_from_untappd_id,
     get_rating_from_soup,
@@ -75,8 +75,8 @@ class Beer(ScrobblableMixin):
         return self.producer.name
 
     @property
-    def verb(self) -> str:
-        return "Drinking"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Drinking", tags="beer")
 
     @property
     def beeradvocate_link(self) -> str:

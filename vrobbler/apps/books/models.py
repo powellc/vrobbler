@@ -19,6 +19,7 @@ from imagekit.processors import ResizeToFit
 from scrobbles.mixins import (
     LongPlayScrobblableMixin,
     ObjectWithGenres,
+    ScrobblableConstants,
     ScrobblableMixin,
 )
 from scrobbles.utils import get_scrobbles_for_media
@@ -135,8 +136,8 @@ class Book(LongPlayScrobblableMixin):
         return f" by {self.author}"
 
     @property
-    def verb(self) -> str:
-        return "Reading"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Reading", tags="book")
 
     @property
     def logdata_cls(self):

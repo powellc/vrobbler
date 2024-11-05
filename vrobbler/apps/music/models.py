@@ -17,7 +17,7 @@ from imagekit.processors import ResizeToFit
 from music.allmusic import get_allmusic_slug, scrape_data_from_allmusic
 from music.bandcamp import get_bandcamp_slug
 from music.theaudiodb import lookup_album_from_tadb, lookup_artist_from_tadb
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -429,8 +429,8 @@ class Track(ScrobblableMixin):
         return self.artist
 
     @property
-    def verb(self) -> str:
-        return "Listening"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Listening", tags="headphones")
 
     @property
     def mb_link(self):

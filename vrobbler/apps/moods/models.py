@@ -5,7 +5,7 @@ from django.db import models
 from django.urls import reverse
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 from vrobbler.apps.scrobbles.dataclasses import MoodLogData
 
@@ -46,8 +46,8 @@ class Mood(ScrobblableMixin):
         return ""
 
     @property
-    def verb(self) -> str:
-        return "Feeling"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Feeling", tags="thinking")
 
     @property
     def logdata_cls(self):

@@ -3,7 +3,7 @@ from django.apps import apps
 from django.db import models
 from django.urls import reverse
 from scrobbles.dataclasses import TrailLogData
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 from locations.models import GeoLocation
 
 BNULL = {"blank": True, "null": True}
@@ -39,8 +39,8 @@ class Trail(ScrobblableMixin):
         return TrailLogData
 
     @property
-    def verb(self) -> str:
-        return "Moving"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Moving", tags="runner")
 
     @classmethod
     def find_or_create(cls, title: str) -> "Trail":

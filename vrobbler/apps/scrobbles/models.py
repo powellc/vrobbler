@@ -1192,9 +1192,9 @@ class Scrobble(TimeStampedModel):
                 profile.ntfy_url,
                 data=f"{scrobble.media_obj}".encode(encoding="utf-8"),
                 headers={
-                    "Title": scrobble.media_obj.verb,
+                    "Title": scrobble.media_obj.strings.verb,
                     "Priority": "default",
-                    "Tags": "loudspeaker",
+                    "Tags": scrobble.media_obj.strings.tags,
                 },
             )
 

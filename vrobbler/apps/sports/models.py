@@ -7,7 +7,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 from sports.utils import get_players_from_event, get_round_name_from_event
 
 logger = logging.getLogger(__name__)
@@ -134,8 +134,8 @@ class SportEvent(ScrobblableMixin):
         return self.round.season.league
 
     @property
-    def verb(self) -> str:
-        return "Watching"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Watching", tags="trophy")
 
     @property
     def sportsdb_link(self):

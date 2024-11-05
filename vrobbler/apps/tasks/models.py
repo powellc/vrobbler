@@ -6,7 +6,7 @@ from django.apps import apps
 from django.db import models
 from django.urls import reverse
 from scrobbles.dataclasses import JSONDataclass
-from scrobbles.mixins import LongPlayScrobblableMixin
+from scrobbles.mixins import LongPlayScrobblableMixin, ScrobblableConstants
 
 BNULL = {"blank": True, "null": True}
 
@@ -39,8 +39,8 @@ class Task(LongPlayScrobblableMixin):
         return reverse("tasks:task_detail", kwargs={"slug": self.uuid})
 
     @property
-    def verb(self) -> str:
-        return "Doing"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Doing", tags="white_check_mark")
 
     # @property
     # def logdata_cls(self):

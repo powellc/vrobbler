@@ -2,7 +2,7 @@ from django.apps import apps
 from django.db import models
 from django.urls import reverse
 from scrobbles.dataclasses import LifeEventLogData
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 BNULL = {"blank": True, "null": True}
 
@@ -23,8 +23,8 @@ class LifeEvent(ScrobblableMixin):
         return LifeEventLogData
 
     @property
-    def verb(self) -> str:
-        return "Experiencing"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Experiencing", tags="camping")
 
     @classmethod
     def find_or_create(cls, title: str) -> "LifeEvent":

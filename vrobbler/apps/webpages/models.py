@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from htmldate import find_date
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -86,8 +86,8 @@ class WebPage(ScrobblableMixin):
         return int(self.estimated_time_to_read_in_seconds / 60)
 
     @property
-    def verb(self) -> str:
-        return "Browsing"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Browsing", tags="earth_americas")
 
     @property
     def subtitle(self):

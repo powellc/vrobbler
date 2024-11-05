@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import logging
 from typing import Optional
 from uuid import uuid4
@@ -14,6 +15,23 @@ from taggit.models import GenericTaggedItemBase, TagBase
 BNULL = {"blank": True, "null": True}
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ScrobblableConstants:
+    verb: str
+    tags: str
+    priority: str
+
+    def __init__(
+        self,
+        verb: str = "Scrobbling",
+        tags: str = "green_square",
+        priority: str = "default",
+    ):
+        self.verb = verb
+        self.tags = tags
+        self.priority = priority
 
 
 class Genre(TagBase):
@@ -81,8 +99,8 @@ class ScrobblableMixin(TimeStampedModel):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
 
     @property
-    def verb(self) -> str:
-        return "Scrobbling"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants()
 
     @property
     def primary_image_url(self) -> str:

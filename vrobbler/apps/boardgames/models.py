@@ -13,7 +13,7 @@ from django_extensions.db.models import TimeStampedModel
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from scrobbles.dataclasses import BoardGameLogData
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -101,8 +101,8 @@ class BoardGame(ScrobblableMixin):
         return BoardGameLogData
 
     @property
-    def verb(self) -> str:
-        return "Playing"
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Playing", tags="game_die")
 
     def primary_image_url(self) -> str:
         url = ""
