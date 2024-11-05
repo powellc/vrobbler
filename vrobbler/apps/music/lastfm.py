@@ -62,9 +62,10 @@ class LastFM:
             if self.vrobbler_user.profile:
                 timezone = self.vrobbler_user.profile.timezone
 
+            timestamp = lfm_scrobble.get("timestamp")
             new_scrobble = Scrobble(
                 user=self.vrobbler_user,
-                timestamp=lfm_scrobble.get("timestamp"),
+                timestamp=timestamp,
                 source=source,
                 track=track,
                 timezone=timezone,
