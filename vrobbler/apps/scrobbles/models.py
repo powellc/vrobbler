@@ -1193,7 +1193,7 @@ class Scrobble(TimeStampedModel):
                 notify_str += f" - {scrobble.log.get('description')}"
             requests.post(
                 profile.ntfy_url,
-                data=f"{scrobble.media_obj}".encode(encoding="utf-8"),
+                data=notify_str.encode(encoding="utf-8"),
                 headers={
                     "Title": scrobble.media_obj.strings.verb,
                     "Priority": "default",
