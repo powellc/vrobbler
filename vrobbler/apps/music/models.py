@@ -429,6 +429,10 @@ class Track(ScrobblableMixin):
         return self.artist
 
     @property
+    def verb(self) -> str:
+        return "Listening"
+
+    @property
     def mb_link(self):
         return f"https://musicbrainz.org/recording/{self.musicbrainz_id}"
 

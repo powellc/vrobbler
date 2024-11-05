@@ -22,6 +22,10 @@ class LifeEvent(ScrobblableMixin):
     def logdata_cls(self):
         return LifeEventLogData
 
+    @property
+    def verb(self) -> str:
+        return "Experiencing"
+
     @classmethod
     def find_or_create(cls, title: str) -> "LifeEvent":
         return cls.objects.filter(title=title).first()

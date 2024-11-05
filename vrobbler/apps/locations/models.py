@@ -90,6 +90,10 @@ class GeoLocation(ScrobblableMixin):
             return f"{self.lat} x {self.lon}"
         return ""
 
+    @property
+    def verb(self) -> str:
+        return "Going"
+
     def loc_diff(self, old_lat_lon: tuple) -> tuple:
         return (
             abs(Decimal(old_lat_lon[0]) - Decimal(self.lat)),

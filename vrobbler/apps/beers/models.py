@@ -75,6 +75,10 @@ class Beer(ScrobblableMixin):
         return self.producer.name
 
     @property
+    def verb(self) -> str:
+        return "Drinking"
+
+    @property
     def beeradvocate_link(self) -> str:
         link = ""
         if self.producer and self.beeradvocate_id:

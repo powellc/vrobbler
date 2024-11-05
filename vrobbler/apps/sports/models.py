@@ -134,6 +134,10 @@ class SportEvent(ScrobblableMixin):
         return self.round.season.league
 
     @property
+    def verb(self) -> str:
+        return "Watching"
+
+    @property
     def sportsdb_link(self):
         return f"https://thesportsdb.com/event/{self.thesportsdb_id}"
 

@@ -46,6 +46,10 @@ class Mood(ScrobblableMixin):
         return ""
 
     @property
+    def verb(self) -> str:
+        return "Feeling"
+
+    @property
     def logdata_cls(self):
         return MoodLogData
 

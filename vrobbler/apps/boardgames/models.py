@@ -100,6 +100,10 @@ class BoardGame(ScrobblableMixin):
     def logdata_cls(self):
         return BoardGameLogData
 
+    @property
+    def verb(self) -> str:
+        return "Playing"
+
     def primary_image_url(self) -> str:
         url = ""
         if self.cover:
@@ -125,6 +129,11 @@ class BoardGame(ScrobblableMixin):
 
             if year:
                 data["published_date"] = datetime(int(year), 1, 1)
+
+            if not data["min_players"]:
+                data.pop("min_players")
+            if not data["min_players"]:
+                data.pop("max_players")
 
             # Fun trick for updating all fields at once
             BoardGame.objects.filter(pk=self.id).update(**data)

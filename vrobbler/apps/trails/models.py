@@ -38,6 +38,10 @@ class Trail(ScrobblableMixin):
     def logdata_cls(self):
         return TrailLogData
 
+    @property
+    def verb(self) -> str:
+        return "Moving"
+
     @classmethod
     def find_or_create(cls, title: str) -> "Trail":
         return cls.objects.filter(title=title).first()

@@ -145,6 +145,10 @@ class VideoGame(LongPlayScrobblableMixin):
         return f" On {self.platforms.first()}"
 
     @property
+    def verb(self) -> str:
+        return "Sessioning"
+
+    @property
     def primary_image_url(self) -> str:
         url = ""
         if self.cover:

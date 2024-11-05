@@ -196,6 +196,10 @@ class Video(ScrobblableMixin):
             url = self.cover_image_medium.url
         return url
 
+    @property
+    def verb(self) -> str:
+        return "Watching"
+
     def fix_metadata(self, force_update=False):
         imdb_dict = lookup_video_from_imdb(self.imdb_id)
         if not imdb_dict:

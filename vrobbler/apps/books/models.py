@@ -135,6 +135,10 @@ class Book(LongPlayScrobblableMixin):
         return f" by {self.author}"
 
     @property
+    def verb(self) -> str:
+        return "Reading"
+
+    @property
     def logdata_cls(self):
         return BookLogData
 

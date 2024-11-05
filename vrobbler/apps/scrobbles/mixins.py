@@ -81,6 +81,10 @@ class ScrobblableMixin(TimeStampedModel):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
 
     @property
+    def verb(self) -> str:
+        return "Scrobbling"
+
+    @property
     def primary_image_url(self) -> str:
         logger.warning(f"Not implemented yet")
         return ""
@@ -88,6 +92,7 @@ class ScrobblableMixin(TimeStampedModel):
     @property
     def logdata_cls(self) -> None:
         from scrobbles.dataclasses import ScrobbleLogData
+
         return ScrobbleLogData
 
     @property

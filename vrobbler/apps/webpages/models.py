@@ -86,6 +86,10 @@ class WebPage(ScrobblableMixin):
         return int(self.estimated_time_to_read_in_seconds / 60)
 
     @property
+    def verb(self) -> str:
+        return "Browsing"
+
+    @property
     def subtitle(self):
         return self.domain
 

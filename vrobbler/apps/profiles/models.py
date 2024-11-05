@@ -40,6 +40,9 @@ class UserProfile(TimeStampedModel):
     webdav_pass = EncryptedField(**BNULL)
     webdav_auto_import = models.BooleanField(default=False)
 
+    ntfy_url = models.CharField(max_length=255, **BNULL)
+    ntfy_enabled = models.BooleanField(default=False)
+
     redirect_to_webpage = models.BooleanField(default=True)
 
     def __str__(self):

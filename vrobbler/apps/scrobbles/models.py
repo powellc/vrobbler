@@ -7,6 +7,8 @@ from uuid import uuid4
 
 import pendulum
 import pytz
+import requests
+from beers.models import Beer
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
 from books.models import Book
@@ -25,6 +27,7 @@ from moods.models import Mood
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import PodcastEpisode
+from profiles.models import UserProfile
 from profiles.utils import (
     end_of_day,
     end_of_month,
@@ -39,7 +42,6 @@ from scrobbles.stats import build_charts
 from scrobbles.utils import media_class_to_foreign_key
 from sports.models import SportEvent
 from tasks.models import Task
-from beers.models import Beer
 from trails.models import Trail
 from videogames import retroarch
 from videogames.models import VideoGame
@@ -1181,6 +1183,21 @@ class Scrobble(TimeStampedModel):
         scrobble = cls.objects.create(
             **scrobble_data,
         )
+        profile = UserProfile.objects.filter(
+            user_id=scrobble_data["user_id"]
+        ).first()
+        if profile.ntfy_enabled and profile.ntfy_url:
+            # TODO allow prority and tags to be configured in the profile
+            requests.post(
+                profile.ntfy_url,
+                data=f"{scrobble.media_obj}".encode(encoding="utf-8"),
+                headers={
+                    "Title": scrobble.media_obj.verb,
+                    "Priority": "default",
+                    "Tags": "loudspeaker",
+                },
+            )
+
         return scrobble
 
     def stop(self, force_finish=False) -> None:
