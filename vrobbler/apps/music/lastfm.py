@@ -49,15 +49,15 @@ class LastFM:
         lastfm_scrobbles = self.get_last_scrobbles(time_from=last_processed)
 
         for lfm_scrobble in lastfm_scrobbles:
-            timestamp = lfm_scrobble.pop("timestamp")
-
-            artist = get_or_create_artist(lfm_scrobble.pop("artist"))
-            album = get_or_create_album(lfm_scrobble.pop("album"), artist)
-
-            lfm_scrobble["artist"] = artist
-            if album:
-                lfm_scrobble["album"] = album
-            track = get_or_create_track(**lfm_scrobble)
+            track = get_or_create_track(
+                lfm_scrobble,
+                {
+                    "TRACK_TITLE": "track",
+                    "ARTIST_NAME": "artist",
+                    "ALBUM_NAME": "album",
+                    "TIMESTAMP": "timestamp",
+                },
+            )
 
             timezone = settings.TIME_ZONE
             if self.vrobbler_user.profile:
