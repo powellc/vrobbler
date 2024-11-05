@@ -55,7 +55,6 @@ class LastFM:
                     "TRACK_TITLE": "track",
                     "ARTIST_NAME": "artist",
                     "ALBUM_NAME": "album",
-                    "TIMESTAMP": "timestamp",
                 },
             )
 
@@ -65,7 +64,7 @@ class LastFM:
 
             new_scrobble = Scrobble(
                 user=self.vrobbler_user,
-                timestamp=timestamp,
+                timestamp=lfm_scrobble.get("timestamp"),
                 source=source,
                 track=track,
                 timezone=timezone,
