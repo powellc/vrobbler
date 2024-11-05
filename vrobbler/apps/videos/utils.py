@@ -67,7 +67,7 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
     # TODO this is a hack so we don't spam scrobbles without a run time seconds
     if video.run_time_seconds == 0:
         video.run_time_seconds = 1800
-        video.save(update_fields=["run_time_seconds"]
+        video.save(update_fields=["run_time_seconds"])
 
     return video
 
