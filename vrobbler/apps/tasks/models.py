@@ -40,7 +40,7 @@ class Task(LongPlayScrobblableMixin):
 
     @property
     def strings(self) -> ScrobblableConstants:
-        return ScrobblableConstants(verb="Doing", tags="white_check_mark")
+        return ScrobblableConstants(verb="Doing", tags="memo")
 
     # @property
     # def logdata_cls(self):
