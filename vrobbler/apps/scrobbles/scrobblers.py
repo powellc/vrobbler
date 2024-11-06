@@ -151,8 +151,10 @@ def web_scrobbler_scrobble_media(
     ).replace(tzinfo=pytz.utc)
 
     if created or event_name == "nowplaying":
-        video.run_time_seconds = 1800
         processed = post_data.get("data").get("song").get("processed")
+        video.run_time_seconds = processed.get("duration", 1500)
+        if not processed.get("duration"):
+            video.run_time_seconds = 1500
         # TODO maybe artist could be the series?
         video.title = " - ".join([processed.get("artist"), processed.get("track")])
         video.save()

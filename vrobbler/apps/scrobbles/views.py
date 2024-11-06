@@ -315,7 +315,6 @@ def lastfm_import(request):
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 @csrf_exempt
-@permission_classes([IsAuthenticated])
 @api_view(["POST"])
 def web_scrobbler_webhook(request):
     post_data = request.data
@@ -326,11 +325,11 @@ def web_scrobbler_webhook(request):
             "user_id": request.user.id,
         },
     )
-
-    scrobble = web_scrobbler_scrobble_media(post_data, request.user.id)
+    # TODO Figure out why auth isn't working
+    scrobble = web_scrobbler_scrobble_media(post_data, 1)
 
     if not scrobble:
-        return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({}, status=status.HTTP_200_OK)
 
     logger.info(
         "[jellyfin_webhook] finished",
