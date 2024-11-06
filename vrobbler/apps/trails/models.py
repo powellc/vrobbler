@@ -1,4 +1,4 @@
-from enum import Enum
+from django.utils.translation import gettext_lazy as _
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
@@ -9,12 +9,21 @@ from locations.models import GeoLocation
 BNULL = {"blank": True, "null": True}
 
 
-class TrailType(Enum):
-    WOODS = "Woods"
-    ROAD = "Road"
-
 
 class Trail(ScrobblableMixin):
+
+    class PrincipalType(models.TextChoices):
+        WOODS = "WOODS"
+        ROAD = "ROAD"
+        BEACH = "BEACH"
+        MOUNTAIN = "MOUNTAIN"
+
+    class ActivityType(models.TextChoices):
+        WALK= "WALK"
+        HIKE = "HIKE"
+        RUN = "RUN"
+        BIKE = "BIKE"
+
     description = models.TextField(**BNULL)
     trailhead_location = models.ForeignKey(
         GeoLocation,
@@ -30,6 +39,8 @@ class Trail(ScrobblableMixin):
     )
     strava_id = models.CharField(max_length=255, **BNULL)
     trailforks_id = models.CharField(max_length=255, **BNULL)
+    principal_type = models.CharField(max_length=10, choices=PrincipalType.choices, **BNULL)
+    default_activity_type = models.CharField(max_length=10, choices=ActivityType.choices, **BNULL)
 
     def get_absolute_url(self):
         return reverse("trails:trail_detail", kwargs={"slug": self.uuid})
