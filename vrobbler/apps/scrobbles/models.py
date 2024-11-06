@@ -1186,7 +1186,7 @@ class Scrobble(TimeStampedModel):
         profile = UserProfile.objects.filter(
             user_id=scrobble_data["user_id"]
         ).first()
-        if profile.ntfy_enabled and profile.ntfy_url:
+        if profile and profile.ntfy_enabled and profile.ntfy_url:
             # TODO allow prority and tags to be configured in the profile
             notify_str = f"{scrobble.media_obj}"
             if scrobble.log and scrobble.log.get("description"):

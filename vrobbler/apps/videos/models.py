@@ -128,6 +128,7 @@ class Video(ScrobblableMixin):
         TV_EPISODE = "E", _("TV Episode")
         MOVIE = "M", _("Movie")
         SKATE_VIDEO = "S", _("Skate Video")
+        YOUTUBE = "Y", _("YouTube Video")
 
     video_type = models.CharField(
         max_length=1,
@@ -161,6 +162,7 @@ class Video(ScrobblableMixin):
     tvrage_id = models.CharField(max_length=20, **BNULL)
     tvdb_id = models.CharField(max_length=20, **BNULL)
     tmdb_id = models.CharField(max_length=20, **BNULL)
+    youtube_url = models.CharField(max_length=255, **BNULL)
     plot = models.TextField(**BNULL)
     year = models.IntegerField(**BNULL)
 

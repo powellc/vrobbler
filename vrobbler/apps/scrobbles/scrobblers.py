@@ -2,6 +2,7 @@ import logging
 import re
 from typing import Optional
 
+from datetime import datetime
 import pendulum
 import pytz
 from beers.models import Beer
@@ -132,6 +133,49 @@ def jellyfin_scrobble_media(
         status=playback_status,
     )
 
+
+def web_scrobbler_scrobble_media(
+    post_data: dict, user_id: int
+) -> Optional[Scrobble]:
+    media_type = Scrobble.MediaType.VIDEO
+
+    event_name = post_data.get("eventName")
+    parsed = post_data.get("data").get("song").get("parsed")
+    processed = post_data.get("data").get("song").get("processed")
+    video, created = Video.objects.get_or_create(
+        video_type=Video.VideoType.YOUTUBE, 
+        youtube_url=parsed.get("originUrl"),
+    )
+    timestamp = datetime.utcfromtimestamp(
+        post_data.get("time", 0)/1000
+    ).replace(tzinfo=pytz.utc)
+
+    if created or event_name == "nowplaying":
+        video.run_time_seconds = 1800
+        processed = post_data.get("data").get("song").get("processed")
+        # TODO maybe artist could be the series?
+        video.title = " - ".join([processed.get("artist"), processed.get("track")])
+        video.save()
+        return video.scrobble_for_user(
+            user_id,
+            source="YouTube",
+            playback_position_seconds=0,
+            status=event_name,
+        )
+
+    scrobble = Scrobble.objects.filter(user_id=user_id, video=video, in_progress=True).first()
+    if not scrobble:
+        return video.scrobble_for_user(
+            user_id,
+            source="YouTube",
+            playback_position_seconds=0,
+            status=event_name,
+        )
+    if event_name == "paused":
+        scrobble.pause()
+    if event_name == "resumedplaying":
+        scrobble.resume()
+    return scrobble
 
 def manual_scrobble_video(imdb_id: str, user_id: int):
     if "tt" not in imdb_id:

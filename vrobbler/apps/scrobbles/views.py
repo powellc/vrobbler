@@ -314,6 +314,29 @@ def lastfm_import(request):
 
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+@api_view(["POST"])
+def web_scrobbler_webhook(request):
+    post_data = request.data
+    logger.info(
+        "[web_scrobbler_webhook] called",
+        extra={
+            "post_data": post_data,
+            "user_id": request.user.id,
+        },
+    )
+
+    scrobble = web_scrobbler_scrobble_media(post_data, request.user.id)
+
+    if not scrobble:
+        return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+    logger.info(
+        "[jellyfin_webhook] finished",
+        extra={"scrobble_id": scrobble.id},
+    )
+    return Response({"scrobble_id": scrobble.id}, status=status.HTTP_200_OK)
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])

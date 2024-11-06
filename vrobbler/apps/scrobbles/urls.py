@@ -32,6 +32,11 @@ urlpatterns = [
         name="lastfm-import",
     ),
     path(
+        "webhook/web-scrobbler/",
+        views.web_scrobbler_webhook,
+        name="web-scrobbler-webhook",
+    ),
+    path(
         "webhook/gps/",
         views.gps_webhook,
         name="gps-webhook",
