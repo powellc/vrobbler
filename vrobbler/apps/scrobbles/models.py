@@ -1191,8 +1191,6 @@ class Scrobble(TimeStampedModel):
             notify_str = f"{scrobble.media_obj}"
             if scrobble.log and scrobble.log.get("description"):
                 notify_str += f" - {scrobble.log.get('description')}"
-            if scrobble.media_obj.subtitle:
-                notify_str += f" - {scrobble.media_obj.subtitle}"
             requests.post(
                 profile.ntfy_url,
                 data=notify_str.encode(encoding="utf-8"),
