@@ -84,15 +84,21 @@ def lookup_or_create_authors_from_author_str(ko_author_str: str) -> list:
 
 def create_book_from_row(row: list):
     # No KoReader book yet, create it
-    author_str = get_author_str_from_row(row)
+    author_str = get_author_str_from_row(row).replace("\x00", "")
     total_pages = row[KoReaderBookColumn.PAGES.value]
     run_time = total_pages * Book.AVG_PAGE_READING_SECONDS
-    book_title = row[KoReaderBookColumn.TITLE.value]
+    book_title = row[KoReaderBookColumn.TITLE.value].replace("\x00", "")
     if " - " in book_title:
         split_title = book_title.split(" - ")
         book_title = split_title[0]
         if (not author_str or author_str == "N/A") and len(split_title) > 1:
             author_str = split_title[1].split("_")[0]
+
+    clean_row = []
+    for value in row:
+        if isinstance(value, str):
+            value = value.replace("\x00", "")
+        clean_row.append(value)
 
     book = Book.objects.create(
         title=book_title.replace("_", ":"),
@@ -102,7 +108,7 @@ def create_book_from_row(row: list):
                 "title": book_title,
                 "author_str": author_str,
                 "book_id": row[KoReaderBookColumn.ID.value],
-                "raw_row_data": row,
+                "raw_row_data": clean_row,
             }
         },
         run_time_seconds=run_time,
@@ -142,11 +148,8 @@ def build_book_map(rows) -> dict:
         ).first()
 
         if not book:
-            book = Book.objects.filter(
-                title=book_row[KoReaderBookColumn.TITLE.value]
-                .split(" - ")[0]
-                .lower()
-            ).first()
+            title = book_row[KoReaderBookColumn.TITLE.value].split(" - ")[0].lower().replace("\x00", "")
+            book = Book.objects.filter(title=title).first()
 
         if not book:
             book = create_book_from_row(book_row)
