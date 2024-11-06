@@ -23,6 +23,56 @@ from videos.imdb import lookup_video_from_imdb
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 
+class Channel(TimeStampedModel):
+    uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
+    name = models.CharField(max_length=255)
+    cover_image = models.ImageField(upload_to="videos/channels/", **BNULL)
+    cover_small = ImageSpecField(
+        source="cover_image",
+        processors=[ResizeToFit(100, 100)],
+        format="JPEG",
+        options={"quality": 60},
+    )
+    cover_medium = ImageSpecField(
+        source="cover_image",
+        processors=[ResizeToFit(300, 300)],
+        format="JPEG",
+        options={"quality": 75},
+    )
+    genre = TaggableManager(through=ObjectWithGenres)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("videos:channel_detail", kwargs={"slug": self.uuid})
+
+    def youtube_link(self):
+        return f"https://www.youtube.com/user/t{self.yt_username}"
+
+    @property
+    def primary_image_url(self) -> str:
+        url = ""
+        if self.cover_image:
+            url = self.cover_image_medium.url
+        return url
+
+    def scrobbles_for_user(self, user_id: int, include_playing=False):
+        from scrobbles.models import Scrobble
+
+        played_query = models.Q(played_to_completion=True)
+        if include_playing:
+            played_query = models.Q()
+        return Scrobble.objects.filter(
+            played_query,
+            video__channel=self,
+            user=user_id,
+        ).order_by("-timestamp")
+
+    def fix_metadata(self, force: bool = False):
+        # TODO Scrape channel info from Youtube
+        logger.warning("Not implemented yet")
+        return
 
 class Series(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
@@ -141,6 +191,7 @@ class Video(ScrobblableMixin):
 
     # TV show specific fields
     tv_series = models.ForeignKey(Series, on_delete=models.DO_NOTHING, **BNULL)
+    channel = models.ForeignKey(Channel, on_delete=models.DO_NOTHING, **BNULL)
     season_number = models.IntegerField(**BNULL)
     episode_number = models.IntegerField(**BNULL)
     next_imdb_id = models.CharField(max_length=20, **BNULL)
@@ -162,7 +213,7 @@ class Video(ScrobblableMixin):
     tvrage_id = models.CharField(max_length=20, **BNULL)
     tvdb_id = models.CharField(max_length=20, **BNULL)
     tmdb_id = models.CharField(max_length=20, **BNULL)
-    youtube_url = models.CharField(max_length=255, **BNULL)
+    youtube_id = models.CharField(max_length=255, **BNULL)
     plot = models.TextField(**BNULL)
     year = models.IntegerField(**BNULL)
 
@@ -171,7 +222,9 @@ class Video(ScrobblableMixin):
 
     def __str__(self):
         if self.video_type == self.VideoType.TV_EPISODE:
-            return f"{self.tv_series} - Season {self.season_number}, Episode {self.episode_number}"
+            return f"{self.title} - {self.tv_series} - Season {self.season_number}, Episode {self.episode_number}"
+        if self.video_type == self.VideoType.YOUTUBE:
+            return f"{self.title} - {self.channel}"
         return self.title
 
     def get_absolute_url(self):
@@ -194,6 +247,10 @@ class Video(ScrobblableMixin):
     @property
     def link(self):
         return self.imdb_link
+
+    @property
+    def youtube_link(self):
+        return f"https://www.youtube.com/watch?v={self.youtube_id}"
 
     @property
     def primary_image_url(self) -> str:

@@ -12,8 +12,9 @@ from music.utils import (
 )
 from scrobbles.constants import AsTsvColumn
 from scrobbles.models import Scrobble
+from music.constants import MOPIDY_POST_KEYS
 
-from vrobbler.apps.scrobbles.utils import timestamp_user_tz_to_utc
+from scrobbles.utils import timestamp_user_tz_to_utc
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +44,8 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
             rockbox_info += row[0] + "\n"
             continue
         if len(row) > 8:
-            logger.warning(
-                "Improper row length during Audioscrobbler import",
+            logger.info(
+                "[skip] too many columns in row",
                 extra={"row": row},
             )
             continue
@@ -73,7 +74,13 @@ def process_audioscrobbler_tsv_file(file_path, user_id, user_tz=None):
 
         # TODO Set all this up as constants
         if row[AsTsvColumn["COMPLETE"].value] == "S":
-            logger.info(f"Skipping track {track} because not finished")
+            logger.info(
+                "[skip] track not finished",
+                extra={
+                    "album_name": row[AsTsvColumn["ALBUM_NAME"].value],
+                    "artist_name": row[AsTsvColumn["ARTIST_NAME"].value],
+                }
+            )
             continue
 
         timestamp = timestamp_user_tz_to_utc(
