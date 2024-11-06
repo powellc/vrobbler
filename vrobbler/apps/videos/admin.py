@@ -1,7 +1,14 @@
 from django.contrib import admin
 from scrobbles.models import Scrobble
-from videos.models import Series, Video
+from videos.models import Series, Video, Channel
 from scrobbles.admin import ScrobbleInline
+
+
+@admin.register(Channel)
+class ChannelAdmin(admin.ModelAdmin):
+    date_hierarchy = "created"
+    list_display = ("name", "youtube_id")
+    ordering = ("-created",)
 
 
 @admin.register(Series)
