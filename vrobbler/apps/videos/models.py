@@ -39,6 +39,7 @@ class Channel(TimeStampedModel):
         format="JPEG",
         options={"quality": 75},
     )
+    youtube_id = models.CharField(max_length=255, **BNULL)
     genre = TaggableManager(through=ObjectWithGenres)
 
     def __str__(self):

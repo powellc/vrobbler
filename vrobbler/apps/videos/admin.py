@@ -21,17 +21,16 @@ class SeriesAdmin(admin.ModelAdmin):
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    raw_id_fields = ("tv_series",)
+    raw_id_fields = ("tv_series","channel",)
     list_display = (
         "title",
         "video_type",
         "year",
         "tv_series",
-        "season_number",
-        "episode_number",
+        "channel",
         "imdb_rating",
     )
-    list_filter = ("year", "tv_series", "video_type")
+    list_filter = ("year", "tv_series", "channel", "video_type")
     ordering = ("-created",)
     inlines = [
         ScrobbleInline,
