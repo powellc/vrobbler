@@ -7,4 +7,5 @@ TODOIST_TITLE_SUFFIX_LABELS = [
     "admin",
     "meeting",
     "habit",
+    "research",
 ]
