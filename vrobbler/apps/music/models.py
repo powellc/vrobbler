@@ -430,7 +430,7 @@ class Track(ScrobblableMixin):
 
     @property
     def strings(self) -> ScrobblableConstants:
-        return ScrobblableConstants(verb="Listening", tags="headphones")
+        return ScrobblableConstants(verb="Listening", tags="notes")
 
     @property
     def mb_link(self):

@@ -1196,7 +1196,7 @@ class Scrobble(TimeStampedModel):
                 data=notify_str.encode(encoding="utf-8"),
                 headers={
                     "Title": scrobble.media_obj.strings.verb,
-                    "Priority": "default",
+                    "Priority": scrobble.media_obj.strings.priority,
                     "Tags": scrobble.media_obj.strings.tags,
                 },
             )

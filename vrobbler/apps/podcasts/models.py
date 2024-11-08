@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from podcasts.scrapers import scrape_data_from_google_podcasts
-from scrobbles.mixins import ScrobblableMixin
+from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -90,6 +90,10 @@ class PodcastEpisode(ScrobblableMixin):
     @property
     def subtitle(self):
         return self.podcast
+
+    @property
+    def strings(self) -> ScrobblableConstants:
+        return ScrobblableConstants(verb="Listening", tags="microphone")
 
     @property
     def info_link(self):
