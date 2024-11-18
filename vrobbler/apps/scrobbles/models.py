@@ -147,7 +147,9 @@ class BaseFileImportMixin(TimeStampedModel):
             return
 
         for count, scrobble in enumerate(scrobbles):
-            scrobble_str = f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.media_obj.title}"
+            scrobble_str = (
+                f"{scrobble.id}\t{scrobble.timestamp}\t{scrobble.media_obj}"
+            )
             log_line = f"{scrobble_str}"
             if count > 0:
                 log_line = "\n" + log_line
