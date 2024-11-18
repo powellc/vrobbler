@@ -269,3 +269,23 @@ def get_file_md5_hash(file_path: str) -> str:
         while chunk := f.read(8192):
             file_hash.update(chunk)
     return file_hash.hexdigest()
+
+
+def deduplicate_tracks():
+    from music.models import Track
+
+    # TODO This whole thing should iterate over users
+    dups = []
+
+    for t in Track.objects.all():
+        if Track.objects.filter(title=t.title, artist=t.artist).exists():
+            dups.append(t)
+
+    for b in dups:
+        tracks = Track.objects.filter(artist=b.artist, title=b.title)
+        first = tracks.first()
+        for other in tracks.exclude(id=first.id):
+            print("moving scrobbles for ", other.id, " to ", first.id)
+            other.scrobble_set.update(track=first)
+            print("deleting ", other.id, " - ", other)
+            other.delete()
