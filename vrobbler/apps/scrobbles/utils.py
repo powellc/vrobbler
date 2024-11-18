@@ -1,8 +1,10 @@
+import hashlib
 import logging
 import re
 from datetime import datetime, timedelta, tzinfo
 
 import pytz
+from books.koreader import fetch_file_from_webdav
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -11,6 +13,8 @@ from profiles.models import UserProfile
 from profiles.utils import now_user_timezone
 from scrobbles.constants import LONG_PLAY_MEDIA
 from scrobbles.tasks import process_lastfm_import, process_retroarch_import
+from vrobbler.apps.scrobbles.tasks import process_koreader_import
+from webdav.client import get_webdav_client
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -178,5 +182,87 @@ def delete_zombie_scrobbles(dry_run=True):
     return zombies_found
 
 
+def import_from_webdav_for_all_users(restart=False):
+    """Grab a list of all users with WebDAV enabled and kickoff imports for them"""
+    from scrobbles.models import KoReaderImport
+
+    # LastFmImport = apps.get_model("scrobbles", "LastFMImport")
+    webdav_enabled_user_ids = UserProfile.objects.filter(
+        webdav_url__isnull=False,
+        webdav_user__isnull=False,
+        webdav_pass__isnull=False,
+        webdav_auto_import=True,
+    ).values_list("user_id", flat=True)
+    logger.info(
+        f"start import of {webdav_enabled_user_ids.count()} webdav accounts"
+    )
+
+    koreader_import_count = 0
+
+    for user_id in webdav_enabled_user_ids:
+        webdav_client = get_webdav_client(user_id)
+
+        try:
+            webdav_client.info("var/koreader/statistics.sqlite3")
+            koreader_found = True
+        except:
+            koreader_found = False
+            logger.info(
+                "no koreader stats file found on webdav",
+                extra={"user_id": user_id},
+            )
+
+        if koreader_found:
+            last_import = (
+                KoReaderImport.objects.filter(
+                    user_id=user_id, processed_finished__isnull=False
+                )
+                .order_by("processed_finished")
+                .last()
+            )
+
+            koreader_file_path = fetch_file_from_webdav(1)
+            new_hash = get_file_md5_hash(koreader_file_path)
+            old_hash = None
+            if last_import:
+                old_hash = last_import.file_md5_hash()
+
+            if old_hash and new_hash == old_hash:
+                logger.info(
+                    "koreader stats file has not changed",
+                    extra={
+                        "user_id": user_id,
+                        "new_hash": new_hash,
+                        "old_hash": old_hash,
+                        "last_import_id": last_import.id,
+                    },
+                )
+                continue
+
+            koreader_import, created = KoReaderImport.objects.get_or_create(
+                user_id=user_id, processed_finished__isnull=True
+            )
+
+            if not created and not restart:
+                logger.info(
+                    f"Not resuming failed KoReader import {koreader_import.id} for user {user_id}, use restart=True to restart"
+                )
+                continue
+
+            koreader_import.save_sqlite_file_to_self(koreader_file_path)
+
+            process_koreader_import.delay(koreader_import.id)
+            koreader_import_count += 1
+    return koreader_import_count
+
+
 def media_class_to_foreign_key(media_class: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", media_class).lower()
+
+
+def get_file_md5_hash(file_path: str) -> str:
+    with open(file_path, "rb") as f:
+        file_hash = hashlib.md5()
+        while chunk := f.read(8192):
+            file_hash.update(chunk)
+    return file_hash.hexdigest()

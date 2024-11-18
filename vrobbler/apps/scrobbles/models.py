@@ -15,6 +15,7 @@ from books.models import Book
 from bricksets.models import BrickSet
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files import File
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -49,6 +50,7 @@ from videos.models import Series, Video
 from webpages.models import WebPage
 
 from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
+from vrobbler.apps.scrobbles.utils import get_file_md5_hash
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -185,6 +187,19 @@ class KoReaderImport(BaseFileImportMixin):
         return path
 
     sqlite_file = models.FileField(upload_to=get_path, **BNULL)
+
+    def save_sqlite_file_to_self(self, file_path):
+        with open(file_path, "rb") as f:
+            self.sqlite_file.save(
+                f"{self.user_id}-koreader-statistics.sqlite",
+                File(f),
+                save=True,
+            )
+
+    def file_md5_hash(self) -> str:
+        if self.sqlite_file:
+            return get_file_md5_hash(self.sqlite_file.path)
+        return ""
 
     def process(self, force=False):
 

@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from beers.untappd import get_beer_from_untappd_id, get_rating_from_soup
 from django.apps import apps
 from django.db import models
 from django.urls import reverse
@@ -8,10 +9,6 @@ from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from scrobbles.dataclasses import BeerLogData
 from scrobbles.mixins import ScrobblableConstants, ScrobblableMixin
-from vrobbler.apps.beers.untappd import (
-    get_beer_from_untappd_id,
-    get_rating_from_soup,
-)
 
 BNULL = {"blank": True, "null": True}
 

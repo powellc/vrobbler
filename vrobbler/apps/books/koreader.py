@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import logging
 import re
 import sqlite3
@@ -7,12 +6,11 @@ from enum import Enum
 
 import pytz
 import requests
-from books.models import Author, Book
-from books.openlibrary import get_author_openlibrary_id
+from books.constants import BOOKS_TITLES_TO_IGNORE
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from stream_sqlite import stream_sqlite
-from vrobbler.apps.books.constants import BOOKS_TITLES_TO_IGNORE
+from webdav.client import get_webdav_client
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -63,6 +61,8 @@ def lookup_or_create_authors_from_author_str(ko_author_str: str) -> list:
     """Takes a string of authors from KoReader and returns a list
     of Authors from our database
     """
+    from books.models import Author
+
     author_str_list = ko_author_str.split(", ")
     author_list = []
     for author_str in author_str_list:
@@ -83,6 +83,8 @@ def lookup_or_create_authors_from_author_str(ko_author_str: str) -> list:
 
 
 def create_book_from_row(row: list):
+    from books.models import Book
+
     # No KoReader book yet, create it
     author_str = get_author_str_from_row(row).replace("\x00", "")
     total_pages = row[KoReaderBookColumn.PAGES.value]
@@ -131,6 +133,8 @@ def build_book_map(rows) -> dict:
     primary key IDs for page creation.
 
     """
+    from books.models import Book
+
     book_id_map = {}
 
     for book_row in rows:
@@ -148,7 +152,12 @@ def build_book_map(rows) -> dict:
         ).first()
 
         if not book:
-            title = book_row[KoReaderBookColumn.TITLE.value].split(" - ")[0].lower().replace("\x00", "")
+            title = (
+                book_row[KoReaderBookColumn.TITLE.value]
+                .split(" - ")[0]
+                .lower()
+                .replace("\x00", "")
+            )
             book = Book.objects.filter(title=title).first()
 
         if not book:
@@ -438,3 +447,19 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
             extra={"created_scrobbles": created},
         )
     return created
+
+
+def fetch_file_from_webdav(user_id: int) -> str:
+    file_path = f"/tmp/{user_id}-koreader-import.sqlite3"
+    client = get_webdav_client(user_id)
+
+    if not client:
+        logger.warning("could not get webdav client for user")
+        # TODO maybe we raise an exception here?
+        return ""
+
+    client.download_sync(
+        remote_path="var/koreader/statistics.sqlite3",
+        local_path=file_path,
+    )
+    return file_path
