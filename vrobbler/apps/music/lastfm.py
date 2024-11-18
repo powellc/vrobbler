@@ -52,9 +52,10 @@ class LastFM:
             track = get_or_create_track(
                 lfm_scrobble,
                 {
-                    "TRACK_TITLE": "track",
+                    "TRACK_TITLE": "title",
                     "ARTIST_NAME": "artist",
                     "ALBUM_NAME": "album",
+                    "RUN_TIME": "run_time_seconds",
                 },
             )
 
