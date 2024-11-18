@@ -12,8 +12,11 @@ from django.utils import timezone
 from profiles.models import UserProfile
 from profiles.utils import now_user_timezone
 from scrobbles.constants import LONG_PLAY_MEDIA
-from scrobbles.tasks import process_lastfm_import, process_retroarch_import
-from vrobbler.apps.scrobbles.tasks import process_koreader_import
+from scrobbles.tasks import (
+    process_koreader_import,
+    process_lastfm_import,
+    process_retroarch_import,
+)
 from webdav.client import get_webdav_client
 
 logger = logging.getLogger(__name__)
