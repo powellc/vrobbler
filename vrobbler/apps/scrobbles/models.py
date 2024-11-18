@@ -7,7 +7,6 @@ from uuid import uuid4
 
 import pendulum
 import pytz
-import requests
 from beers.models import Beer
 from boardgames.models import BoardGame
 from books.koreader import process_koreader_sqlite_file
@@ -28,7 +27,6 @@ from moods.models import Mood
 from music.lastfm import LastFM
 from music.models import Artist, Track
 from podcasts.models import PodcastEpisode
-from profiles.models import UserProfile
 from profiles.utils import (
     end_of_day,
     end_of_month,
@@ -38,9 +36,13 @@ from profiles.utils import (
     start_of_week,
 )
 from scrobbles import dataclasses as logdata
-from scrobbles.constants import LONG_PLAY_MEDIA
+from scrobbles.constants import LONG_PLAY_MEDIA, MEDIA_END_PADDING_SECONDS
 from scrobbles.stats import build_charts
-from scrobbles.utils import media_class_to_foreign_key
+from scrobbles.utils import (
+    get_file_md5_hash,
+    media_class_to_foreign_key,
+    send_notifications_for_scrobble,
+)
 from sports.models import SportEvent
 from tasks.models import Task
 from trails.models import Trail
@@ -48,9 +50,6 @@ from videogames import retroarch
 from videogames.models import VideoGame
 from videos.models import Series, Video
 from webpages.models import WebPage
-
-from vrobbler.apps.scrobbles.constants import MEDIA_END_PADDING_SECONDS
-from vrobbler.apps.scrobbles.utils import get_file_md5_hash
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -1197,27 +1196,8 @@ class Scrobble(TimeStampedModel):
         cls,
         scrobble_data: dict,
     ) -> "Scrobble":
-        scrobble = cls.objects.create(
-            **scrobble_data,
-        )
-        profile = UserProfile.objects.filter(
-            user_id=scrobble_data["user_id"]
-        ).first()
-        if profile and profile.ntfy_enabled and profile.ntfy_url:
-            # TODO allow prority and tags to be configured in the profile
-            notify_str = f"{scrobble.media_obj}"
-            if scrobble.log and scrobble.log.get("description"):
-                notify_str += f" - {scrobble.log.get('description')}"
-            requests.post(
-                profile.ntfy_url,
-                data=notify_str.encode(encoding="utf-8"),
-                headers={
-                    "Title": scrobble.media_obj.strings.verb,
-                    "Priority": scrobble.media_obj.strings.priority,
-                    "Tags": scrobble.media_obj.strings.tags,
-                },
-            )
-
+        scrobble = cls.objects.create(**scrobble_data)
+        send_notifications_for_scrobble(scrobble.id)
         return scrobble
 
     def stop(self, force_finish=False) -> None:

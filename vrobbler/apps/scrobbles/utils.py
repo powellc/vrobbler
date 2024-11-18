@@ -4,7 +4,7 @@ import re
 from datetime import datetime, timedelta, tzinfo
 
 import pytz
-from books.koreader import fetch_file_from_webdav
+import requests
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -188,6 +188,7 @@ def delete_zombie_scrobbles(dry_run=True):
 def import_from_webdav_for_all_users(restart=False):
     """Grab a list of all users with WebDAV enabled and kickoff imports for them"""
     from scrobbles.models import KoReaderImport
+    from books.koreader import fetch_file_from_webdav
 
     # LastFmImport = apps.get_model("scrobbles", "LastFMImport")
     webdav_enabled_user_ids = UserProfile.objects.filter(
@@ -289,3 +290,24 @@ def deduplicate_tracks():
             other.scrobble_set.update(track=first)
             print("deleting ", other.id, " - ", other)
             other.delete()
+
+
+def send_notifications_for_scrobble(scrobble_id):
+    from scrobbles.models import Scrobble
+
+    scrobble = Scrobble.objects.get(id=scrobble_id)
+    profile = scrobble.user.profile
+    if profile and profile.ntfy_enabled and profile.ntfy_url:
+        # TODO allow prority and tags to be configured in the profile
+        notify_str = f"{scrobble.media_obj}"
+        if scrobble.log and scrobble.log.get("description"):
+            notify_str += f" - {scrobble.log.get('description')}"
+        requests.post(
+            profile.ntfy_url,
+            data=notify_str.encode(encoding="utf-8"),
+            headers={
+                "Title": scrobble.media_obj.strings.verb,
+                "Priority": scrobble.media_obj.strings.priority,
+                "Tags": scrobble.media_obj.strings.tags,
+            },
+        )

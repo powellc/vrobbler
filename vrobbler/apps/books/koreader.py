@@ -9,6 +9,7 @@ import requests
 from books.constants import BOOKS_TITLES_TO_IGNORE
 from django.apps import apps
 from django.contrib.auth import get_user_model
+from scrobbles.utils import send_notifications_for_scrobble
 from stream_sqlite import stream_sqlite
 from webdav.client import get_webdav_client
 
@@ -441,6 +442,7 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
     created = []
     if new_scrobbles:
         created = Scrobble.objects.bulk_create(new_scrobbles)
+        send_notifications_for_scrobble(created.last().id)
         fix_long_play_stats_for_scrobbles(created)
         logger.info(
             f"Created {len(created)} scrobbles",
