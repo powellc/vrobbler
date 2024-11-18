@@ -1,4 +1,4 @@
 export ENV_PATH=$(poetry env info --path)
 source "${ENV_PATH}/bin/activate"
 
-export PYPI_PASSWORD="$(pass personal/apikey/pypi)"
+#export PYPI_PASSWORD="$(pass personal/apikey/pypi)"
