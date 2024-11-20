@@ -442,7 +442,8 @@ def process_koreader_sqlite_file(file_path, user_id) -> list:
     created = []
     if new_scrobbles:
         created = Scrobble.objects.bulk_create(new_scrobbles)
-        send_notifications_for_scrobble(created.last().id)
+        if created:
+            send_notifications_for_scrobble(created[-1].id)
         fix_long_play_stats_for_scrobbles(created)
         logger.info(
             f"Created {len(created)} scrobbles",
