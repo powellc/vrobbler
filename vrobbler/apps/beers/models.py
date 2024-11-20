@@ -132,6 +132,6 @@ class Beer(ScrobblableMixin):
 
     def scrobbles(self, user_id):
         Scrobble = apps.get_model("scrobbles", "Scrobble")
-        return Scrobble.objects.filter(
-            user_id=user_id, life_event=self
-        ).order_by("-timestamp")
+        return Scrobble.objects.filter(user_id=user_id, beer=self).order_by(
+            "-timestamp"
+        )

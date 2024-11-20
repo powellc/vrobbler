@@ -19,6 +19,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
+from foods.models import Food
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
 from lifeevents.models import LifeEvent
@@ -506,6 +507,7 @@ class Scrobble(TimeStampedModel):
         GEO_LOCATION = "GeoLocation", "GeoLocation"
         TRAIL = "Trail", "Trail"
         BEER = "Beer", "Beer"
+        FOOD = "Food", "Food"
         TASK = "Task", "Task"
         WEBPAGE = "WebPage", "Web Page"
         LIFE_EVENT = "LifeEvent", "Life event"
@@ -532,6 +534,7 @@ class Scrobble(TimeStampedModel):
         GeoLocation, on_delete=models.DO_NOTHING, **BNULL
     )
     beer = models.ForeignKey(Beer, on_delete=models.DO_NOTHING, **BNULL)
+    food = models.ForeignKey(Food, on_delete=models.DO_NOTHING, **BNULL)
     trail = models.ForeignKey(Trail, on_delete=models.DO_NOTHING, **BNULL)
     task = models.ForeignKey(Task, on_delete=models.DO_NOTHING, **BNULL)
     web_page = models.ForeignKey(WebPage, on_delete=models.DO_NOTHING, **BNULL)

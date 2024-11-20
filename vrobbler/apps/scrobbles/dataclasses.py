@@ -203,3 +203,11 @@ class BeerLogData(WithOthersLogData):
     details: Optional[str] = None
     rating: Optional[str] = None
     notes: Optional[str] = None
+
+
+@dataclass
+class FoodLogData(JSONDataclass):
+    meal: Optional[str] = None
+    details: Optional[str] = None
+    rating: Optional[str] = None
+    notes: Optional[str] = None

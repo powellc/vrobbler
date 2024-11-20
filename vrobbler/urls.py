@@ -38,6 +38,7 @@ from vrobbler.apps.sports.api.views import (
 from vrobbler.apps.tasks import urls as tasks_urls
 from vrobbler.apps.trails import urls as trails_urls
 from vrobbler.apps.beers import urls as beers_urls
+from vrobbler.apps.foods import urls as foods_urls
 from vrobbler.apps.videogames import urls as videogame_urls
 from vrobbler.apps.videos import urls as video_urls
 from vrobbler.apps.videos.api.views import SeriesViewSet, VideoViewSet
@@ -79,7 +80,7 @@ urlpatterns = [
     path("", include(sports_urls, namespace="sports")),
     path("", include(locations_urls, namespace="locations")),
     path("", include(trails_urls, namespace="trails")),
-    path("", include(beers_urls, namespace="beers")),
+    path("", include(foods_urls, namespace="foods")),
     path("", include(tasks_urls, namespace="tasks")),
     path("", include(webpages_urls, namespace="webpages")),
     path("", include(podcast_urls, namespace="podcasts")),
