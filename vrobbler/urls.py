@@ -80,6 +80,7 @@ urlpatterns = [
     path("", include(sports_urls, namespace="sports")),
     path("", include(locations_urls, namespace="locations")),
     path("", include(trails_urls, namespace="trails")),
+    path("", include(beers_urls, namespace="beers")),
     path("", include(foods_urls, namespace="foods")),
     path("", include(tasks_urls, namespace="tasks")),
     path("", include(webpages_urls, namespace="webpages")),
