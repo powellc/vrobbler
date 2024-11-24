@@ -100,10 +100,6 @@ class ScrobblableMixin(TimeStampedModel):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
 
     @property
-    def finish_url(self) -> str:
-        return reverse("scrobbles:finish", kwargs={"uuid": self.uuid})
-
-    @property
     def strings(self) -> ScrobblableConstants:
         return ScrobblableConstants()
 

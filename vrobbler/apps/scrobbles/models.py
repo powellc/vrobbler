@@ -604,6 +604,10 @@ class Scrobble(TimeStampedModel):
                 id=self.logdata.serial_scrobble_id
             ).first()
 
+    @property
+    def finish_url(self) -> str:
+        return reverse("scrobbles:finish", kwargs={"uuid": self.uuid})
+
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = uuid4()
