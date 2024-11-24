@@ -67,6 +67,9 @@ class Beer(ScrobblableMixin):
     def get_absolute_url(self) -> str:
         return reverse("beers:beer_detail", kwargs={"slug": self.uuid})
 
+    def __str__(self):
+        return f"{self.title} by {self.producer}"
+
     @property
     def subtitle(self):
         return self.producer.name

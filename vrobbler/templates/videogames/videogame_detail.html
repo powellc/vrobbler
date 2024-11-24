@@ -67,7 +67,7 @@
         {% if object.scrobble_set.last.long_play_complete == True %}
         <a href="">Play again</a>
         {% else %}
-        <a href="{{object.get_start_url}}">Resume playing</a>
+        <a href="{{object.start_url}}">Resume playing</a>
         {% endif %}
     </p>
 </div>

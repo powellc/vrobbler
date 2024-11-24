@@ -169,9 +169,6 @@ class VideoGame(LongPlayScrobblableMixin):
         slug = self.title.lower().replace(" ", "-")
         return f"https://igdb.com/games/{slug}"
 
-    def get_start_url(self):
-        return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
-
     @property
     def logdata_cls(self):
         return VideoGameLogData

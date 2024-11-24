@@ -23,6 +23,7 @@ from videos.imdb import lookup_video_from_imdb
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
 
+
 class Channel(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     name = models.CharField(max_length=255)
@@ -74,6 +75,7 @@ class Channel(TimeStampedModel):
         # TODO Scrape channel info from Youtube
         logger.warning("Not implemented yet")
         return
+
 
 class Series(TimeStampedModel):
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
@@ -223,9 +225,9 @@ class Video(ScrobblableMixin):
 
     def __str__(self):
         if self.video_type == self.VideoType.TV_EPISODE:
-            return f"{self.title} - {self.tv_series} - Season {self.season_number}, Episode {self.episode_number}"
+            return f"{self.title} / [S{self.season_number}E{self.episode_number}] {self.tv_series}"
         if self.video_type == self.VideoType.YOUTUBE:
-            return f"{self.title} - {self.channel}"
+            return f"{self.title} / {self.channel}"
         return self.title
 
     def get_absolute_url(self):

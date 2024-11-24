@@ -309,5 +309,6 @@ def send_notifications_for_scrobble(scrobble_id):
                 "Title": scrobble.media_obj.strings.verb,
                 "Priority": scrobble.media_obj.strings.priority,
                 "Tags": scrobble.media_obj.strings.tags,
+                "Click": scrobble.finish_url,
             },
         )

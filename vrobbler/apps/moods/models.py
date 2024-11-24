@@ -38,9 +38,6 @@ class Mood(ScrobblableMixin):
     def get_absolute_url(self):
         return reverse("moods:mood-detail", kwargs={"slug": self.uuid})
 
-    def get_start_url(self):
-        return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
-
     @property
     def subtitle(self) -> str:
         return ""

@@ -3,7 +3,7 @@
         <dt><a href="{{media.get_absolute_url}}">{{media.title}}</a></dt>
         <dd><a href="{{media.get_absolute_url}}"><img src="{{media.primary_image_url}}" style="width: 200px; height: 200px; object-fit:cover; " /></a></dd>
         <dd>
-            {% if media.is_long_play_in_progress %}Playing{% else %}<a type="button" class="btn btn-sm btn-primary" href="{{media.get_start_url}}">Resume</a>{% endif %}
+            {% if media.is_long_play_in_progress %}Playing{% else %}<a type="button" class="btn btn-sm btn-primary" href="{{media.start_url}}">Resume</a>{% endif %}
             <a type="button" class="right btn btn-sm " href="{{media.get_longplay_finish_url}}">Finish</a>
         </dd>
     </dl>

@@ -95,8 +95,13 @@ class ScrobblableMixin(TimeStampedModel):
         )
         return Scrobble.create_or_update(self, user_id, scrobble_data)
 
-    def get_start_url(self):
+    @property
+    def start_url(self):
         return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
+
+    @property
+    def finish_url(self) -> str:
+        return reverse("scrobbles:finish", kwargs={"uuid": self.uuid})
 
     @property
     def strings(self) -> ScrobblableConstants:

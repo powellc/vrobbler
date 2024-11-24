@@ -150,9 +150,6 @@ class Book(LongPlayScrobblableMixin):
             url = self.cover_medium.url
         return url
 
-    def get_start_url(self):
-        return reverse("scrobbles:start", kwargs={"uuid": self.uuid})
-
     def get_absolute_url(self):
         return reverse("books:book_detail", kwargs={"slug": self.uuid})
 

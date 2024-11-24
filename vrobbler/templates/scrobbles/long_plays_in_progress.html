@@ -28,7 +28,7 @@
             <dd><a href="{{media.get_absolute_url}}"><img src="{{media.cover_medium.url}}" style="width: 200px; height: 200px; object-fit:cover; " /></a></dd>
             {% endif %}
             <dd>
-                {% if media.is_long_play_in_progress %}Playing{% else %}<a type="button" class="btn btn-sm btn-primary" href="{{media.get_start_url}}">Resume</a>{% endif %}
+                {% if media.is_long_play_in_progress %}Playing{% else %}<a type="button" class="btn btn-sm btn-primary" href="{{media.start_url}}">Resume</a>{% endif %}
                 <a type="button" class="right btn btn-sm " href="{{media.get_longplay_finish_url}}">Finish</a>
             </dd>
         </dl>
@@ -55,7 +55,7 @@
                         <td>{{media.scrobble_set.count}}</td>
                         <td><a href="{{media.get_absolute_url}}">{{media}}</a></td>
                         <td>{% if media.author %}{{media.author}}{% else %}{{media.platforms.first}}{% endif %}</td>
-                        <td><a type="button" class="btn btn-sm btn-primary" href="{{media.get_start_url}}">Resume</a></td>
+                        <td><a type="button" class="btn btn-sm btn-primary" href="{{media.start_url}}">Resume</a></td>
                         <td><a type="button" class="right btn btn-sm " href="{{media.get_longplay_finish_url}}">Finish</a></td>
                     </tr>
                     {% endfor %}
