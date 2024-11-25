@@ -48,6 +48,7 @@ dataclass-wizard = "0.22.0"
 webdavclient3 = "^3.14.6"
 boto3 = "^1.35.37"
 django-oauth-toolkit = "^3.0.1"
+meta-yt = "^0.1.9"
 
 [tool.poetry.group.dev]
 optional = true
