@@ -1,7 +1,8 @@
 import logging
-from typing import Dict, Optional
+from typing import Optional
 from uuid import uuid4
 
+import pendulum
 import requests
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -18,7 +19,13 @@ from scrobbles.mixins import (
     ScrobblableMixin,
 )
 from taggit.managers import TaggableManager
-from videos.imdb import lookup_video_from_imdb
+from videos.services.metadata import VideoMetadata
+from videos.sources.imdb import lookup_video_from_imdb
+from vrobbler.apps.videos.sources.youtube import lookup_video_from_youtube
+
+YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v="
+YOUTUBE_CHANNEL_URL = "https://www.youtube.com/channel/"
+IMDB_VIDEO_URL = "https://www.imdb.com/title/tt"
 
 logger = logging.getLogger(__name__)
 BNULL = {"blank": True, "null": True}
@@ -43,14 +50,15 @@ class Channel(TimeStampedModel):
     youtube_id = models.CharField(max_length=255, **BNULL)
     genre = TaggableManager(through=ObjectWithGenres)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     def get_absolute_url(self):
         return reverse("videos:channel_detail", kwargs={"slug": self.uuid})
 
-    def youtube_link(self):
-        return f"https://www.youtube.com/user/t{self.yt_username}"
+    @property
+    def youtube_url(self):
+        return YOUTUBE_CHANNEL_URL + self.youtube_id
 
     @property
     def primary_image_url(self) -> str:
@@ -109,8 +117,10 @@ class Series(TimeStampedModel):
     def get_absolute_url(self):
         return reverse("videos:series_detail", kwargs={"slug": self.uuid})
 
-    def imdb_link(self):
-        return f"https://www.imdb.com/title/tt{self.imdb_id}"
+    def imdb_link(self) -> str:
+        if self.imdb_id:
+            return IMDB_VIDEO_URL + self.imdb_id
+        return ""
 
     @property
     def primary_image_url(self) -> str:
@@ -150,15 +160,11 @@ class Series(TimeStampedModel):
         name_or_id = self.name
         if self.imdb_id:
             name_or_id = self.imdb_id
-        imdb_dict = lookup_video_from_imdb(name_or_id)
-        if not imdb_dict:
+        video_metadata: VideoMetadata = lookup_video_from_imdb(name_or_id)
+
+        if not video_metadata.title:
             logger.warning(f"No imdb data for {self}")
             return
-
-        self.imdb_id = imdb_dict.get("imdb_id")
-        self.imdb_rating = imdb_dict.get("imdb_rating")
-        self.plot = imdb_dict.get("plot")
-        self.save(update_fields=["imdb_id", "imdb_rating", "plot"])
 
         cover_url = imdb_dict.get("cover_url")
 
@@ -175,6 +181,7 @@ class Series(TimeStampedModel):
 class Video(ScrobblableMixin):
     COMPLETION_PERCENT = getattr(settings, "VIDEO_COMPLETION_PERCENT", 90)
     SECONDS_TO_STALE = getattr(settings, "VIDEO_SECONDS_TO_STALE", 14400)
+    METADATA_CLASS = VideoMetadata
 
     class VideoType(models.TextChoices):
         UNKNOWN = "U", _("Unknown")
@@ -218,12 +225,14 @@ class Video(ScrobblableMixin):
     tmdb_id = models.CharField(max_length=20, **BNULL)
     youtube_id = models.CharField(max_length=255, **BNULL)
     plot = models.TextField(**BNULL)
-    year = models.IntegerField(**BNULL)
+    upload_date = models.DateField(**BNULL)
 
     class Meta:
         unique_together = [["title", "imdb_id"]]
 
     def __str__(self):
+        if not self.title:
+            return self.youtube_id or self.imdb_id
         if self.video_type == self.VideoType.TV_EPISODE:
             return f"{self.title} / [S{self.season_number}E{self.episode_number}] {self.tv_series}"
         if self.video_type == self.VideoType.YOUTUBE:
@@ -248,12 +257,14 @@ class Video(ScrobblableMixin):
         return self.imdb_link
 
     @property
-    def link(self):
+    def link(self) -> str:
         return self.imdb_link
 
     @property
-    def youtube_link(self):
-        return f"https://www.youtube.com/watch?v={self.youtube_id}"
+    def youtube_link(self) -> str:
+        if self.youtube_id:
+            return YOUTUBE_BASE_URL + self.youtube_id
+        return ""
 
     @property
     def primary_image_url(self) -> str:
@@ -266,44 +277,52 @@ class Video(ScrobblableMixin):
     def strings(self) -> ScrobblableConstants:
         return ScrobblableConstants(verb="Watching", tags="movie_camera")
 
-    def fix_metadata(self, force_update=False):
-        imdb_dict = lookup_video_from_imdb(self.imdb_id)
-        if not imdb_dict:
-            logger.warn(f"No imdb data for {self}")
-            return
-        if imdb_dict.get("runtimes") and len(imdb_dict.get("runtimes")) > 0:
-            self.run_time_seconds = int(imdb_dict.get("runtimes")[0]) * 60
-        if (
-            imdb_dict.get("run_time_seconds")
-            and imdb_dict.get("run_time_seconds") > 0
-        ):
-            self.run_time_seconds = int(imdb_dict.get("run_time_seconds"))
-        self.imdb_rating = imdb_dict.get("imdb_rating")
-        self.plot = imdb_dict.get("plot")
-        self.year = imdb_dict.get("year")
-        self.save(
-            update_fields=["imdb_rating", "plot", "year", "run_time_seconds"]
-        )
-
-        cover_url = imdb_dict.get("cover_url")
-
-        if (not self.cover_image or force_update) and cover_url:
-            r = requests.get(cover_url)
+    def save_image_from_url(self, url: str, force_update: bool = False):
+        if not self.cover_image or (force_update and url):
+            r = requests.get(url)
             if r.status_code == 200:
                 fname = f"{self.title}_{self.uuid}.jpg"
                 self.cover_image.save(fname, ContentFile(r.content), save=True)
 
-        if genres := imdb_dict.get("genres"):
-            self.genre.add(*genres)
+    @classmethod
+    def get_from_youtube_id(
+        cls, youtube_id: str, overwrite: bool = False
+    ) -> "Video":
+        video, created = cls.objects.get_or_create(youtube_id=youtube_id)
+        if not created and not overwrite:
+            return video
 
-    def scrape_cover_from_url(
-        self, cover_url: str, force_update: bool = False
-    ):
-        if not self.cover_image or force_update:
-            r = requests.get(cover_url)
-            if r.status_code == 200:
-                fname = f"{self.title}_{self.uuid}.jpg"
-                self.cover_image.save(fname, ContentFile(r.content), save=True)
+        vdict, cover, genres = lookup_video_from_youtube(
+            youtube_id
+        ).as_dict_with_cover_and_genres()
+        if created or overwrite:
+            for k, v in vdict.items():
+                setattr(video, k, v)
+            video.save()
+
+            video.save_image_from_url(cover)
+            video.genre.add(*genres)
+        return video
+
+    @classmethod
+    def get_from_imdb_id(cls, imdb_id: str, overwrite: bool = False):
+        video, created = cls.objects.get_or_create(imdb_id=imdb_id)
+        if not created and not overwrite:
+            return video
+
+        vdict, cover, genres = lookup_video_from_imdb(
+            imdb_id
+        ).as_dict_with_cover_and_genres()
+        if created or overwrite:
+            for k, v in vdict.items():
+                if k == "imdb_id":
+                    v = "tt" + v
+                setattr(video, k, v)
+            video.save()
+
+            video.save_image_from_url(cover)
+            video.genre.add(*genres)
+        return video
 
     @classmethod
     def find_or_create(

@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     "tasks",
     "trails",
     "beers",
+    "foods",
     "lifeevents",
     "moods",
     "mathfilters",

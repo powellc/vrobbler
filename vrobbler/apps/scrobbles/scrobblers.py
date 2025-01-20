@@ -143,11 +143,11 @@ def web_scrobbler_scrobble_media(
     parsed = post_data.get("data").get("song").get("parsed")
     processed = post_data.get("data").get("song").get("processed")
     video, created = Video.objects.get_or_create(
-        video_type=Video.VideoType.YOUTUBE, 
+        video_type=Video.VideoType.YOUTUBE,
         youtube_url=parsed.get("originUrl"),
     )
     timestamp = datetime.utcfromtimestamp(
-        post_data.get("time", 0)/1000
+        post_data.get("time", 0) / 1000
     ).replace(tzinfo=pytz.utc)
 
     if created or event_name == "nowplaying":
@@ -156,7 +156,9 @@ def web_scrobbler_scrobble_media(
         if not processed.get("duration"):
             video.run_time_seconds = 1500
         # TODO maybe artist could be the series?
-        video.title = " - ".join([processed.get("artist"), processed.get("track")])
+        video.title = " - ".join(
+            [processed.get("artist"), processed.get("track")]
+        )
         video.save()
         return video.scrobble_for_user(
             user_id,
@@ -165,7 +167,9 @@ def web_scrobbler_scrobble_media(
             status=event_name,
         )
 
-    scrobble = Scrobble.objects.filter(user_id=user_id, video=video, in_progress=True).first()
+    scrobble = Scrobble.objects.filter(
+        user_id=user_id, video=video, in_progress=True
+    ).first()
     if not scrobble:
         return video.scrobble_for_user(
             user_id,
@@ -179,11 +183,13 @@ def web_scrobbler_scrobble_media(
         scrobble.resume()
     return scrobble
 
-def manual_scrobble_video(imdb_id: str, user_id: int):
-    if "tt" not in imdb_id:
-        imdb_id = "tt" + imdb_id
 
-    video = Video.find_or_create({JELLYFIN_POST_KEYS.get("IMDB_ID"): imdb_id})
+def manual_scrobble_video(video_id: str, user_id: int):
+    if "tt" in video_id:
+        video = Video.get_from_imdb_id(video_id)
+
+    else:
+        video = Video.get_from_youtube_id(video_id)
 
     # When manually scrobbling, try finding a source from the series
     source = "Vrobbler"
@@ -330,14 +336,15 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
         content_key = "-w"
         item_id = url
 
+    # Try generic search for any URL with digit-based IDs
     if not item_id:
         try:
             item_id = re.findall("\d+", url)[0]
         except IndexError:
             pass
 
-    if content_key == "-t":
-        item_id = url
+    if content_key == "-i" and not item_id:
+        item_id = url.split("v=")[1].split("&")[0]
 
     scrobble_fn = MANUAL_SCROBBLE_FNS[content_key]
     return eval(scrobble_fn)(item_id, user_id)

@@ -60,7 +60,7 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
             video.genre.add(*genres)
 
         if cover_url := video_dict.pop("cover_url", None):
-            video.scrape_cover_from_url(cover_url)
+            video.save_image_from_url(cover_url)
 
         Video.objects.filter(pk=video.id).update(**video_dict)
         video.refresh_from_db()

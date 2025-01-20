@@ -33,6 +33,7 @@ SCROBBLE_CONTENT_URLS = {
     "-u": "https://untappd.com/",
     "-b": "https://www.amazon.com/",
     "-t": "https://app.todoist.com/app/task/{id}",
+    "-i": "https://www.youtube.com/watch?v=",
 }
 
 EXCLUDE_FROM_NOW_PLAYING = ("GeoLocation",)
