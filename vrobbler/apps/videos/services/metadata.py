@@ -35,7 +35,7 @@ class VideoMetadata:
     season_number: Optional[str]
     next_imdb_id: Optional[str]
     year: Optional[int]
-    series_id: Optional[int]
+    tv_series_id: Optional[int]
     plot: Optional[str]
     imdb_rating: Optional[str]
     cover_url: Optional[str]

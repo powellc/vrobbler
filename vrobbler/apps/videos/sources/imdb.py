@@ -25,37 +25,45 @@ def lookup_video_from_imdb(
         pass
 
     video_metadata = metadata.VideoMetadata(imdb_id=imdb_id)
-    imdb_data: dict = {}
+    imdb_result: dict = {}
 
     imdb_result = imdb_client.get_movie(name_or_id)
-    imdb_client.update(imdb_result, info=["plot", "synopsis", "taglines"])
-    imdb_data = imdb_result
 
-    if not imdb_data:
-        imdb_results = imdb_client.search_movie(name_or_id)
+    if not imdb_result:
+        imdb_result = {}
+        imdb_results: list = imdb_client.search_movie(name_or_id)
         if len(imdb_results) > 1:
             for result in imdb_results:
                 if result["kind"] == kind:
-                    imdb_data = result
+                    imdb_client.update(
+                        result,
+                        info=[
+                            "plot",
+                            "synopsis",
+                            "taglines",
+                            "next_episode",
+                            "genres",
+                        ],
+                    )
+                    imdb_result = result
                     break
 
         if len(imdb_results) == 1:
-            imdb_data = imdb_results[0]
+            imdb_result = imdb_results[0]
+
         imdb_client.update(
-            imdb_data,
+            imdb_result,
             info=["plot", "synopsis", "taglines", "next_episode", "genres"],
         )
 
-    if not imdb_data:
+    if not imdb_result:
         logger.info(
             f"[lookup_video_from_imdb] no video found on imdb",
             extra={"name_or_id": name_or_id},
         )
         return None
 
-    imdb_client.update(imdb_data)
-
-    video_metadata.cover_url = imdb_data.get("cover url")
+    video_metadata.cover_url = imdb_result.get("cover url")
     if video_metadata.cover_url:
         video_metadata.cover_url = helpers.resizeImage(
             video_metadata.cover_url, width=800
@@ -63,25 +71,27 @@ def lookup_video_from_imdb(
 
     video_metadata.video_type = metadata.VideoType.MOVIE
     series_name = None
-    if imdb_data.get("kind") == "episode":
-        series_name = imdb_data.get("episode of", None).data.get("title", None)
-        series, series_created = Series.objects.get_or_create(name=series_name)
+    if imdb_result.get("kind") == "episode":
+        series_name = imdb_result.get("episode of", None).data.get(
+            "title", None
+        )
+        series, _ = Series.objects.get_or_create(name=series_name)
         video_metadata.video_type = metadata.VideoType.TV_EPISODE
-        video_metadata.series_id = series.id
+        video_metadata.tv_series_id = series.id
 
-    if imdb_data.get("runtimes"):
+    if imdb_result.get("runtimes"):
         video_metadata.run_time_seconds = (
-            int(imdb_data.get("runtimes")[0]) * 60
+            int(imdb_result.get("runtimes")[0]) * 60
         )
 
-    video_metadata.title = imdb_data.get("title", "")
-    video_metadata.imdb_id = imdb_data.get("imdbID")
-    video_metadata.episode_number = imdb_data.get("episode", None)
-    video_metadata.season_number = imdb_data.get("season", None)
-    video_metadata.next_imdb_id = imdb_data.get("next episode", None)
-    video_metadata.year = imdb_data.get("year", None)
-    video_metadata.plot = imdb_data.get("plot outline")
-    video_metadata.imdb_rating = imdb_data.get("rating")
-    video_metadata.genres = imdb_data.get("genres")
+    video_metadata.title = imdb_result.get("title", "")
+    video_metadata.imdb_id = imdb_result.get("imdbID")
+    video_metadata.episode_number = imdb_result.get("episode", None)
+    video_metadata.season_number = imdb_result.get("season", None)
+    video_metadata.next_imdb_id = imdb_result.get("next episode", None)
+    video_metadata.year = imdb_result.get("year", None)
+    video_metadata.plot = imdb_result.get("plot outline")
+    video_metadata.imdb_rating = imdb_result.get("rating")
+    video_metadata.genres = imdb_result.get("genres")
 
     return video_metadata
