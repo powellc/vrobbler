@@ -57,7 +57,7 @@ class ScrobblableMixin(TimeStampedModel):
 
     uuid = models.UUIDField(default=uuid4, editable=False, **BNULL)
     title = models.CharField(max_length=255, **BNULL)
-    run_time_seconds = models.IntegerField(**BNULL)
+    run_time_seconds = models.IntegerField(default=900)
     run_time_ticks = models.PositiveBigIntegerField(**BNULL)
 
     genre = TaggableManager(through=ObjectWithGenres, blank=True)
