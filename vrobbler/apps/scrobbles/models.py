@@ -680,6 +680,12 @@ class Scrobble(TimeStampedModel):
             logger.info(f"Redirecting to {self.media_obj.url}")
             redirect_url = self.media_obj.get_read_url()
 
+        if (
+            self.media_type == self.MediaType.VIDEO
+            and self.media_obj.youtube_id
+        ):
+            redirect_url = self.media_obj.youtube_link
+
         return redirect_url
 
     @property

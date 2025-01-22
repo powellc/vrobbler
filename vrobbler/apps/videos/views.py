@@ -29,8 +29,8 @@ class SeriesDetailView(LoginRequiredMixin, generic.DetailView):
             user_id
         ).next_imdb_id
         if self.object.is_episode_playing(user_id):
-            next_episode_id = None
-        context_data["next_episode_id"] = next_episode_id
+            next_episode_id = ""
+        context_data["next_episode_id"] = "tt" + next_episode_id
         return context_data
 
 

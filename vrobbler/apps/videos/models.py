@@ -263,7 +263,7 @@ class Video(ScrobblableMixin):
     @property
     def youtube_link(self) -> str:
         if self.youtube_id:
-            return YOUTUBE_BASE_URL + self.youtube_id
+            return f"https://www.youtube.com/watch?v={self.youtube_id}"
         return ""
 
     @property
