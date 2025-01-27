@@ -60,8 +60,8 @@ def lookup_video_from_youtube(youtube_id: str) -> VideoMetadata:
         video_metadata.cover_url = (
             yt_metadata.get("thumbnails", {}).get("high", {}).get("url", {})
         )
-        video_metadata.genres = yt_metadata.get("tags")
-        video_metadata.overview = yt_metadata.get("description")
+        video_metadata.genres = yt_metadata.get("tags", [])
+        video_metadata.overview = yt_metadata.get("description", "")
 
         date_str = yt_metadata.get("publishedAt")
         if date_str:
