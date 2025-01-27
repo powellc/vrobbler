@@ -35,6 +35,7 @@ from vrobbler.apps.books.locg import (
     lookup_comic_from_locg,
     lookup_comic_writer_by_locg_slug,
 )
+from vrobbler.apps.books.sources.google import lookup_book_from_google
 from vrobbler.apps.scrobbles.dataclasses import BookLogData
 
 COMICVINE_API_KEY = getattr(settings, "COMICVINE_API_KEY", "")
@@ -101,16 +102,16 @@ class Book(LongPlayScrobblableMixin):
 
     title = models.CharField(max_length=255)
     authors = models.ManyToManyField(Author, blank=True)
-    goodreads_id = models.CharField(max_length=255, **BNULL)
     koreader_data_by_hash = models.JSONField(**BNULL)
-    isbn = models.CharField(max_length=255, **BNULL)
+    isbn_13 = models.CharField(max_length=255, **BNULL)
+    isbn_10 = models.CharField(max_length=255, **BNULL)
     pages = models.IntegerField(**BNULL)
     language = models.CharField(max_length=4, **BNULL)
     first_publish_year = models.IntegerField(**BNULL)
+    publish_date = models.DateField(**BNULL)
+    publisher = models.CharField(max_length=255, **BNULL)
     first_sentence = models.TextField(**BNULL)
     openlibrary_id = models.CharField(max_length=255, **BNULL)
-    locg_slug = models.CharField(max_length=255, **BNULL)
-    comicvine_data = models.JSONField(**BNULL)
     cover = models.ImageField(upload_to="books/covers/", **BNULL)
     cover_small = ImageSpecField(
         source="cover",
@@ -152,6 +153,32 @@ class Book(LongPlayScrobblableMixin):
 
     def get_absolute_url(self):
         return reverse("books:book_detail", kwargs={"slug": self.uuid})
+
+    @classmethod
+    def get_from_google(cls, title: str, overwrite: bool = False):
+        book, created = cls.objects.get_or_create(title=title)
+        if not created and not overwrite:
+            return book
+
+        bdict, authors, cover, genres = lookup_book_from_google(
+            title
+        ).as_dict_with_authors_cover_and_genres()
+
+        if created or overwrite:
+            for k, v in bdict.items():
+                setattr(book, k, v)
+                book.save()
+
+                book.save_image_from_url(cover)
+                book.genre.add(*genres)
+        return book
+
+    def save_image_from_url(self, url: str, force_update: bool = False):
+        if not self.cover or (force_update and url):
+            r = requests.get(url)
+            if r.status_code == 200:
+                fname = f"{self.title}_{self.uuid}.jpg"
+                self.cover.save(fname, ContentFile(r.content), save=True)
 
     def fix_metadata(self, data: dict = {}, force_update=False):
         if (not self.openlibrary_id or not self.locg_slug) or force_update:
@@ -340,7 +367,9 @@ class Book(LongPlayScrobblableMixin):
                 )
                 return book
 
-            book, book_created = cls.objects.get_or_create(isbn=data["isbn"])
+            book, book_created = cls.objects.get_or_create(
+                isbn_13=data["isbn"]
+            )
             if book_created:
                 book.fix_metadata(data=data)
 

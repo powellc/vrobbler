@@ -30,10 +30,10 @@ class BookAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
     list_display = (
         "title",
-        "isbn",
+        "subtitle",
+        "isbn_13",
         "first_publish_year",
         "pages",
-        "openlibrary_id",
     )
     search_fields = ("name",)
     ordering = ("-created",)
