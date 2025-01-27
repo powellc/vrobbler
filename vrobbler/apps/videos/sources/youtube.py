@@ -1,6 +1,9 @@
 import pendulum
 from meta_yt import Video, YouTube
 from videos.metadata import VideoMetadata, VideoType
+import logging
+
+logger = logging.getLogger(__name__)
 
 YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v="
 YOUTUBE_CHANNEL_URL = "https://www.youtube.com/channel/"
@@ -9,12 +12,16 @@ YOUTUBE_CHANNEL_URL = "https://www.youtube.com/channel/"
 def lookup_video_from_youtube(youtube_id: str) -> VideoMetadata:
     from videos.models import Channel
 
-    yt_metadata: Optional[Video] = YouTube(
-        YOUTUBE_VIDEO_URL + youtube_id
-    ).video
+    video_metadata = VideoMetadata(youtube_id=youtube_id)
+    try:
+        yt_metadata: Optional[Video] = YouTube(
+            YOUTUBE_VIDEO_URL + youtube_id
+        ).video
+    except KeyError:
+        logger.warning("Cannot access youtube, probably thinks you're a bot")
+        return video_metadata
 
     if yt_metadata:
-        video_metadata = VideoMetadata(youtube_id=youtube_id)
 
         if yt_metadata.channel:
             channel, _created = Channel.objects.get_or_create(
