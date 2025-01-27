@@ -1,15 +1,14 @@
 import logging
 import re
 from typing import Optional
+from urllib.parse import parse_qs, urlparse
 
-from datetime import datetime
 import pendulum
 import pytz
 from beers.models import Beer
 from boardgames.models import BoardGame
 from books.models import Book
 from dateutil.parser import parse
-from django.conf import settings
 from django.utils import timezone
 from locations.constants import LOCATION_PROVIDERS
 from locations.models import GeoLocation
@@ -141,7 +140,9 @@ def web_scrobbler_scrobble_media(
     return video.scrobble_for_user(user_id, status, source="Web Scrobbler")
 
 
-def manual_scrobble_video(video_id: str, user_id: int):
+def manual_scrobble_video(
+    video_id: str, user_id: int, action: Optional[str] = None
+):
     if "tt" in video_id:
         video = Video.get_from_imdb_id(video_id)
 
@@ -169,10 +170,17 @@ def manual_scrobble_video(video_id: str, user_id: int):
         },
     )
 
-    return Scrobble.create_or_update(video, user_id, scrobble_dict)
+    scrobble = Scrobble.create_or_update(video, user_id, scrobble_dict)
+
+    if action == "stop":
+        scrobble.stop(force_finish=True)
+
+    return scrobble
 
 
-def manual_scrobble_event(thesportsdb_id: str, user_id: int):
+def manual_scrobble_event(
+    thesportsdb_id: str, user_id: int, action: Optional[str] = None
+):
     data_dict = lookup_event_from_thesportsdb(thesportsdb_id)
 
     event = SportEvent.find_or_create(data_dict)
@@ -185,7 +193,9 @@ def manual_scrobble_event(thesportsdb_id: str, user_id: int):
     return Scrobble.create_or_update(event, user_id, scrobble_dict)
 
 
-def manual_scrobble_video_game(hltb_id: str, user_id: int):
+def manual_scrobble_video_game(
+    hltb_id: str, user_id: int, action: Optional[str] = None
+):
     game = VideoGame.objects.filter(hltb_id=hltb_id).first()
     if not game:
         data_dict = lookup_game_from_hltb(hltb_id)
@@ -223,7 +233,9 @@ def manual_scrobble_video_game(hltb_id: str, user_id: int):
     return Scrobble.create_or_update(game, user_id, scrobble_dict)
 
 
-def manual_scrobble_book(openlibrary_id: str, user_id: int):
+def manual_scrobble_book(
+    openlibrary_id: str, user_id: int, action: Optional[str] = None
+):
     book = Book.find_or_create(openlibrary_id)
 
     scrobble_dict = {
@@ -247,7 +259,9 @@ def manual_scrobble_book(openlibrary_id: str, user_id: int):
     return Scrobble.create_or_update(book, user_id, scrobble_dict)
 
 
-def manual_scrobble_board_game(bggeek_id: str, user_id: int):
+def manual_scrobble_board_game(
+    bggeek_id: str, user_id: int, action: Optional[str] = None
+):
     boardgame = BoardGame.find_or_create(bggeek_id)
 
     if not boardgame:
@@ -273,7 +287,9 @@ def manual_scrobble_board_game(bggeek_id: str, user_id: int):
     return Scrobble.create_or_update(boardgame, user_id, scrobble_dict)
 
 
-def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
+def manual_scrobble_from_url(
+    url: str, user_id: int, action: Optional[str] = None
+) -> Scrobble:
     """We have scrobblable media URLs, and then any other webpages that
     we want to scrobble as a media type in and of itself. This checks whether
     we know about the content type, and routes it to the appropriate media
@@ -304,7 +320,7 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
         item_id = url.split("v=")[1].split("&")[0]
 
     scrobble_fn = MANUAL_SCROBBLE_FNS[content_key]
-    return eval(scrobble_fn)(item_id, user_id)
+    return eval(scrobble_fn)(item_id, user_id, action=action)
 
 
 def todoist_scrobble_task_finish(
@@ -454,7 +470,7 @@ def todoist_scrobble_task(
     return scrobble
 
 
-def manual_scrobble_task(url: str, user_id: int):
+def manual_scrobble_task(url: str, user_id: int, action: Optional[str] = None):
     source_id = re.findall("\d+", url)[0]
 
     if "todoist" in url:
@@ -484,7 +500,9 @@ def manual_scrobble_task(url: str, user_id: int):
     return scrobble
 
 
-def manual_scrobble_webpage(url: str, user_id: int):
+def manual_scrobble_webpage(
+    url: str, user_id: int, action: Optional[str] = None
+):
     webpage = WebPage.find_or_create({"url": url})
 
     scrobble_dict = {
@@ -604,7 +622,9 @@ def web_scrobbler_scrobble_video_or_song(
     return scrobble
 
 
-def manual_scrobble_beer(untappd_id: str, user_id: int):
+def manual_scrobble_beer(
+    untappd_id: str, user_id: int, action: Optional[str] = None
+):
     beer = Beer.find_or_create(untappd_id)
 
     if not beer:
