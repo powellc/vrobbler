@@ -8,4 +8,6 @@ TODOIST_TITLE_SUFFIX_LABELS = [
     "meeting",
     "habit",
     "research",
+    "exercise",
+    "lifeevent",
 ]
