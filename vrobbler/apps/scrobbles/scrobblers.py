@@ -300,7 +300,7 @@ def manual_scrobble_from_url(url: str, user_id: int) -> Scrobble:
         except IndexError:
             pass
 
-    if content_key == "-i" and not item_id:
+    if content_key == "-i":
         item_id = url.split("v=")[1].split("&")[0]
 
     scrobble_fn = MANUAL_SCROBBLE_FNS[content_key]
