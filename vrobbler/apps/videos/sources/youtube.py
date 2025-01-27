@@ -32,7 +32,7 @@ def lookup_video_from_youtube(youtube_id: str) -> VideoMetadata:
 
         video_metadata.title = yt_metadata.title
         video_metadata.run_time_seconds = yt_metadata.duration
-        video_metadata.video_type = VideoType.YOUTUBE
+        video_metadata.video_type = VideoType.YOUTUBE.value
         video_metadata.youtube_id = yt_metadata.video_id
         video_metadata.cover_url = yt_metadata.thumbnail
         video_metadata.genres = yt_metadata.keywords

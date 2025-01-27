@@ -69,14 +69,14 @@ def lookup_video_from_imdb(
             video_metadata.cover_url, width=800
         )
 
-    video_metadata.video_type = VideoType.MOVIE
+    video_metadata.video_type = VideoType.MOVIE.value
     series_name = None
     if imdb_result.get("kind") == "episode":
         series_name = imdb_result.get("episode of", None).data.get(
             "title", None
         )
         series, _ = Series.objects.get_or_create(name=series_name)
-        video_metadata.video_type = VideoType.TV_EPISODE
+        video_metadata.video_type = VideoType.TV_EPISODE.value
         video_metadata.tv_series_id = series.id
 
     if imdb_result.get("runtimes"):
