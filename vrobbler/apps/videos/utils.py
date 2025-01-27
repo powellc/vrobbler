@@ -29,48 +29,23 @@ def get_or_create_video(data_dict: dict, post_keys: dict, force_update=False):
         )
         return
 
-    video, video_created = Video.objects.get_or_create(
-        imdb_id=video_dict.get("imdb_id"),
-        title=video_dict.get("title"),
-    )
-    if video_created or force_update:
-        if not "overview" in video_dict.keys():
-            video_dict["overview"] = data_dict.get(
-                post_keys.get("OVERVIEW"), None
-            )
-        if not "tagline" in video_dict.keys():
-            video_dict["tagline"] = data_dict.get(
-                post_keys.get("TAGLINE"), None
-            )
-        if not "tmdb_id" in video_dict.keys():
-            video_dict["tmdb_id"] = data_dict.get(
-                post_keys.get("TMDB_ID"), None
-            )
+    video = Video.get_from_imdb_id(video_dict.get("imdb_id")
 
-        series_name = video_dict.pop("series_name", None)
-        if series_name:
-            series, series_created = Series.objects.get_or_create(
-                name=series_name
-            )
-            if series_created:
-                series.fix_metadata()
-            video_dict["tv_series_id"] = series.id
-
-        if genres := video_dict.pop("genres", None):
-            video.genre.add(*genres)
-
-        if cover_url := video_dict.pop("cover_url", None):
-            video.save_image_from_url(cover_url)
-
-        Video.objects.filter(pk=video.id).update(**video_dict)
-        video.refresh_from_db()
-    # TODO this is a hack so we don't spam scrobbles without a run time seconds
-    if video.run_time_seconds == 0:
-        video.run_time_seconds = 1800
-        video.save(update_fields=["run_time_seconds"])
+    if not "overview" in video_dict.keys():
+        video_dict["overview"] = data_dict.get(
+            post_keys.get("OVERVIEW"), None
+        )
+    if not "tagline" in video_dict.keys():
+        video_dict["tagline"] = data_dict.get(
+            post_keys.get("TAGLINE"), None
+        )
+    if not "tmdb_id" in video_dict.keys():
+        video_dict["tmdb_id"] = data_dict.get(
+            post_keys.get("TMDB_ID"), None
+        )
 
     return video
 
 
-def get_or_create_video_from_skatevideosite(title: str, force_update=True):
-    ...
+def get_or_create_video_from_skatevideosite(title: str, force_update: bool=True):
+    return

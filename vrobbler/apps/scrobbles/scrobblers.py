@@ -135,53 +135,10 @@ def jellyfin_scrobble_media(
 
 
 def web_scrobbler_scrobble_media(
-    post_data: dict, user_id: int
+    youtube_id: str, user_id: int, status: str = "started"
 ) -> Optional[Scrobble]:
-    media_type = Scrobble.MediaType.VIDEO
-
-    event_name = post_data.get("eventName")
-    parsed = post_data.get("data").get("song").get("parsed")
-    processed = post_data.get("data").get("song").get("processed")
-    video, created = Video.objects.get_or_create(
-        video_type=Video.VideoType.YOUTUBE,
-        youtube_url=parsed.get("originUrl"),
-    )
-    timestamp = datetime.utcfromtimestamp(
-        post_data.get("time", 0) / 1000
-    ).replace(tzinfo=pytz.utc)
-
-    if created or event_name == "nowplaying":
-        processed = post_data.get("data").get("song").get("processed")
-        video.run_time_seconds = processed.get("duration", 1500)
-        if not processed.get("duration"):
-            video.run_time_seconds = 1500
-        # TODO maybe artist could be the series?
-        video.title = " - ".join(
-            [processed.get("artist"), processed.get("track")]
-        )
-        video.save()
-        return video.scrobble_for_user(
-            user_id,
-            source="YouTube",
-            playback_position_seconds=0,
-            status=event_name,
-        )
-
-    scrobble = Scrobble.objects.filter(
-        user_id=user_id, video=video, in_progress=True
-    ).first()
-    if not scrobble:
-        return video.scrobble_for_user(
-            user_id,
-            source="YouTube",
-            playback_position_seconds=0,
-            status=event_name,
-        )
-    if event_name == "paused":
-        scrobble.pause()
-    if event_name == "resumedplaying":
-        scrobble.resume()
-    return scrobble
+    video = Video.get_from_youtube_id(youtube_id)
+    return video.scrobble_for_user(user_id, status, source="Web Scrobbler")
 
 
 def manual_scrobble_video(video_id: str, user_id: int):
@@ -620,7 +577,7 @@ def web_scrobbler_scrobble_video_or_song(
 
     # No track found, create a Video
     if not track:
-        Video.find_or_create(data_dict)
+        Video.get_from_youtube_id()
 
     # Now we run off a scrobble
     mopidy_data = {

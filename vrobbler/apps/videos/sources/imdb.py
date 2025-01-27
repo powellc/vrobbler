@@ -1,7 +1,7 @@
 import logging
 
 from imdb import Cinemagoer, helpers
-from videos.services import metadata
+from videos.metadata import VideoMetadata, VideoType
 
 imdb_client = Cinemagoer()
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def lookup_video_from_imdb(
     name_or_id: str, kind: str = "movie"
-) -> metadata.VideoMetadata:
+) -> VideoMetadata:
     from videos.models import Series
 
     # Very few video titles start with tt, but IMDB IDs often come in with it
@@ -24,7 +24,7 @@ def lookup_video_from_imdb(
     except ValueError:
         pass
 
-    video_metadata = metadata.VideoMetadata(imdb_id=imdb_id)
+    video_metadata = VideoMetadata(imdb_id=imdb_id)
     imdb_result: dict = {}
 
     imdb_result = imdb_client.get_movie(name_or_id)
@@ -69,14 +69,14 @@ def lookup_video_from_imdb(
             video_metadata.cover_url, width=800
         )
 
-    video_metadata.video_type = metadata.VideoType.MOVIE
+    video_metadata.video_type = VideoType.MOVIE
     series_name = None
     if imdb_result.get("kind") == "episode":
         series_name = imdb_result.get("episode of", None).data.get(
             "title", None
         )
         series, _ = Series.objects.get_or_create(name=series_name)
-        video_metadata.video_type = metadata.VideoType.TV_EPISODE
+        video_metadata.video_type = VideoType.TV_EPISODE
         video_metadata.tv_series_id = series.id
 
     if imdb_result.get("runtimes"):

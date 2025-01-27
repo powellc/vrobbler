@@ -19,8 +19,9 @@ from scrobbles.mixins import (
     ScrobblableMixin,
 )
 from taggit.managers import TaggableManager
-from videos.services.metadata import VideoMetadata
+from videos.metadata import VideoMetadata
 from videos.sources.imdb import lookup_video_from_imdb
+
 from vrobbler.apps.videos.sources.youtube import lookup_video_from_youtube
 
 YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v="
@@ -329,6 +330,5 @@ class Video(ScrobblableMixin):
         cls, data_dict: dict, post_keys: dict = JELLYFIN_POST_KEYS
     ) -> Optional["Video"]:
         """Thes smallest of wrappers around our actual get or create utility."""
-        from videos.utils import get_or_create_video
-
-        return get_or_create_video(data_dict, post_keys)
+        imdb_key = post_keys.get("IMDB_ID")
+        return cls.get_from_imdb_id(data_dict.get(imdb_key))

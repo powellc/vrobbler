@@ -78,10 +78,12 @@ class ScrobblableMixin(TimeStampedModel):
             "user_id": user_id,
             "timestamp": timezone.now(),
             "source": source,
-            "playback_position_seconds": playback_position_seconds,
             "status": status,
-            "log": log,
+            "playback_position_seconds": playback_position_seconds,
         }
+
+        if log:
+            scrobble_data["log"] = log
 
         logger.info(
             "[scrobble_for_user] called",

@@ -1,12 +1,12 @@
 import pendulum
 from meta_yt import Video, YouTube
-from videos.services import metadata
+from videos.metadata import VideoMetadata, VideoType
 
 YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v="
 YOUTUBE_CHANNEL_URL = "https://www.youtube.com/channel/"
 
 
-def lookup_video_from_youtube(youtube_id: str) -> metadata.VideoMetadata:
+def lookup_video_from_youtube(youtube_id: str) -> VideoMetadata:
     from videos.models import Channel
 
     yt_metadata: Optional[Video] = YouTube(
@@ -14,7 +14,7 @@ def lookup_video_from_youtube(youtube_id: str) -> metadata.VideoMetadata:
     ).video
 
     if yt_metadata:
-        video_metadata = metadata.VideoMetadata(youtube_id=youtube_id)
+        video_metadata = VideoMetadata(youtube_id=youtube_id)
 
         if yt_metadata.channel:
             channel, _created = Channel.objects.get_or_create(
@@ -25,7 +25,7 @@ def lookup_video_from_youtube(youtube_id: str) -> metadata.VideoMetadata:
 
         video_metadata.title = yt_metadata.title
         video_metadata.run_time_seconds = yt_metadata.duration
-        video_metadata.video_type = metadata.VideoType.YOUTUBE
+        video_metadata.video_type = VideoType.YOUTUBE
         video_metadata.youtube_id = yt_metadata.video_id
         video_metadata.cover_url = yt_metadata.thumbnail
         video_metadata.genres = yt_metadata.keywords
