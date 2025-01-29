@@ -83,7 +83,7 @@ def import_chess_games_for_all_users():
                         black_player.get("aiLevel", "")
                     )
                 else:
-                    other_player["name_str"] = white_player.get(
+                    other_player["name_str"] = black_player.get(
                         "user", {}
                     ).get("name", "")
                 other_player["color"] = "black"
