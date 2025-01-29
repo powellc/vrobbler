@@ -1,9 +1,6 @@
 from enum import Enum
 from typing import Optional
 
-import pendulum
-from meta_yt import YouTube
-
 
 YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v="
 IMDB_VIDEO_URL = "https://www.imdb.com/title/tt"
