@@ -30,6 +30,7 @@ class UserProfile(TimeStampedModel):
     archivebox_url = models.CharField(max_length=255, **BNULL)
 
     bgg_username = models.CharField(max_length=255, **BNULL)
+    lichess_username = models.CharField(max_length=255, **BNULL)
 
     todoist_auth_key = EncryptedField(**BNULL)
     todoist_state = EncryptedField(**BNULL)
