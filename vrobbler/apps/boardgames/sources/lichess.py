@@ -48,7 +48,9 @@ def import_chess_games_for_all_users():
             white_player = game_dict.get("players", {}).get("white", {})
 
             user_player = {
-                "user_id": user.profile.lichess_username,
+                "user_id": user.id,
+                "lichess_username": user.profile.lichess_username,
+                "bgg_username": user.profile.bgg_username,
                 "color": "",
                 "win": False,
             }
@@ -67,6 +69,7 @@ def import_chess_games_for_all_users():
                     other_player["name_str"] = white_player.get(
                         "user", {}
                     ).get("name", "")
+                    other_player["lichess_username"] = other_player["name_str"]
 
                 other_player["color"] = "white"
                 if winner == "black":
@@ -86,6 +89,7 @@ def import_chess_games_for_all_users():
                     other_player["name_str"] = black_player.get(
                         "user", {}
                     ).get("name", "")
+                    other_player["lichess_username"] = other_player["name_str"]
                 other_player["color"] = "black"
                 if winner == "white":
                     user_player["win"] = True
@@ -96,10 +100,18 @@ def import_chess_games_for_all_users():
             log_data["players"].append(other_player)
 
             scrobble_dict = {
+                "media_type": Scrobble.MediaType.BOARD_GAME,
                 "user_id": user.id,
+                "playback_position_seconds": (
+                    game_dict.get("lastMoveAt") - game_dict.get("createdAt")
+                ).seconds,
+                "in_progress": False,
+                "played_to_completion": True,
                 "timestamp": game_dict.get("createdAt"),
                 "stop_timestamp": game_dict.get("lastMoveAt"),
                 "board_game_id": chess.id,
+                "source": "Lichess",
+                "timezone": user.profile.timezone,
                 "log": log_data,
             }
             scrobbles_to_create.append(Scrobble(**scrobble_dict))
@@ -107,13 +119,3 @@ def import_chess_games_for_all_users():
     if scrobbles_to_create:
         Scrobble.objects.bulk_create(scrobbles_to_create)
     return scrobbles_to_create
-
-
-# 'players': {
-#     'white': {'aiLevel': 1},
-#     'black': {'user': {'name': 'secstate', 'id': 'secstate'},
-#   'rating': 1500,
-#   'provisional': True}
-# },
-# 'fullId': '4T8CinfXdI95',
-# 'winner': 'black',
