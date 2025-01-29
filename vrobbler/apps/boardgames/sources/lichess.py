@@ -1,9 +1,9 @@
 import berserk
-from django.conf import settings
-
 from boardgames.models import BoardGame
-from scrobbles.models import Scrobble
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from scrobbles.models import Scrobble
+from scrobbles.utils import send_notifications_for_scrobble
 
 User = get_user_model()
 
@@ -39,9 +39,6 @@ def import_chess_games_for_all_users():
                 "moves": game_dict.get("moves"),
                 "players": [],
             }
-
-            chess_status = game_dict.get("status")
-            chess_source = game_dict.get("source")
 
             winner = game_dict.get("winner")
             black_player = game_dict.get("players", {}).get("black", {})
@@ -117,5 +114,7 @@ def import_chess_games_for_all_users():
             scrobbles_to_create.append(Scrobble(**scrobble_dict))
 
     if scrobbles_to_create:
-        Scrobble.objects.bulk_create(scrobbles_to_create)
+        created = Scrobble.objects.bulk_create(scrobbles_to_create)
+        for scrobble in created:
+            send_notifications_for_scrobble(scrobble.id)
     return scrobbles_to_create
