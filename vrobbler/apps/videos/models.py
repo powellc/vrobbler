@@ -316,8 +316,6 @@ class Video(ScrobblableMixin):
         ).as_dict_with_cover_and_genres()
         if created or overwrite:
             for k, v in vdict.items():
-                if k == "imdb_id":
-                    v = "tt" + v
                 setattr(video, k, v)
             video.save()
 
@@ -330,5 +328,5 @@ class Video(ScrobblableMixin):
         cls, data_dict: dict, post_keys: dict = JELLYFIN_POST_KEYS
     ) -> Optional["Video"]:
         """Thes smallest of wrappers around our actual get or create utility."""
-        imdb_key = post_keys.get("IMDB_ID")
+        imdb_key = post_keys.get("IMDB_ID", "").replace("tt", "")
         return cls.get_from_imdb_id(data_dict.get(imdb_key))

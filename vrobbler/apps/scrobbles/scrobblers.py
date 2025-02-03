@@ -104,7 +104,9 @@ def jellyfin_scrobble_media(
         / 10000000
     )
     if media_type == Scrobble.MediaType.VIDEO:
-        media_obj = Video.find_or_create(post_data)
+        media_obj = Video.get_from_imdb_id(
+            post_data.get("Provider_imdb", "").replace("tt", "")
+        )
     else:
         media_obj = get_or_create_track(
             post_data, post_keys=JELLYFIN_POST_KEYS
