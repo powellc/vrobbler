@@ -236,9 +236,9 @@ def manual_scrobble_video_game(
 
 
 def manual_scrobble_book(
-    openlibrary_id: str, user_id: int, action: Optional[str] = None
+    title: str, user_id: int, action: Optional[str] = None
 ):
-    book = Book.find_or_create(openlibrary_id)
+    book = Book.get_from_google(title)
 
     scrobble_dict = {
         "user_id": user_id,
