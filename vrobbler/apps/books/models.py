@@ -165,12 +165,21 @@ class Book(LongPlayScrobblableMixin):
         ).as_dict_with_authors_cover_and_genres()
 
         if created or overwrite:
+            author_list = []
+            if authors:
+                for author_str in authors:
+                    if author_str:
+                        author_list.append(
+                            Author.objects.get_or_create(name=author_str)[0]
+                        )
+
             for k, v in bdict.items():
                 setattr(book, k, v)
                 book.save()
 
                 book.save_image_from_url(cover)
                 book.genre.add(*genres)
+                book.authors.add(*author_list)
         return book
 
     def save_image_from_url(self, url: str, force_update: bool = False):
